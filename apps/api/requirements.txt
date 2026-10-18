@@ -1,0 +1,14 @@
+# Direct backend dependencies, pinned to the versions actually installed and verified
+# in .venv on 2026-10-18. See docs/RESEARCH_AND_SOURCES.md for licences.
+fastapi==0.143.3
+uvicorn[standard]==0.54.0
+pydantic==2.14.1
+networkx==3.7
+shapely==2.2.0
+reportlab==5.0.1
+
+# development / verification
+pytest==9.1.1
+httpx==0.28.1
+hypothesis==6.170.1
+ruff==0.17.1

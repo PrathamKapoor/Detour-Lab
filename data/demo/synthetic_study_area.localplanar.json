@@ -1,0 +1,164 @@
+{
+  "schema": "detour-lab-local-planar/1.0",
+  "NOTICE": "SYNTHETIC SCHEMATIC DATASET - NOT A REAL PLACE. Coordinates are local planar metres in an invented layout. This file is deliberately NOT RFC 7946 GeoJSON and must never be presented as real-world geography or as field-measured data.",
+  "dataset": {
+    "name": "DETOUR LAB synthetic schematic study area",
+    "description": "Invented two-block footway layout used to demonstrate closure editing, four-valued rule evaluation, confirmed vs possible reachability and phase transitions. Every attribute below is synthetic.",
+    "license": "Apache-2.0 (authored for this repository)",
+    "attribution": "Authored for DETOUR LAB as a synthetic demonstration fixture.",
+    "url": null,
+    "provenance_class": "synthetic",
+    "version": "1.0.0",
+    "retrieved_at": null
+  },
+  "project": {
+    "name": "Campus Edge Block (SYNTHETIC SCHEMATIC)",
+    "study_area_description": "Schematic two-block study area: one main footway, one back-lane footway, two crossings, two modelled destinations. Not a survey of any real location.",
+    "jurisdiction": "unspecified",
+    "owner": "unspecified"
+  },
+  "basis": {
+    "kind": "local_planar_meters",
+    "unit": "m",
+    "local_origin_label": "Arbitrary synthetic local origin (0,0) at the west junction of the schematic main footway. Not a georeferenced coordinate.",
+    "crs_note": "Local planar metre basis invented for this synthetic fixture. It is NOT WGS 84 and NOT any projected CRS. Metre arithmetic is exact within this basis because the basis is defined in metres."
+  },
+  "graph_version_id": "demo-graph-v1",
+  "nodes": [
+    { "id": "N_W", "x": 0.0, "y": 0.0, "node_type": "junction", "name": "West junction (synthetic)" },
+    { "id": "N_M", "x": 40.0, "y": 0.0, "node_type": "junction", "name": "Mid junction (synthetic)" },
+    { "id": "N_E", "x": 80.0, "y": 0.0, "node_type": "junction", "name": "East junction (synthetic)" },
+    { "id": "N_K", "x": 40.0, "y": 9.0, "node_type": "crossing_interface", "name": "Main crossing interface (synthetic)" },
+    { "id": "N_S", "x": 40.0, "y": 18.0, "node_type": "destination", "name": "Campus main gate (synthetic)" },
+    { "id": "N_B1", "x": 0.0, "y": 18.0, "node_type": "junction", "name": "Back-lane west end (synthetic)" },
+    { "id": "N_BC", "x": 20.0, "y": 18.0, "node_type": "curb_interface", "name": "Back-lane curb interface (synthetic)" },
+    { "id": "N_EK", "x": 80.0, "y": 9.0, "node_type": "curb_interface", "name": "East crossing curb interface (synthetic)" },
+    { "id": "N_SE", "x": 80.0, "y": 18.0, "node_type": "destination", "name": "Library entrance (synthetic)" }
+  ],
+  "edges": [
+    { "id": "E_WM", "u": "N_W", "v": "N_M", "length_m": 40.0, "edge_type": "sidewalk", "name": "Main footway west segment" },
+    { "id": "E_ME", "u": "N_M", "v": "N_E", "length_m": 40.0, "edge_type": "sidewalk", "name": "Main footway east segment" },
+    { "id": "E_K1", "u": "N_M", "v": "N_K", "length_m": 9.0, "edge_type": "crossing", "name": "Main crossing, north half" },
+    { "id": "E_K2", "u": "N_K", "v": "N_S", "length_m": 9.0, "edge_type": "crossing", "name": "Main crossing, south half" },
+    { "id": "E_WB", "u": "N_W", "v": "N_B1", "length_m": 18.0, "edge_type": "sidewalk", "name": "Back-lane west link" },
+    { "id": "E_BS1", "u": "N_B1", "v": "N_BC", "length_m": 20.0, "edge_type": "sidewalk", "name": "Back-lane west half" },
+    { "id": "E_BS2", "u": "N_BC", "v": "N_S", "length_m": 20.0, "edge_type": "sidewalk", "name": "Back-lane east half" },
+    { "id": "E_ES1", "u": "N_E", "v": "N_EK", "length_m": 9.0, "edge_type": "sidewalk", "name": "East link, north half" },
+    { "id": "E_ES2", "u": "N_EK", "v": "N_SE", "length_m": 9.0, "edge_type": "sidewalk", "name": "East link, south half" },
+    { "id": "E_SSE", "u": "N_S", "v": "N_SE", "length_m": 40.0, "edge_type": "sidewalk", "name": "South footway" },
+    {
+      "id": "E_ALT",
+      "u": "N_M",
+      "v": "N_SE",
+      "length_m": 43.863,
+      "edge_type": "shared_use_path",
+      "name": "Rear access track (width and gradient never measured in this synthetic fixture)"
+    },
+    {
+      "id": "E_LINK",
+      "u": "N_B1",
+      "v": "N_EK",
+      "length_m": 80.505,
+      "edge_type": "sidewalk",
+      "name": "Diagonal footway link - crosses the main crossing in space but shares NO node with it"
+    }
+  ],
+  "evidence": [
+    { "id": "EV-E_WM-width", "element_id": "E_WM", "field": "width_mm", "value": 1800, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true, "note": "Invented value for demonstration." },
+    { "id": "EV-E_WM-slope", "element_id": "E_WM", "field": "slope_percent", "value": 3.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true, "note": "Invente signed rise along u->v." },
+    { "id": "EV-E_WM-surface", "element_id": "E_WM", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true, "note": "Invented value for demonstration." },
+
+    { "id": "EV-E_ME-width", "element_id": "E_ME", "field": "width_mm", "value": 1600, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_ME-slope", "element_id": "E_ME", "field": "slope_percent", "value": 4.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_ME-surface", "element_id": "E_ME", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+
+    { "id": "EV-E_K1-width", "element_id": "E_K1", "field": "width_mm", "value": 1100, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true, "note": "Crossing width passes demo profile A (900 mm) and fails demo profile B (1200 mm)." },
+    { "id": "EV-E_K1-slope", "element_id": "E_K1", "field": "slope_percent", "value": 1.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_K1-surface", "element_id": "E_K1", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+
+    { "id": "EV-E_K2-width", "element_id": "E_K2", "field": "width_mm", "value": 1100, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_K2-slope", "element_id": "E_K2", "field": "slope_percent", "value": 1.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_K2-surface", "element_id": "E_K2", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+
+    { "id": "EV-E_WB-width", "element_id": "E_WB", "field": "width_mm", "value": 1500, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_WB-slope", "element_id": "E_WB", "field": "slope_percent", "value": 2.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_WB-surface", "element_id": "E_WB", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+
+    { "id": "EV-E_BS1-width", "element_id": "E_BS1", "field": "width_mm", "value": 1000, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true, "note": "Passes demo profile A (900 mm), fails demo profile B (1200 mm)." },
+    { "id": "EV-E_BS1-slope", "element_id": "E_BS1", "field": "slope_percent", "value": 1.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_BS1-surface", "element_id": "E_BS1", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+
+    { "id": "EV-E_BS2-width", "element_id": "E_BS2", "field": "width_mm", "value": 1000, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_BS2-slope", "element_id": "E_BS2", "field": "slope_percent", "value": 1.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_BS2-surface", "element_id": "E_BS2", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+
+    { "id": "EV-E_ES1-width", "element_id": "E_ES1", "field": "width_mm", "value": 1500, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_ES1-slope", "element_id": "E_ES1", "field": "slope_percent", "value": 1.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_ES1-surface", "element_id": "E_ES1", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+
+    { "id": "EV-E_ES2-width", "element_id": "E_ES2", "field": "width_mm", "value": 1500, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_ES2-slope", "element_id": "E_ES2", "field": "slope_percent", "value": 1.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_ES2-surface", "element_id": "E_ES2", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+
+    { "id": "EV-E_SSE-width", "element_id": "E_SSE", "field": "width_mm", "value": 2000, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_SSE-slope", "element_id": "E_SSE", "field": "slope_percent", "value": 1.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_SSE-surface", "element_id": "E_SSE", "field": "surface", "value": "concrete", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+
+    { "id": "EV-E_ALT-surface", "element_id": "E_ALT", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true, "note": "Only the surface was ever described for the rear access track. Width and gradient were never observed, so both remain UNKNOWN and no pass may be inferred." },
+
+    { "id": "EV-E_LINK-width", "element_id": "E_LINK", "field": "width_mm", "value": 1500, "unit": "mm", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_LINK-slope", "element_id": "E_LINK", "field": "slope_percent", "value": 2.0, "unit": "percent", "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-E_LINK-surface", "element_id": "E_LINK", "field": "surface", "value": "asphalt", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true, "note": "The diagonal link looks like it meets the main crossing, but it shares no node ID with it, so no connection exists until a reviewer links them explicitly." },
+
+    { "id": "EV-N_K-curb", "element_id": "N_K", "field": "curb_transition", "value": "flush", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+    { "id": "EV-N_K-crossing", "element_id": "N_K", "field": "crossing_type", "value": "zebra_marked", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true },
+
+    { "id": "EV-N_BC-curb", "element_id": "N_BC", "field": "curb_transition", "value": "kerb_upstand", "unit": null, "method": "synthetic_fixture", "source": "synthetic fixture generator", "observed_at": "2026-01-05T09:00:00Z", "verification_status": "unverified", "provenance_class": "synthetic", "synthetic": true, "note": "A known unusable transition for both demo profiles." }
+  ],
+  "origins_destinations": [
+    { "id": "OD-W", "label": "West transit stop", "node_id": "N_W", "kind": "origin", "essential": true, "priority": 1, "weight_source": "demo_assumption", "weight": null },
+    { "id": "OD-E", "label": "East transit stop", "node_id": "N_E", "kind": "origin", "essential": true, "priority": 1, "weight_source": "demo_assumption", "weight": null },
+    { "id": "OD-GATE", "label": "Campus main gate", "node_id": "N_S", "kind": "destination", "essential": true, "priority": 1, "weight_source": "demo_assumption", "weight": null },
+    { "id": "OD-LIB", "label": "Library entrance", "node_id": "N_SE", "kind": "destination", "essential": true, "priority": 2, "weight_source": "demo_assumption", "weight": null }
+  ],
+  "phases": [
+    {
+      "id": "phase-1",
+      "order": 1,
+      "label": "Phase 1 - main footway resurfacing",
+      "boundary_convention": "logical_ordinal",
+      "start_ordinal": 1,
+      "end_ordinal": 2,
+      "closed_edge_ids": ["E_ME"],
+      "temporary_edge_ids": [],
+      "notes": "Synthetic logical phase. No construction calendar is asserted. The main footway east segment is closed for resurfacing."
+    },
+    {
+      "id": "phase-2",
+      "order": 2,
+      "label": "Phase 2 - east link reconstruction",
+      "boundary_convention": "logical_ordinal",
+      "start_ordinal": 2,
+      "end_ordinal": 3,
+      "closed_edge_ids": ["E_ME", "E_ES1"],
+      "temporary_edge_ids": ["TMP-EAST-BYPASS"],
+      "notes": "Synthetic logical phase. The east link north half is closed and a modelled temporary footway is proposed for the same corridor."
+    }
+  ],
+  "temporary_edges": [
+    {
+      "id": "TMP-EAST-BYPASS",
+      "u": "N_E",
+      "v": "N_EK",
+      "length_m": 9.0,
+      "edge_type": "temporary_path",
+      "name": "Modelled temporary footway (east link bypass)",
+      "constructible_in_field": false,
+      "evidence": [
+        { "id": "EV-TMP1-width", "field": "width_mm", "value": 900, "unit": "mm", "method": "design_assumption", "source": "synthetic design assumption (not a field measurement)", "observed_at": "2026-01-10T09:00:00Z", "verification_status": "unverified", "provenance_class": "assumed", "synthetic": true, "note": "Exactly at the demo profile A threshold and below the demo profile B threshold." },
+        { "id": "EV-TMP1-slope", "field": "slope_percent", "value": 1.0, "unit": "percent", "method": "design_assumption", "source": "synthetic design assumption (not a field measurement)", "observed_at": "2026-01-10T09:00:00Z", "verification_status": "unverified", "provenance_class": "assumed", "synthetic": true },
+        { "id": "EV-TMP1-surface", "field": "surface", "value": "asphalt", "unit": null, "method": "design_assumption", "source": "synthetic design assumption (not a field measurement)", "observed_at": "2026-01-10T09:00:00Z", "verification_status": "unverified", "provenance_class": "assumed", "synthetic": true }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,308 @@
+{
+  "id": "DEMO_RULEPACK_NOT_LEGAL",
+  "version": "1.0.0",
+  "name": "DETOUR LAB demonstration rulepack (NOT a legal standard)",
+  "basis": "Synthetic demonstration thresholds selected only to exercise the evaluation engine. Values are not derived from any statutory instrument and have not been reviewed by an accessibility professional.",
+  "jurisdiction_scope": "unspecified",
+  "legal_applicability": "unverified",
+  "disclaimer": "Modeled checks only. 'Pass' means every applicable check in this demonstration rulepack was satisfied by the evidence available. It is not legal compliance, professional approval, or a statement that anyone can physically travel the route.",
+  "attributes": {
+    "width_mm": {
+      "quantity": "width_mm",
+      "accepted_units": ["mm", "cm", "m", "in", "ft"],
+      "freshness": null,
+      "description": "Clear width of the walking surface, canonicalised to integer millimetres."
+    },
+    "slope_percent": {
+      "quantity": "slope_percent",
+      "accepted_units": ["percent", "%", "ratio", "degree", "abs_percent"],
+      "freshness": null,
+      "description": "Signed longitudinal grade in percent along the direction of travel u->v. Positive is a rise."
+    },
+    "surface": {
+      "quantity": "text",
+      "accepted_units": [],
+      "freshness": null,
+      "description": "Declared walking surface category."
+    },
+    "curb_transition": {
+      "quantity": "text",
+      "accepted_units": [],
+      "freshness": null,
+      "description": "Transition type at a curb or crossing interface."
+    },
+    "crossing_type": {
+      "quantity": "text",
+      "accepted_units": [],
+      "freshness": {
+        "max_age_days": 1825,
+        "requires_verified": false
+      },
+      "description": "Crossing control type. An explicit freshness policy applies because crossing layouts change; a record without an observed date cannot be shown to be current."
+    }
+  },
+  "rules": [
+    {
+      "id": "DEMO-EDGE-WIDTH-MANUAL",
+      "version": "1.0.0",
+      "scope": "edge",
+      "kind": "hard",
+      "criticality": "critical",
+      "description": "Footway clear width for the demo manual-wheelchair profile.",
+      "applies_to_edge_types": ["sidewalk", "shared_use_path", "crossing", "temporary_path"],
+      "applies_to_node_types": [],
+      "profiles": ["DEMO_PROFILE_MANUAL_WHEELCHAIR"],
+      "checks": [
+        { "field": "width_mm", "operator": "gte", "threshold": 900, "description": "Minimum clear width 900 mm." }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Modelled clear width is below the demo manual-wheelchair threshold.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold. Inspiration noted for review: public right-of-way accessibility guidance on clear width (e.g. US Access Board PROWAG R302) - applicability to any jurisdiction is unverified."
+    },
+    {
+      "id": "DEMO-EDGE-WIDTH-LIMITED",
+      "version": "1.0.0",
+      "scope": "edge",
+      "kind": "hard",
+      "criticality": "critical",
+      "description": "Footway clear width for the demo limited-mobility walking profile.",
+      "applies_to_edge_types": ["sidewalk", "shared_use_path", "crossing", "temporary_path"],
+      "applies_to_node_types": [],
+      "profiles": ["DEMO_PROFILE_LIMITED_MOBILITY_WALKER"],
+      "checks": [
+        { "field": "width_mm", "operator": "gte", "threshold": 1200, "description": "Minimum clear width 1200 mm." }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Modelled clear width is below the demo limited-mobility walking threshold.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold. No statutory basis claimed."
+    },
+    {
+      "id": "DEMO-EDGE-SLOPE-MAX-MANUAL",
+      "version": "1.0.0",
+      "scope": "edge",
+      "kind": "hard",
+      "criticality": "critical",
+      "description": "Uphill gradient in the direction of travel, demo manual-wheelchair profile.",
+      "applies_to_edge_types": ["sidewalk", "shared_use_path", "ramp", "temporary_path"],
+      "applies_to_node_types": [],
+      "profiles": ["DEMO_PROFILE_MANUAL_WHEELCHAIR"],
+      "checks": [
+        { "field": "slope_percent", "operator": "lte", "threshold": 8, "description": "Rise at most 8 %." }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Uphill gradient exceeds the demo manual-wheelchair threshold in the direction of travel.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold. Inspiration noted for review: accessible route gradient provisions (e.g. US Access Board PROWAG R302) - applicability unverified."
+    },
+    {
+      "id": "DEMO-EDGE-SLOPE-MIN-MANUAL",
+      "version": "1.0.0",
+      "scope": "edge",
+      "kind": "hard",
+      "criticality": "critical",
+      "description": "Downhill gradient in the direction of travel, demo manual-wheelchair profile.",
+      "applies_to_edge_types": ["sidewalk", "shared_use_path", "ramp", "temporary_path"],
+      "applies_to_node_types": [],
+      "profiles": ["DEMO_PROFILE_MANUAL_WHEELCHAIR"],
+      "checks": [
+        { "field": "slope_percent", "operator": "gte", "threshold": -8, "description": "Descent no steeper than 8 %." }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Downhill gradient exceeds the demo manual-wheelchair threshold in the direction of travel.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold."
+    },
+    {
+      "id": "DEMO-EDGE-SLOPE-MAX-LIMITED",
+      "version": "1.0.0",
+      "scope": "edge",
+      "kind": "hard",
+      "criticality": "critical",
+      "description": "Uphill gradient in the direction of travel, demo limited-mobility walking profile.",
+      "applies_to_edge_types": ["sidewalk", "shared_use_path", "ramp", "temporary_path"],
+      "applies_to_node_types": [],
+      "profiles": ["DEMO_PROFILE_LIMITED_MOBILITY_WALKER"],
+      "checks": [
+        { "field": "slope_percent", "operator": "lte", "threshold": 12, "description": "Rise at most 12 %." }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Uphill gradient exceeds the demo limited-mobility walking threshold in the direction of travel.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold."
+    },
+    {
+      "id": "DEMO-EDGE-SLOPE-MIN-LIMITED",
+      "version": "1.0.0",
+      "scope": "edge",
+      "kind": "hard",
+      "criticality": "critical",
+      "description": "Downhill gradient in the direction of travel, demo limited-mobility walking profile.",
+      "applies_to_edge_types": ["sidewalk", "shared_use_path", "ramp", "temporary_path"],
+      "applies_to_node_types": [],
+      "profiles": ["DEMO_PROFILE_LIMITED_MOBILITY_WALKER"],
+      "checks": [
+        { "field": "slope_percent", "operator": "gte", "threshold": -12, "description": "Descent no steeper than 12 %." }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Downhill gradient exceeds the demo limited-mobility walking threshold in the direction of travel.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold."
+    },
+    {
+      "id": "DEMO-EDGE-SURFACE-MANUAL",
+      "version": "1.0.0",
+      "scope": "edge",
+      "kind": "hard",
+      "criticality": "critical",
+      "description": "Surface category acceptable to the demo manual-wheelchair profile.",
+      "applies_to_edge_types": ["sidewalk", "shared_use_path", "ramp", "temporary_path"],
+      "applies_to_node_types": [],
+      "profiles": ["DEMO_PROFILE_MANUAL_WHEELCHAIR"],
+      "checks": [
+        {
+          "field": "surface",
+          "operator": "one_of",
+          "threshold": null,
+          "values": ["asphalt", "concrete", "smooth_paving"],
+          "description": "Firm, smooth running surface."
+        }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Declared surface is outside the demo manual-wheelchair profile's modelled surface set.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold."
+    },
+    {
+      "id": "DEMO-EDGE-SURFACE-LIMITED",
+      "version": "1.0.0",
+      "scope": "edge",
+      "kind": "hard",
+      "criticality": "advisory",
+      "description": "Surface category acceptable to the demo limited-mobility walking profile.",
+      "applies_to_edge_types": ["sidewalk", "shared_use_path", "ramp", "temporary_path"],
+      "applies_to_node_types": [],
+      "profiles": ["DEMO_PROFILE_LIMITED_MOBILITY_WALKER"],
+      "checks": [
+        {
+          "field": "surface",
+          "operator": "one_of",
+          "threshold": null,
+          "values": ["asphalt", "concrete", "smooth_paving", "compacted_fine_gravel"],
+          "description": "Firm running surface, compacted fine gravel permitted."
+        }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Declared surface is outside the demo limited-mobility walking profile's modelled surface set.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold."
+    },
+    {
+      "id": "DEMO-NODE-CURB-MANUAL",
+      "version": "1.0.0",
+      "scope": "node",
+      "kind": "hard",
+      "criticality": "critical",
+      "description": "Curb transition at an interface usable by the demo manual-wheelchair profile.",
+      "applies_to_edge_types": [],
+      "applies_to_node_types": ["curb_interface", "crossing_interface"],
+      "profiles": ["DEMO_PROFILE_MANUAL_WHEELCHAIR"],
+      "checks": [
+        {
+          "field": "curb_transition",
+          "operator": "one_of",
+          "threshold": null,
+          "values": ["flush", "bevelled", "ramped"],
+          "description": "Transition must be flush, bevelled or ramped."
+        }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Curb transition is not one of the modelled usable transition types.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold."
+    },
+    {
+      "id": "DEMO-NODE-CURB-LIMITED",
+      "version": "1.0.0",
+      "scope": "node",
+      "kind": "hard",
+      "criticality": "critical",
+      "description": "Curb transition at an interface usable by the demo limited-mobility walking profile.",
+      "applies_to_edge_types": [],
+      "applies_to_node_types": ["curb_interface", "crossing_interface"],
+      "profiles": ["DEMO_PROFILE_LIMITED_MOBILITY_WALKER"],
+      "checks": [
+        {
+          "field": "curb_transition",
+          "operator": "one_of",
+          "threshold": null,
+          "values": ["flush", "bevelled", "ramped", "upstand_with_assisted_ramp"],
+          "description": "Transition must be flush, bevelled, ramped or assisted."
+        }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Curb transition is not one of the modelled usable transition types.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold."
+    },
+    {
+      "id": "DEMO-NODE-CROSSING-TYPE",
+      "version": "1.0.0",
+      "scope": "node",
+      "kind": "hard",
+      "criticality": "critical",
+      "description": "Crossing control type at a crossing interface.",
+      "applies_to_edge_types": [],
+      "applies_to_node_types": ["crossing_interface"],
+      "profiles": ["DEMO_PROFILE_MANUAL_WHEELCHAIR", "DEMO_PROFILE_LIMITED_MOBILITY_WALKER"],
+      "checks": [
+        {
+          "field": "crossing_type",
+          "operator": "one_of",
+          "threshold": null,
+          "values": ["signalised_control", "zebra_marked", "raised_table"],
+          "description": "Controlled, marked or raised crossing."
+        }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Crossing type is not one of the modelled usable crossing types.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Synthetic demonstration threshold."
+    },
+    {
+      "id": "DEMO-PREF-SMOOTH-SURFACE-MANUAL",
+      "version": "1.0.0",
+      "scope": "edge",
+      "kind": "preference",
+      "criticality": "advisory",
+      "description": "Demo manual-wheelchair profile prefers the smoothest running surface when several confirmed routes exist. This preference can influence route ranking only; it can never change a hard verdict.",
+      "applies_to_edge_types": ["sidewalk", "shared_use_path", "ramp", "temporary_path"],
+      "applies_to_node_types": [],
+      "profiles": ["DEMO_PROFILE_MANUAL_WHEELCHAIR"],
+      "checks": [
+        {
+          "field": "surface",
+          "operator": "one_of",
+          "threshold": null,
+          "values": ["asphalt", "concrete"],
+          "description": "Preferred surface for route ranking."
+        }
+      ],
+      "requires_verified_evidence": false,
+      "failure_message": "Surface is acceptable but not preferred for route ranking.",
+      "basis_label": "DEMO_RULEPACK_NOT_LEGAL",
+      "source_reference": "Demonstration preference weight; no accessibility standard sets a preference ordering."
+    }
+  ],
+  "source": {
+    "name": "DETOUR LAB synthetic demo rulepack",
+    "description": "Authored for this repository to exercise Pass/Fail/Unknown/N-A evaluation. Contains no measured field data and no statutory text.",
+    "license": "Apache-2.0 (repository licence)",
+    "attribution": "Authored for DETOUR LAB; thresholds are synthetic demonstration values.",
+    "url": null,
+    "provenance_class": "synthetic",
+    "version": "1.0.0",
+    "retrieved_at": null
+  }
+}
