@@ -394,9 +394,11 @@ class Repository:
             current = Scenario.model_validate(loads(row["payload_json"]))
             payload = current.model_dump(mode="json")
             payload["edits"] = [*payload["edits"], edit.model_dump(mode="json")]
+            # The scenario keeps a **stable identity**: only its revision, content
+            # hash and note change. Branching is an explicit operation, never a side
+            # effect of an edit - otherwise a client following the scenario list
+            # would fetch an ID that no longer resolves.
             payload["revision"] = actual + 1
-            payload["id"] = f"{scenario_id}#r{actual + 1}"
-            payload["parent_scenario_id"] = scenario_id
             payload["note"] = note or current.note
             payload["content_hash"] = ""
             payload["created_at"] = datetime.now(UTC).isoformat()

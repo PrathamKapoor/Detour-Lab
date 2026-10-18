@@ -914,6 +914,46 @@
       }
     },
     "/api/v1/projects/{project_id}/scenarios": {
+      "get": {
+        "description": "Scenarios belonging to a project, for scenario selection and branching.",
+        "operationId": "list_project_scenarios_api_v1_projects__project_id__scenarios_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Project Scenarios Api V1 Projects  Project Id  Scenarios Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Project Scenarios"
+      },
       "post": {
         "operationId": "create_scenario_api_v1_projects__project_id__scenarios_post",
         "parameters": [
@@ -1067,6 +1107,46 @@
       }
     },
     "/api/v1/scenarios/{scenario_id}": {
+      "get": {
+        "description": "Full scenario payload: phases, origins/destinations, edits and revision.\n\nRequired by the planning UI before any edit can be composed; without it a\nclient cannot know which revision to submit or which phases exist.",
+        "operationId": "get_scenario_api_v1_scenarios__scenario_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Scenario Api V1 Scenarios  Scenario Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Scenario"
+      },
       "patch": {
         "description": "Validate then apply edits as a new immutable revision.\n\nValidation runs against a *prospective* scenario before anything is written,\nso a malformed edit is rejected with 422 and never becomes a stored revision\n(MASTER_PROMPT \u00a79 \"apply validated edits\").",
         "operationId": "patch_scenario_api_v1_scenarios__scenario_id__patch",
@@ -1208,6 +1288,48 @@
           }
         },
         "summary": "Scenario Revisions"
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/runs": {
+      "get": {
+        "description": "Stored runs for a scenario, newest first, for baseline/after comparison.",
+        "operationId": "list_scenario_runs_api_v1_scenarios__scenario_id__runs_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Scenario Runs Api V1 Scenarios  Scenario Id  Runs Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Scenario Runs"
       }
     }
   }

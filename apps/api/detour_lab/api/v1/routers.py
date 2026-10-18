@@ -247,6 +247,65 @@ def get_project_graph(project_id: str, repository: Repository = Depends(get_repo
     }
 
 
+@router.get("/projects/{project_id}/scenarios")
+def list_project_scenarios(project_id: str, repository: Repository = Depends(get_repository)) -> dict:
+    """Scenarios belonging to a project, for scenario selection and branching."""
+    repository.get_project(project_id)
+    scenarios = repository.list_scenarios(project_id)
+    return {
+        "project_id": project_id,
+        "scenarios": [
+            {
+                "id": s.id,
+                "name": s.name,
+                "revision": s.revision,
+                "content_hash": s.content_hash,
+                "parent_scenario_id": s.parent_scenario_id,
+                "base_graph_version_id": s.base_graph_version_id,
+                "rulepack_id": s.rulepack_id,
+                "phase_count": len(s.phases),
+                "edit_count": len(s.edits),
+                "note": s.note,
+            }
+            for s in scenarios
+        ],
+    }
+
+
+@router.get("/scenarios/{scenario_id}")
+def get_scenario(scenario_id: str, repository: Repository = Depends(get_repository)) -> dict:
+    """Full scenario payload: phases, origins/destinations, edits and revision.
+
+    Required by the planning UI before any edit can be composed; without it a
+    client cannot know which revision to submit or which phases exist.
+    """
+    return repository.get_scenario(scenario_id).model_dump(mode="json")
+
+
+@router.get("/scenarios/{scenario_id}/runs")
+def list_scenario_runs(scenario_id: str, repository: Repository = Depends(get_repository)) -> dict:
+    """Stored runs for a scenario, newest first, for baseline/after comparison."""
+    repository.get_scenario(scenario_id)
+    runs = repository.list_runs(scenario_id)
+    return {
+        "scenario_id": scenario_id,
+        "runs": [
+            {
+                "id": r.run_id,
+                "scenario_revision": r.scenario_revision,
+                "phase_id": r.phase_id,
+                "profile_id": r.profile_id,
+                "engine_version": r.engine_version,
+                "evaluation_instant": r.evaluation_instant,
+                "input_hash": r.input_hash,
+                "semantic_hash": r.semantic_hash,
+                "created_at": r.created_at,
+            }
+            for r in sorted(runs, key=lambda r: (r.created_at, r.run_id), reverse=True)
+        ],
+    }
+
+
 @router.post("/projects/{project_id}/scenarios", status_code=status.HTTP_201_CREATED)
 def create_scenario(
     project_id: str, payload: ScenarioRequest, repository: Repository = Depends(get_repository)
