@@ -1,0 +1,506 @@
+/* Application layout: shell chrome, view-specific grids, small-screen behaviour. */
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--status-info);
+  color: #04121f;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 0 0 var(--radius-md) 0;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* ------------------------------------------------------------------ header -- */
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 210px;
+}
+
+.app-brand__mark {
+  font-size: var(--text-xl);
+  color: var(--status-info);
+}
+
+.app-brand__name {
+  font-size: var(--text-md);
+  letter-spacing: 0.08em;
+}
+
+.app-brand__tag {
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+
+.app-header__context {
+  display: flex;
+  gap: var(--space-4);
+  flex: 1;
+  overflow-x: auto;
+}
+
+.app-context {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.app-context__label {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.app-header__status {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.app-flag {
+  font-size: var(--text-2xs);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-default);
+  color: var(--text-secondary);
+  background: var(--surface-inset);
+  white-space: nowrap;
+}
+
+.app-flag--pass {
+  border-color: var(--status-pass);
+  color: var(--status-pass);
+}
+
+.app-flag--unknown {
+  border-color: var(--status-unknown);
+  color: var(--status-unknown);
+}
+
+.app-flag--fail {
+  border-color: var(--status-fail);
+  color: var(--status-fail);
+}
+
+/* ----------------------------------------------------------------- sidebar -- */
+.app-nav__item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  color: var(--text-secondary);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  cursor: pointer;
+}
+
+.app-nav__item:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.app-nav__item--active {
+  background: var(--surface-selected);
+  border-left-color: var(--status-info);
+  color: var(--text-primary);
+}
+
+.app-nav__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.app-nav__hint {
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+
+.app-sidebar__footer {
+  margin-top: auto;
+  padding: var(--space-3);
+}
+
+.app-disclaimer {
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  line-height: 1.5;
+  border-top: 1px solid var(--line-subtle);
+  padding-top: var(--space-2);
+}
+
+.app-disclaimer strong {
+  color: var(--status-unknown);
+}
+
+/* -------------------------------------------------------------------- main -- */
+.app-main__inner {
+  height: 100%;
+  overflow: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/*
+ * Grid and flex children default to min-width:auto, which lets a wide data table
+ * push the whole document sideways on small screens. Constraining them keeps the
+ * overflow inside the panel, where it scrolls horizontally instead.
+ */
+.app-main__inner > *,
+.studio > *,
+.editor > *,
+.analysis > *,
+.compare > *,
+.evidence > *,
+.reports > *,
+.panel {
+  min-width: 0;
+}
+
+/*
+ * Panels keep their natural height so dense engineering tables are never clipped
+ * mid-row; the main region scrolls instead. The studio is the exception: it is a
+ * full-height workspace with its own internal scrolling.
+ */
+.app-main__inner > * {
+  flex: 0 0 auto;
+}
+
+.app-main__inner > .studio {
+  flex: 1 1 auto;
+  min-height: 420px;
+}
+
+.panel__body,
+.panel__body--flush {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.panel__foot-note {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  border-top: 1px solid var(--line-subtle);
+}
+
+/* --------------------------------------------------------------- dashboard -- */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.dashboard__grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+}
+
+.dashboard__name {
+  font-weight: 600;
+}
+
+.dashboard__id {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.dashboard__license,
+.dashboard__profile-name {
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+
+.dashboard__profiles {
+  list-style: none;
+  margin: var(--space-2) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dashboard__profiles li {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-xs);
+}
+
+.dashboard__ruleset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ------------------------------------------------------------------ studio -- */
+.studio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--inspector-width);
+  gap: var(--space-4);
+  height: 100%;
+  min-height: 0;
+}
+
+.studio__main,
+.studio__inspector,
+.editor__main,
+.editor__side,
+.analysis,
+.compare,
+.evidence,
+.reports {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.studio__inspector {
+  overflow: auto;
+}
+
+.studio__canvas-wrap {
+  padding: var(--space-3);
+  min-height: 0;
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.legend__item {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  font-size: var(--text-xs);
+}
+
+.legend__glyph {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  color: var(--status-info);
+  min-width: 1.2em;
+}
+
+.legend__description {
+  display: block;
+  color: var(--text-muted);
+}
+
+/* ----------------------------------------------------------------- editor -- */
+.editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--inspector-width);
+  gap: var(--space-4);
+}
+
+.editor__controls {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.editor__phase-state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.inspector__rule {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  margin-bottom: var(--space-2);
+  background: var(--surface-inset);
+}
+
+.inspector__rule summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--text-xs);
+}
+
+.inspector__rule-id {
+  font-size: var(--text-xs);
+}
+
+.inspector__rule-version {
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+}
+
+.inspector__list {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.row-button {
+  background: transparent;
+  border: none;
+  color: var(--status-info);
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  font-size: var(--text-sm);
+}
+
+.row-button:hover {
+  text-decoration: underline;
+}
+
+.entity-table {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.entity-table__controls {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+  flex-wrap: wrap;
+}
+
+.entity-table__kinds {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.entity-table__state {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.entity-table__sub,
+.entity-table__muted {
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------- analysis -- */
+.analysis__controls {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.tabs--inline {
+  border: none;
+}
+
+/* ---------------------------------------------------------------- compare -- */
+.compare__context {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.is-changed td {
+  background: color-mix(in srgb, var(--status-info) 8%, transparent);
+}
+
+/* --------------------------------------------------------------- evidence -- */
+.evidence__group + .evidence__group {
+  border-top: 1px solid var(--line-subtle);
+}
+
+.evidence__group-head {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-3) var(--space-4) 0;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------- responsive -- */
+@media (max-width: 1200px) {
+  .studio,
+  .editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .app-header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .app-shell {
+    grid-template-rows: auto auto 1fr;
+  }
+
+  /* The header context chips wrap instead of pushing the page sideways. */
+  .app-brand {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .app-brand__tag {
+    display: none;
+  }
+
+  .app-header__context {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    overflow-x: visible;
+  }
+
+  .app-header__status {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
+
+  .app-main__inner {
+    padding: var(--space-2);
+  }
+
+  .data-table {
+    font-size: var(--text-xs);
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  /* Wide engineering tables scroll inside their panel, never widen the page. */
+  .panel__body,
+  .panel__body--flush {
+    max-width: 100%;
+  }
+
+  .graph-canvas__svg {
+    height: 340px !important;
+  }
+}

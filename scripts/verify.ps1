@@ -6,15 +6,22 @@
     Runs the real checks and prints their raw output:
       * backend unit / property / integration tests (pytest)
       * static analysis (ruff)
+      * frontend type-check, lint, unit/integration tests and production build
+      * Playwright end-to-end tests against the real backend (skipped with an
+        explicit SKIPPED line when the browser runtime is unavailable)
       * an actual HTTP smoke test against a live uvicorn process
       * a deterministic replay check
 
     Exits non-zero on the first real failure so CI can rely on it.
+
+    -SkipFrontend skips every frontend check and states that clearly; a skipped
+    check is never reported as passing.
 #>
 [CmdletBinding()]
 param(
     [int]$Port = 8077,
-    [switch]$SkipFrontend
+    [switch]$SkipFrontend,
+    [switch]$SkipE2E
 )
 
 $ErrorActionPreference = 'Stop'
@@ -36,16 +43,50 @@ Write-Step 'Backend test suite (pytest)'
 & $python -m pytest (Join-Path $apiDir 'tests') -q
 if ($LASTEXITCODE -ne 0) { throw 'Backend tests failed' }
 
-if (-not $SkipFrontend) {
+if ($SkipFrontend) {
+    Write-Host '--- SKIPPED: frontend checks (-SkipFrontend). Not verified in this run. ---' -ForegroundColor Yellow
+} else {
     $webDir = Join-Path $repoRoot 'apps\web'
-    if (Test-Path (Join-Path $webDir 'package.json')) {
-        Write-Step 'Frontend type-check and unit tests'
+    if (-not (Test-Path (Join-Path $webDir 'package.json'))) {
+        Write-Host '--- SKIPPED: no apps/web/package.json found. Not verified in this run. ---' -ForegroundColor Yellow
+    } else {
         Push-Location $webDir
         try {
+            if (-not (Test-Path (Join-Path $webDir 'node_modules'))) {
+                Write-Step 'Installing frontend dependencies (npm ci)'
+                npm ci --no-audit --no-fund
+                if ($LASTEXITCODE -ne 0) { throw 'npm ci failed' }
+            }
+
+            Write-Step 'Frontend type-check (tsc)'
             npm run typecheck
             if ($LASTEXITCODE -ne 0) { throw 'Frontend type-check failed' }
+
+            Write-Step 'Frontend lint (eslint)'
+            npm run lint
+            if ($LASTEXITCODE -ne 0) { throw 'Frontend lint failed' }
+
+            Write-Step 'Frontend unit and integration tests (vitest)'
             npm run test
             if ($LASTEXITCODE -ne 0) { throw 'Frontend tests failed' }
+
+            Write-Step 'Frontend production build (vite)'
+            npm run build
+            if ($LASTEXITCODE -ne 0) { throw 'Frontend production build failed' }
+
+            if ($SkipE2E) {
+                Write-Host '--- SKIPPED: Playwright end-to-end tests (-SkipE2E). Not verified in this run. ---' -ForegroundColor Yellow
+            } else {
+                # A missing browser runtime is reported as SKIPPED, never as a pass.
+                $browserProbe = Join-Path $env:LOCALAPPDATA 'ms-playwright'
+                if (-not (Test-Path $browserProbe)) {
+                    Write-Host '--- SKIPPED: Playwright browsers not installed. Run "npm run e2e:install" in apps\web. Not verified in this run. ---' -ForegroundColor Yellow
+                } else {
+                    Write-Step 'End-to-end tests against the real backend (playwright)'
+                    npm run e2e
+                    if ($LASTEXITCODE -ne 0) { throw 'End-to-end tests failed' }
+                }
+            }
         } finally { Pop-Location }
     }
 }

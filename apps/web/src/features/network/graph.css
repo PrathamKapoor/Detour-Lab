@@ -1,0 +1,313 @@
+.graph-canvas {
+  position: relative;
+  background:
+    linear-gradient(var(--line-subtle) 1px, transparent 1px) 0 0 / 100% 40px,
+    linear-gradient(90deg, var(--line-subtle) 1px, transparent 1px) 0 0 / 40px 100%,
+    var(--surface-sunken);
+  border: 1px solid var(--line-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.graph-canvas__svg {
+  display: block;
+  cursor: grab;
+}
+
+.graph-canvas__svg:active {
+  cursor: grabbing;
+}
+
+/* ------------------------------------------------------------------ edges -- */
+.graph-edge__hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  cursor: pointer;
+}
+
+.graph-edge__line {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition:
+    stroke var(--transition-fast),
+    stroke-width var(--transition-fast);
+}
+
+/* Dash pattern encodes "possible only" independently of colour. */
+.graph-edge--possible .graph-edge__line {
+  stroke: var(--status-unknown);
+  stroke-dasharray: 7 5;
+}
+
+.graph-edge--confirmed .graph-edge__line {
+  stroke: var(--status-pass);
+}
+
+.graph-edge--closed .graph-edge__line {
+  stroke: var(--status-fail);
+  stroke-dasharray: 2 6;
+  opacity: 0.75;
+}
+
+.graph-edge--temporary .graph-edge__line {
+  stroke: var(--status-temp);
+  stroke-dasharray: 10 3 2 3;
+}
+
+.graph-edge--hovered .graph-edge__line {
+  stroke: var(--text-primary);
+}
+
+.graph-edge--selected .graph-edge__line {
+  stroke: var(--status-info);
+}
+
+.graph-edge__marker {
+  fill: var(--surface-canvas);
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.graph-edge--confirmed .graph-edge__marker {
+  stroke: var(--status-pass);
+}
+
+.graph-edge--possible .graph-edge__marker {
+  stroke: var(--status-unknown);
+}
+
+.graph-edge__closure line {
+  stroke: var(--status-fail);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* --------------------------------------------------------------- crossings -- */
+/* An open ring: it marks a geometric intersection that is NOT a connection. */
+.graph-crossing {
+  fill: none;
+  stroke: var(--status-unknown);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 2;
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------------------------ nodes -- */
+.graph-node__dot {
+  fill: var(--surface-overlay);
+  stroke: var(--text-secondary);
+  stroke-width: 2;
+  cursor: pointer;
+}
+
+.graph-node--selected .graph-node__dot {
+  fill: var(--status-info);
+  stroke: var(--surface-canvas);
+}
+
+.graph-node__hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.graph-node__label {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-anchor: middle;
+  pointer-events: none;
+  user-select: none;
+}
+
+.graph-node--selected .graph-node__label {
+  fill: var(--status-info);
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------- controls -- */
+.graph-canvas__controls {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: flex;
+  gap: var(--space-1);
+  background: color-mix(in srgb, var(--surface-raised) 88%, transparent);
+  border: 1px solid var(--line-default);
+  border-radius: var(--radius-md);
+  padding: 3px;
+}
+
+/* ------------------------------------------------------------- inspector -- */
+.inspector__section {
+  border-top: 1px solid var(--line-subtle);
+  padding: var(--space-3) 0;
+}
+
+.inspector__section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.inspector__heading {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.inspector__route {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+}
+
+.inspector__route-edge {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  border: 1px solid var(--line-default);
+  border-radius: var(--radius-sm);
+  padding: 1px 4px;
+  background: var(--surface-inset);
+}
+
+.inspector__route-arrow {
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+}
+
+.inspector__note {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.evidence-card {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  background: var(--surface-inset);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.evidence-card + .evidence-card {
+  margin-top: var(--space-2);
+}
+
+.evidence-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.evidence-card__field {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+}
+
+.evidence-card__value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--status-info);
+}
+
+.evidence-card__meta {
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.evidence-card__note {
+  font-size: var(--text-2xs);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* -------------------------------------------------------------- scenarios -- */
+.edit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.edit-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  border: 1px solid var(--line-subtle);
+  border-left: 3px solid var(--status-info);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  background: var(--surface-inset);
+}
+
+.edit-item__text {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.edit-item--pending {
+  border-left-color: var(--status-unknown);
+}
+
+.dirty-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--status-unknown-dim);
+  border: 1px solid var(--status-unknown);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--status-unknown);
+}
+
+.dirty-banner__glyph {
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------- od matrix -- */
+.od-cell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+
+.od-route {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.delta-up {
+  color: var(--status-pass);
+}
+
+.delta-down {
+  color: var(--status-fail);
+}
+
+.delta-same {
+  color: var(--text-muted);
+}

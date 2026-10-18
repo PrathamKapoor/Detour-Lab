@@ -1,0 +1,105 @@
+/*
+ * DETOUR LAB design tokens.
+ *
+ * Visual language: an engineering workstation, not a dashboard. Deep slate
+ * surfaces, thin borders, restrained status colours, tabular numerals for
+ * measurements. Every status colour is paired with a shape/icon and a text
+ * label elsewhere in the system so colour is never the only signal.
+ */
+
+:root {
+  /* ---- surfaces -------------------------------------------------------- */
+  --surface-canvas: #0b1017;
+  --surface-sunken: #080c12;
+  --surface-raised: #121a24;
+  --surface-overlay: #17212d;
+  --surface-inset: #0e151d;
+  --surface-hover: #1b2735;
+  --surface-selected: #1d3348;
+
+  /* ---- lines ----------------------------------------------------------- */
+  --line-subtle: #1e2a38;
+  --line-default: #2a3a4c;
+  --line-strong: #3d5065;
+
+  /* ---- text ------------------------------------------------------------ */
+  --text-primary: #e8eef5;
+  --text-secondary: #a7b6c7;
+  --text-muted: #7b8b9d;
+  --text-inverse: #0b1017;
+
+  /* ---- semantic status -------------------------------------------------
+   * Deliberately distinct in hue AND used only alongside an icon/label.     */
+  --status-pass: #35c99a;
+  --status-pass-dim: rgba(53, 201, 154, 0.14);
+  --status-fail: #ff6b6b;
+  --status-fail-dim: rgba(255, 107, 107, 0.14);
+  --status-unknown: #f0b429;
+  --status-unknown-dim: rgba(240, 180, 41, 0.14);
+  --status-na: #8b98a8;
+  --status-na-dim: rgba(139, 152, 168, 0.14);
+  --status-info: #5aa9ff;
+  --status-info-dim: rgba(90, 169, 255, 0.14);
+  --status-temp: #b78bff;
+  --status-temp-dim: rgba(183, 139, 255, 0.14);
+
+  /* ---- typography ------------------------------------------------------ */
+  --font-sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Mono', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+
+  /* ---- spacing --------------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  /* ---- radii ----------------------------------------------------------- */
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+  --radius-pill: 999px;
+
+  /* ---- elevation ------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.55);
+
+  /* ---- focus ----------------------------------------------------------- */
+  --focus-ring: 0 0 0 2px var(--surface-canvas), 0 0 0 4px var(--status-info);
+
+  /* ---- layout ---------------------------------------------------------- */
+  --sidebar-width: 216px;
+  --inspector-width: 360px;
+  --header-height: 52px;
+
+  --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-base: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
