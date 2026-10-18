@@ -8,7 +8,9 @@ the result recorded in `FLOW.md`.
 Source: `DETOUR_LAB_Final_PRD.md` §5 (FR-001..FR-016), §6 (FR-101..FR-111), §5.1 (INV-01..INV-08),
 `MASTER_PROMPT.md` §12 (behaviours B1..B32).
 
-Last updated: **18 October 2026, after Gate 1** — 202 backend tests pass, ruff clean.
+Last updated: **18 October 2026, after Gate 2** — 270 backend tests pass, ruff clean, restart
+replay verified (`test_persistence.py`, `test_api_contracts.py`, `test_api_integration.py`,
+`test_contracts_generation.py`).
 
 ---
 
@@ -16,7 +18,7 @@ Last updated: **18 October 2026, after Gate 1** — 202 backend tests pass, ruff
 
 | ID | Requirement (abbrev.) | Implemented modules | Tests | Status |
 |---|---|---|---|---|
-| FR-001 | Create/import study area, validated network with IDs/CRS/origin/licence | `ingestion/schema.py` (`load_local_planar_dataset`, `load_rfc7946_geojson`) | `test_ingestion.py` (22 cases) | IMPLEMENTED AND TESTED |
+| FR-001 | Create/import study area, validated network with IDs/CRS/origin/licence | `ingestion/schema.py`, `POST /projects/{id}/imports` | `test_ingestion.py`, `TestProjectAndImportFlow` | IMPLEMENTED AND TESTED |
 | FR-002 | Explicit topology: shared validated node IDs only | `graph/model.py` | `test_b01_*`, `TestCrossingIsNotConnectivity` | IMPLEMENTED AND TESTED |
 | FR-003 | Graph correction (add/split/link/direction/attribute edits) | `scenarios/apply.py` (`order_edits`, `_apply_one`) | `TestTypedEdits` (9 cases) | IMPLEMENTED AND TESTED |
 | FR-004 | Evidence recording: value, units, source, date, verification | `domain/contracts.py::EvidenceRecord`, `evidence/resolver.py` | `test_evidence_resolution.py` (19 cases) | IMPLEMENTED AND TESTED |
@@ -31,7 +33,7 @@ Last updated: **18 October 2026, after Gate 1** — 202 backend tests pass, ruff
 | FR-013 | Deterministic replay | `domain/hashing.py` | `test_b28_*`, 20-run loop, HTTP replay in `verify.ps1` | IMPLEMENTED AND TESTED |
 | FR-014 | Accessible UI: keyboard + text/table alternatives | — | — | NOT IMPLEMENTED (Gate 3) |
 | FR-015 | Offline demo with documented synthetic/verified labels | `data/demo/…localplanar.json`, `ingestion/schema.py` | `TestLocalPlanarDataset` | IMPLEMENTED AND TESTED (backend); UI delivery at Gate 3 |
-| FR-016 | Structured JSON export incl. unknowns + attribution | `analysis/run.py::AnalysisResult` (canonical, hashable) | `test_b27_*` | PARTIALLY IMPLEMENTED — canonical payload + hashes exist; the manifest endpoint and file export are Gate 2 |
+| FR-016 | Structured JSON export incl. unknowns + attribution | `reporting/manifest.py`, `GET /api/v1/runs/{id}/manifest` | `TestManifest` (6 cases), `test_b27_*` | IMPLEMENTED AND TESTED |
 
 ## P0 hard acceptance invariants (PRD §5.1)
 
@@ -60,7 +62,7 @@ Last updated: **18 October 2026, after Gate 1** — 202 backend tests pass, ruff
 | FR-108 | Failure Lab: ≥5 reproducible faults | NOT IMPLEMENTED (Gate 6) |
 | FR-109 | Side-by-side scenario comparison | NOT IMPLEMENTED (Gate 6) |
 | FR-110 | Watermarked "Planning analysis — not certified" PDF | NOT IMPLEMENTED (Gate 6) |
-| FR-111 | Revision/branch history with input-hash diffs | PARTIALLY IMPLEMENTED — immutable content-addressed revisions exist; history storage is Gate 2 |
+| FR-111 | Revision/branch history with input-hash diffs | `scenario_revisions` table, `GET /scenarios/{id}/revisions` | `TestScenarioRevisions`, `test_revision_history_is_listed` | IMPLEMENTED AND TESTED |
 
 ## P2 future requirements (PRD §7)
 

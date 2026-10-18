@@ -1,14 +1,14 @@
 # TEST_PLAN.md
 
 Scope, layers and gates for DETOUR LAB. Layer counts are **measured**, not estimated:
-`202 passed` on Windows/Python 3.12.10 in ~6.6 s at the Gate 1 checkpoint.
+`270 passed` on Windows/Python 3.12.10 in ~29 s at the Gate 2 checkpoint.
 
 ## Layers
 
 | Layer | Tool | Location | Gate | Count |
 |---|---|---|---|---:|
-| Domain unit + property-based | pytest + Hypothesis | `apps/api/tests/` | 1 | 191 |
-| HTTP contract (real ASGI transport) | pytest + `TestClient` | `apps/api/tests/test_api_contracts.py` | 0/2 | 11 |
+| Domain unit + property-based | pytest + Hypothesis | `apps/api/tests/` | 1 | 217 |
+| HTTP contract + integration | pytest + `TestClient` | `test_api_contracts.py`, `test_api_integration.py`, `test_persistence.py`, `test_contracts_generation.py` | 2 | 53 |
 | Frontend unit | Vitest + Testing Library | `apps/web/tests/` | 3 | not built |
 | End-to-end browser | Playwright | `apps/web/e2e/` | 3+ | not built |
 | Static analysis | ruff | `apps/api/` | 0 | all files |

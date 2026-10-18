@@ -121,6 +121,43 @@ Owner decisions are marked **[OWNER DECISION]**. Synthetic fixture defaults are 
 
 ---
 
+## D-012 — The evaluation instant is an explicit, stored input **(Gate 2)**
+
+- **Decision:** `run_analysis` / `evaluate_graph` require an `as_of` timestamp. It is stored with
+  the run and reused verbatim on replay.
+- **Why:** Defaulting to `datetime.now()` would make verdicts depend on the wall clock and would
+  silently invalidate every attribute governed by a freshness policy (real failure P-05).
+- **Consequence:** Two evaluations with the same `as_of` and inputs produce identical semantic
+  hashes; the HTTP API accepts `evaluation_instant` explicitly.
+
+## D-013 — Volatile metadata is excluded from the semantic fingerprint **(Gate 2)**
+
+- **Decision:** The manifest carries a `runtime` block (run id, created_at, duration, evaluation
+  instant) that is deliberately **excluded** from `semantic_hash`. Everything else is included.
+- **Why:** MASTER_PROMPT §5.5 requires two replay runs with equal semantic inputs to yield the
+  same canonical hash while run metadata legitimately differs.
+- **Consequence:** `verify.ps1` asserts identical *result payloads* and identical *semantic hashes*
+  across two HTTP calls, plus a different run id — a stricter check than comparing whole responses.
+
+## D-014 — Errors use one flat envelope **(Gate 2)**
+
+- **Decision:** Every failure returns `{"code", "message", "details", "request_id"}` at the top
+  level, including Pydantic validation failures and unknown routes.
+- **Why:** FastAPI nests handler-raised errors under `detail` while custom handlers return a flat
+  body; a client should not have to know which produced the response (real failure P-10).
+- **Consequence:** `packages/contracts` consumers have exactly one error shape to handle.
+
+## D-015 — Scenario edits are validated before they are stored **(Gate 2)**
+
+- **Decision:** `PATCH /scenarios/{id}` builds a *prospective* scenario, constructs the phase graph
+  for every declared phase, and only then writes a revision.
+- **Why:** Storing an edit that cannot be applied would leave a scenario that only fails later, at
+  evaluation time, which is exactly the "silent success" the pack forbids.
+- **Consequence:** Invalid edits return 422 and leave revision history untouched; removing an edge
+  that a declared phase closes is rejected with a precise reason code.
+
+---
+
 ## Open items awaiting the owner (not blocking current work)
 
 | # | Question | Why it matters | Current substitute |

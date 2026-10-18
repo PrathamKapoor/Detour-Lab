@@ -105,6 +105,51 @@ correction and the regression test that now prevents recurrence. Nothing here is
 
 ---
 
+## P-10 — Two different error shapes from the same API
+
+- **Observed:** `GET /api/v1/runs/unknown` returned `{"code": ...}` at the top level, while a
+  Pydantic validation failure returned `{"detail": [...]}`, and a handler-raised `HTTPException`
+  returned `{"detail": {"code": ...}}`.
+- **Root cause:** Custom exception handlers bypass FastAPI's default `{"detail": ...}` wrapping,
+  so each new handler silently introduced another shape.
+- **Correction:** Added a `StarletteHTTPException` handler and a `RequestValidationError` handler
+  that both emit the same flat `{code, message, details, request_id}` envelope.
+- **Regression test:** `test_every_error_uses_the_same_envelope`.
+
+## P-11 — Graph version IDs collided across projects
+
+- **Observed:** `sqlite3.IntegrityError: UNIQUE constraint failed: graph_versions.id` when a second
+  project imported the same dataset (both declare `graph_version_id: demo-graph-v1`).
+- **Root cause:** `graph_versions.content_hash` was globally `UNIQUE` and the ID was taken as
+  globally unique, but identical content legitimately belongs to two projects.
+- **Correction:** uniqueness moved to `(project_id, content_hash)`; a colliding ID is deterministically
+  suffixed with the content hash rather than mutating or rejecting.
+- **Regression test:** `test_create_project_then_import_dataset`,
+  `test_duplicate_content_is_not_stored_twice`.
+
+## P-12 — Evidence record IDs were globally unique
+
+- **Observed:** `UNIQUE constraint failed: evidence.record_id` when the same evidence set was stored
+  under a second graph version.
+- **Root cause:** `record_id` was the sole primary key, but evidence IDs are unique *per graph
+  version*, not globally.
+- **Correction:** primary key changed to `(graph_version_id, record_id)`.
+- **Regression test:** `test_unknown_unit_surfaces_as_unknown_not_as_a_pass` (imports a modified
+  dataset into a second project).
+
+## P-13 — Invalid edits were accepted and only failed later
+
+- **Observed:** `PATCH /scenarios/{id}` returned 200 for an edit referencing a non-existent node;
+  the failure only surfaced at the next evaluation.
+- **Root cause:** the endpoint persisted edits without constructing the phase graph.
+- **Correction:** a prospective scenario is validated for every declared phase before anything is
+  written; invalid edits return 422 and leave history untouched. This also surfaced a genuine
+  modelling rule: removing an edge that a declared phase closes is now an explicit rejection.
+- **Regression test:** `test_cyclic_or_invalid_edit_returns_422`,
+  `test_removing_an_edge_that_a_phase_closes_is_rejected`.
+
+---
+
 ## Not yet encountered / not yet fixed
 
 - `StarletteDeprecationWarning: Using httpx with starlette.testclient is deprecated; install

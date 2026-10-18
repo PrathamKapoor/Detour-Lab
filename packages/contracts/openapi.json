@@ -1,0 +1,1214 @@
+{
+  "components": {
+    "schemas": {
+      "CreateProjectRequest": {
+        "properties": {
+          "id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "jurisdiction": {
+            "default": "unspecified",
+            "title": "Jurisdiction",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "notice": {
+            "default": "",
+            "title": "Notice",
+            "type": "string"
+          },
+          "owner": {
+            "default": "unspecified",
+            "title": "Owner",
+            "type": "string"
+          },
+          "study_area_description": {
+            "default": "",
+            "title": "Study Area Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "CreateProjectRequest",
+        "type": "object"
+      },
+      "EdgeType": {
+        "enum": [
+          "sidewalk",
+          "crossing",
+          "temporary_path",
+          "shared_use_path",
+          "ramp"
+        ],
+        "title": "EdgeType",
+        "type": "string"
+      },
+      "EvaluateRequest": {
+        "properties": {
+          "evaluation_instant": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Instant at which evidence freshness is judged. Defaults to the current time for ad-hoc runs; the seeded demo uses a fixed instant. Always stored with the run.",
+            "title": "Evaluation Instant"
+          },
+          "phase_id": {
+            "default": "phase-1",
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "default": "DEMO_PROFILE_MANUAL_WHEELCHAIR",
+            "title": "Profile Id",
+            "type": "string"
+          }
+        },
+        "title": "EvaluateRequest",
+        "type": "object"
+      },
+      "EvidenceRecord": {
+        "additionalProperties": false,
+        "description": "One observation about one field of one element.\n\n``value``/``unit`` are exactly what the source reported. Canonicalisation\nhappens in the resolver so the conversion stays auditable.",
+        "properties": {
+          "element_id": {
+            "minLength": 1,
+            "title": "Element Id",
+            "type": "string"
+          },
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "invalidated": {
+            "default": false,
+            "title": "Invalidated",
+            "type": "boolean"
+          },
+          "method": {
+            "minLength": 1,
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "provenance_class": {
+            "$ref": "#/components/schemas/ProvenanceClass"
+          },
+          "quality": {
+            "default": "medium",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Quality",
+            "type": "string"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewer"
+          },
+          "source": {
+            "minLength": 1,
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "synthetic": {
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "verification_status": {
+            "$ref": "#/components/schemas/VerificationStatus",
+            "default": "unverified"
+          }
+        },
+        "required": [
+          "id",
+          "element_id",
+          "field",
+          "method",
+          "source",
+          "provenance_class"
+        ],
+        "title": "EvidenceRecord",
+        "type": "object"
+      },
+      "GraphEdit": {
+        "additionalProperties": false,
+        "description": "Typed, auditable graph modification applied to a scenario revision.",
+        "properties": {
+          "op": {
+            "enum": [
+              "add_node",
+              "split_edge",
+              "add_edge",
+              "remove_edge",
+              "set_direction",
+              "link_crossing",
+              "update_attribute",
+              "close_edge",
+              "activate_temporary_edge"
+            ],
+            "title": "Op",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          },
+          "target_id": {
+            "minLength": 1,
+            "title": "Target Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "target_id"
+        ],
+        "title": "GraphEdit",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "ImportRequest": {
+        "description": "A local-planar dataset payload (the seeded demo format).",
+        "properties": {
+          "dataset": {
+            "additionalProperties": true,
+            "description": "detour-lab-local-planar/1.0 dataset object",
+            "title": "Dataset",
+            "type": "object"
+          },
+          "graph_version_id_override": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Graph Version Id Override"
+          }
+        },
+        "required": [
+          "dataset"
+        ],
+        "title": "ImportRequest",
+        "type": "object"
+      },
+      "OriginDestination": {
+        "additionalProperties": false,
+        "description": "OD endpoint bound to a **graph node ID**, never to a nearby coordinate.",
+        "properties": {
+          "essential": {
+            "default": true,
+            "title": "Essential",
+            "type": "boolean"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "origin",
+              "destination",
+              "both"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          },
+          "node_id": {
+            "minLength": 1,
+            "title": "Node Id",
+            "type": "string"
+          },
+          "priority": {
+            "default": 1,
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Priority",
+            "type": "integer"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight"
+          },
+          "weight_source": {
+            "default": "demo_assumption",
+            "title": "Weight Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "node_id",
+          "kind"
+        ],
+        "title": "OriginDestination",
+        "type": "object"
+      },
+      "Phase": {
+        "additionalProperties": false,
+        "description": "Construction phase with an explicit ordering convention.\n\nDemo phases use logical ordinals. No construction calendar is invented.",
+        "properties": {
+          "boundary_convention": {
+            "default": "logical_ordinal",
+            "enum": [
+              "[start,end)",
+              "logical_ordinal"
+            ],
+            "title": "Boundary Convention",
+            "type": "string"
+          },
+          "closed_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Closed Edge Ids",
+            "type": "array"
+          },
+          "end_ordinal": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Ordinal"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "title": "Notes",
+            "type": "string"
+          },
+          "order": {
+            "minimum": 0.0,
+            "title": "Order",
+            "type": "integer"
+          },
+          "start_ordinal": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Ordinal"
+          },
+          "temporary_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Temporary Edge Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "order"
+        ],
+        "title": "Phase",
+        "type": "object"
+      },
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      },
+      "ScenarioPatchRequest": {
+        "properties": {
+          "edits": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdit"
+            },
+            "minItems": 1,
+            "title": "Edits",
+            "type": "array"
+          },
+          "expected_revision": {
+            "description": "revision the client believes it is editing",
+            "minimum": 1.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "edits"
+        ],
+        "title": "ScenarioPatchRequest",
+        "type": "object"
+      },
+      "ScenarioRequest": {
+        "properties": {
+          "base_graph_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Graph Version Id"
+          },
+          "id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "intervention_ids": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Intervention Ids",
+            "type": "array"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "origins_destinations": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/OriginDestination"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origins Destinations"
+          },
+          "parent_scenario_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Scenario Id"
+          },
+          "phases": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Phase"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phases"
+          },
+          "profile_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Ids"
+          },
+          "rulepack_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rulepack Id"
+          },
+          "temporary_edges": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/TemporaryEdge"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temporary Edges"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "ScenarioRequest",
+        "type": "object"
+      },
+      "TemporaryEdge": {
+        "additionalProperties": false,
+        "description": "Ephemeral path that exists only in declared phases.",
+        "properties": {
+          "constructible_in_field": {
+            "default": false,
+            "title": "Constructible In Field",
+            "type": "boolean"
+          },
+          "edge_type": {
+            "$ref": "#/components/schemas/EdgeType",
+            "default": "temporary_path"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRecord"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "field_verification_note": {
+            "default": "Modelled edge only. Field constructibility has not been confirmed by any engineer.",
+            "title": "Field Verification Note",
+            "type": "string"
+          },
+          "geometry": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "minItems": 2,
+            "title": "Geometry",
+            "type": "array"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "length_m": {
+            "minimum": 0.0,
+            "title": "Length M",
+            "type": "number"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "u": {
+            "title": "U",
+            "type": "string"
+          },
+          "v": {
+            "title": "V",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "u",
+          "v",
+          "geometry",
+          "length_m"
+        ],
+        "title": "TemporaryEdge",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VerificationStatus": {
+        "enum": [
+          "verified",
+          "unverified",
+          "disputed"
+        ],
+        "title": "VerificationStatus",
+        "type": "string"
+      }
+    }
+  },
+  "info": {
+    "description": "Pre-construction pedestrian detour decision support and model verification. Verdicts are 'Pass in modeled checks' / 'Fail' / 'Unknown' / 'Not applicable'; they are never a legal, regulatory or safety certification. All bundled data is synthetic.",
+    "title": "DETOUR LAB API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Health Api V1 Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health"
+      }
+    },
+    "/api/v1/projects": {
+      "get": {
+        "operationId": "list_projects_api_v1_projects_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Projects Api V1 Projects Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Projects"
+      },
+      "post": {
+        "operationId": "create_project_api_v1_projects_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Project Api V1 Projects Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Project"
+      }
+    },
+    "/api/v1/projects/{project_id}/graph": {
+      "get": {
+        "operationId": "get_project_graph_api_v1_projects__project_id__graph_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Project Graph Api V1 Projects  Project Id  Graph Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Project Graph"
+      }
+    },
+    "/api/v1/projects/{project_id}/imports": {
+      "post": {
+        "description": "Validate and ingest a dataset atomically. A rejected file changes nothing.",
+        "operationId": "import_dataset_api_v1_projects__project_id__imports_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Import Dataset Api V1 Projects  Project Id  Imports Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import Dataset"
+      }
+    },
+    "/api/v1/projects/{project_id}/scenarios": {
+      "post": {
+        "operationId": "create_scenario_api_v1_projects__project_id__scenarios_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Scenario Api V1 Projects  Project Id  Scenarios Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Scenario"
+      }
+    },
+    "/api/v1/rulesets": {
+      "get": {
+        "operationId": "list_rulesets_api_v1_rulesets_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Rulesets Api V1 Rulesets Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Rulesets"
+      }
+    },
+    "/api/v1/runs/{run_id}": {
+      "get": {
+        "operationId": "get_run_api_v1_runs__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Run Api V1 Runs  Run Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Run"
+      }
+    },
+    "/api/v1/runs/{run_id}/manifest": {
+      "get": {
+        "operationId": "get_manifest_api_v1_runs__run_id__manifest_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Manifest Api V1 Runs  Run Id  Manifest Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Manifest"
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}": {
+      "patch": {
+        "description": "Validate then apply edits as a new immutable revision.\n\nValidation runs against a *prospective* scenario before anything is written,\nso a malformed edit is rejected with 422 and never becomes a stored revision\n(MASTER_PROMPT \u00a79 \"apply validated edits\").",
+        "operationId": "patch_scenario_api_v1_scenarios__scenario_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioPatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Patch Scenario Api V1 Scenarios  Scenario Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Patch Scenario"
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/evaluate": {
+      "post": {
+        "operationId": "evaluate_api_v1_scenarios__scenario_id__evaluate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Evaluate Api V1 Scenarios  Scenario Id  Evaluate Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Evaluate"
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/revisions": {
+      "get": {
+        "operationId": "scenario_revisions_api_v1_scenarios__scenario_id__revisions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Scenario Revisions Api V1 Scenarios  Scenario Id  Revisions Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Scenario Revisions"
+      }
+    }
+  }
+}

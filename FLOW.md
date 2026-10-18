@@ -1,6 +1,6 @@
 # FLOW.md — DETOUR LAB execution flow and checkpoint
 
-Last updated: **18 October 2026**, after **Gate 1** completed and verified.
+Last updated: **18 October 2026**, after **Gate 2** completed and verified.
 This file is the single resume point. Update it *before* reporting any step as complete.
 
 ## 1. Verified environment facts (observed, not assumed)
@@ -13,10 +13,11 @@ This file is the single resume point. Update it *before* reporting any step as c
 | Node | v24.21.0, npm 11.19.0 (`npm ping` → PONG) |
 | Python | 3.12.10 in repo venv `.venv` |
 | Backend deps installed | fastapi 0.143.3, pydantic 2.14.1, networkx 3.7, shapely 2.2.0, reportlab 5.0.1, uvicorn 0.54.0, pytest 9.1.1, httpx 0.28.1, hypothesis 6.170.1, ruff 0.17.1 |
-| Backend tests | **202 passed** (`python -m pytest apps/api/tests`), ~6.6 s |
+| Backend tests | **270 passed** (`python -m pytest apps/api/tests`), ~29 s |
 | Static analysis | `ruff check apps/api` → **All checks passed** |
-| Live API | uvicorn on `127.0.0.1:8077`; `GET /api/v1/health` returned `ok`; evaluation endpoint returned computed results |
-| One-command verify | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1 -SkipFrontend` → **VERIFICATION PASSED**, including a byte-identical HTTP replay |
+| Contracts | `packages/contracts/{openapi.json,types.ts,domain-schema.json}` generated from Pydantic; byte-identical on re-run |
+| Live API | uvicorn on `127.0.0.1:8077`; health, graph, evaluate, manifest and restart checks all exercised |
+| One-command verify | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1 -SkipFrontend` → **VERIFICATION PASSED**, including manifest + restart replay + contract determinism |
 | Pre-existing code in repo | **None** — repository created empty by this session |
 | Sibling projects in `C:\Pratham` | AegisCPG, freeflow, mental.ai, MORPH, sofa-problem, VeriKernel — untouched |
 
@@ -38,7 +39,7 @@ from stored canonical facts.
 |---|---|---|---|
 | 0 | Evidence, repo, docs, dependency-verified skeleton, boot + smoke | **PASSED** | `scripts/verify.ps1` output recorded in section 5; API booted on 8077 |
 | 1 | Immutable graph, evidence, four-valued rules, confirmed/possible routing, hashing | **PASSED** | 202 tests; INV-01..08 classes in `test_invariants.py`; 20-run determinism loop |
-| 2 | SQLite persistence, full API contracts, import, JSON manifest, replay | NOT STARTED | — |
+| 2 | SQLite persistence, full API contracts, import, JSON manifest, replay | **PASSED** | `test_persistence.py`, `test_api_contracts.py`, `test_api_integration.py`, `test_contracts_generation.py`; restart replay reproduces the same semantic hash |
 | 3 | Real accessible UI journeys, offline E2E | NOT STARTED | — |
 | 4 | Multi-phase timeline, branching | NOT STARTED | — |
 | 5 | Fix This Plan bounded optimisation | NOT STARTED | — |
@@ -63,7 +64,7 @@ R0 = gates 0–3. R1 = gates 4–7. R2 stays out of scope.
 - [x] Synthetic, explicitly labelled seed dataset loads through the real importer
 - [x] `scripts/setup.ps1` + `scripts/verify.ps1` run successfully on this machine
 - [x] ruff clean, 202 tests green
-- [ ] Git commit of the Gate 0/1 baseline (**next action**)
+- [x] Git commit of the Gate 0/1 baseline (`23cd2a2`, verified author/committer)
 
 ## 5. Gate 1 checklist — COMPLETE
 
@@ -81,18 +82,30 @@ R0 = gates 0–3. R1 = gates 4–7. R2 stays out of scope.
 - [x] Findings carry edge/node, rule, inputs, evidence IDs, reason codes
 - [x] INV-01..INV-08 each asserted by a named test class
 
-## 6. Next exact actions (resume here — Gate 2)
+## 5b. Gate 2 checklist — COMPLETE
 
-1. `git add -A && git commit` the Gate 0/1 baseline; verify
-   `git log -1 --format=fuller` shows `PrathamKapoor <prathamkapoor027@gmail.com>`.
-2. SQLite persistence layer `detour_lab/persistence/`:
-   migrations, transactional writes, foreign keys, canonical payload storage.
-3. Full API contract surface from PRD §10.2:
-   `POST /projects`, `POST /projects/{id}/imports`, `POST /scenarios`, `PATCH /scenarios/{id}`
-   (optimistic concurrency), `POST /scenarios/{id}/evaluate`, `GET /runs/{id}`.
-4. Canonical JSON manifest builder `detour_lab/reporting/manifest.py` (FR-016, INV-06).
-5. Integration tests: atomic import rollback, restart persistence, replay hash equality.
-6. Generate the TypeScript client contracts into `packages/contracts`.
+- [x] SQLite schema with numbered migrations, foreign keys and transactional writes
+- [x] Atomic dataset import: a rejected file leaves zero rows
+- [x] Immutable graph versions, scenarios and per-edit revisions, all content-addressed
+- [x] Optimistic concurrency on `PATCH /scenarios/{id}` returning 409 with both revisions
+- [x] Edits validated against a prospective scenario *before* anything is stored
+- [x] Deterministic evaluation stored with input hash, semantic hash and duration
+- [x] Canonical JSON manifest with the runtime block excluded from the semantic hash
+- [x] One flat error envelope (`code`, `message`, `details`, `request_id`) for every failure
+- [x] Restart persistence proven by a second application process over the same file
+- [x] TypeScript contracts generated from the Pydantic models, byte-identical on re-run
+
+## 6. Next exact actions (resume here — Gate 3)
+
+1. `git commit` the Gate 2 baseline; verify `git log -1 --format=fuller`.
+2. Frontend scaffold `apps/web`: Vite + React + TypeScript, consuming
+   `packages/contracts/types.ts`. No basemap dependency (see `DECISIONS.md` D-006).
+3. Offline SVG graph renderer driven only by API-returned geometry and edge IDs.
+4. Journeys: Project Home → Planning Studio (select/close an edge) → Verification
+   (confirmed vs possible, findings with rule/evidence trace) → Reports (JSON manifest).
+5. Keyboard-operable equivalents for every map action (FR-014) plus a text/table view
+   of every finding; Vitest + Testing Library tests.
+6. Playwright end-to-end: seed → close → evaluate → inspect → export, offline.
 7. Update `docs/REQUIREMENTS_TRACEABILITY.md` and commit per logical change.
 
 ## 7. Recovery / resumption rules

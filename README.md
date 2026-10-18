@@ -19,8 +19,8 @@ unreachable — with the exact rule, evidence and units behind every verdict.
 | Gate | Scope | Status |
 |---|---|---|
 | 0 | Evidence, repository, docs, dependency-verified skeleton, boot + smoke test | **PASSED** — see `FLOW.md` |
-| 1 | Deterministic domain: immutable graph, evidence resolution, four-valued rules, confirmed/possible routing, canonical hashing | **PASSED** — 202 tests |
-| 2 | SQLite persistence, full API contracts, import, JSON manifest, replay | NOT STARTED |
+| 1 | Deterministic domain: immutable graph, evidence resolution, four-valued rules, confirmed/possible routing, canonical hashing | **PASSED** |
+| 2 | SQLite persistence, full API contracts, atomic import, JSON manifest, replay | **PASSED** — 270 backend tests |
 | 3 | Real accessible web UI, offline end-to-end journey | NOT STARTED |
 | 4–7 | Phase timeline, Fix This Plan, Failure Lab, PDF packet, audit | NOT STARTED |
 | R2 | Photo measurement, multi-jurisdiction packs, RBAC, scale | OUT OF SCOPE |
@@ -59,21 +59,28 @@ $env:PYTHONPATH = "$PWD\apps\api"
 .\.venv\Scripts\python.exe -m uvicorn detour_lab.api.main:app --app-dir apps\api --port 8077
 ```
 
-Useful endpoints (all read-only over the seeded synthetic dataset; persistence arrives at Gate 2):
+Useful endpoints (synthetic seeded dataset, persisted in `var/detour_lab.sqlite3`):
 
 | Method + path | Purpose |
 |---|---|
-| `GET /api/v1/health` | Engine/rulepack/dataset identity, provenance and disclaimer |
-| `GET /api/v1/projects` | Seeded project with node/edge/evidence counts |
-| `GET /api/v1/projects/{id}/graph` | Graph version, basis, nodes, directed edges, evidence, unlinked crossings |
+| `GET /api/v1/health` | Engine/rulepack identity, schema version, row counts |
+| `GET /api/v1/projects` · `POST /api/v1/projects` | List / create projects |
+| `POST /api/v1/projects/{id}/imports` | Validate and ingest a dataset atomically |
+| `GET /api/v1/projects/{id}/graph` | Graph version, basis, directed edges, evidence, unlinked crossings |
+| `POST /api/v1/projects/{id}/scenarios` · `PATCH /api/v1/scenarios/{id}` | Create a scenario / append validated edits (optimistic concurrency) |
+| `GET /api/v1/scenarios/{id}/revisions` | Immutable revision history with content hashes |
+| `POST /api/v1/scenarios/{id}/evaluate` | Deterministic evaluation; returns a stored run |
+| `GET /api/v1/runs/{id}` · `GET /api/v1/runs/{id}/manifest` | Run result / canonical JSON manifest |
 | `GET /api/v1/rulesets` | Rulepack (with `legal_applicability`) and the two demo profiles |
-| `GET /api/v1/scenarios/demo` | Seeded scenario and its fixed evaluation instant |
-| `POST /api/v1/scenarios/demo/evaluate` | Deterministic evaluation for a profile + phase |
 
 ```powershell
-Invoke-RestMethod -Uri http://127.0.0.1:8077/api/v1/scenarios/demo/evaluate -Method Post `
-  -ContentType 'application/json' -Body '{"profile_id":"DEMO_PROFILE_MANUAL_WHEELCHAIR","phase_id":"phase-1"}'
+Invoke-RestMethod -Uri http://127.0.0.1:8077/api/v1/scenarios/scn-demo-baseline/evaluate -Method Post `
+  -ContentType 'application/json' `
+  -Body '{"profile_id":"DEMO_PROFILE_MANUAL_WHEELCHAIR","phase_id":"phase-1","evaluation_instant":"2026-03-01T00:00:00Z"}'
 ```
+
+Every failure returns the same envelope: `{"code", "message", "details", "request_id"}`
+(404 unknown entity, 409 revision conflict, 422 invalid input).
 
 ## What the seeded demo shows
 
@@ -113,8 +120,11 @@ DETOUR-LAB/
     scenarios/    typed edits, phase-graph construction
     analysis/     the only place verdicts are produced
     ingestion/    local-planar + RFC 7946 GeoJSON loaders
-    api/          FastAPI boundary
-  apps/api/tests/ 202 backend tests
+    persistence/  SQLite schema, migrations, repository
+    reporting/    canonical manifest, contract generation
+    api/          FastAPI boundary (versioned routes + error envelope)
+  apps/api/tests/ 270 backend tests
+  packages/contracts/ generated openapi.json, types.ts, domain-schema.json
   apps/web/       (Gate 3) React + TypeScript + Vite
   data/demo/      synthetic seeded dataset
   docs/           traceability, test plan, postmortems, assumptions

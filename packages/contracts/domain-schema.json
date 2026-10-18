@@ -1,0 +1,4337 @@
+{
+  "AnalysisResult": {
+    "$defs": {
+      "EdgeEvaluation": {
+        "additionalProperties": false,
+        "description": "Aggregated traversal state for one edge in one (profile, phase).",
+        "properties": {
+          "confirmed_eligible": {
+            "title": "Confirmed Eligible",
+            "type": "boolean"
+          },
+          "edge_id": {
+            "title": "Edge Id",
+            "type": "string"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/$defs/Finding"
+            },
+            "title": "Findings",
+            "type": "array"
+          },
+          "possibly_eligible": {
+            "title": "Possibly Eligible",
+            "type": "boolean"
+          },
+          "reason_codes": {
+            "items": {
+              "$ref": "#/$defs/ReasonCode"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "relevant_check_count": {
+            "title": "Relevant Check Count",
+            "type": "integer"
+          },
+          "state": {
+            "$ref": "#/$defs/VerdictState"
+          },
+          "unknown_only": {
+            "default": false,
+            "title": "Unknown Only",
+            "type": "boolean"
+          },
+          "verdict_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Verdict Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "edge_id",
+          "state",
+          "relevant_check_count",
+          "confirmed_eligible",
+          "possibly_eligible"
+        ],
+        "title": "EdgeEvaluation",
+        "type": "object"
+      },
+      "Finding": {
+        "additionalProperties": false,
+        "description": "User-facing explanation derived only from computed data (FR-012).",
+        "properties": {
+          "attributes": {
+            "items": {
+              "$ref": "#/$defs/ResolvedAttribute"
+            },
+            "title": "Attributes",
+            "type": "array"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "element_kind": {
+            "enum": [
+              "edge",
+              "node"
+            ],
+            "title": "Element Kind",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "reason_code": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "remedy_hint": {
+            "default": "",
+            "title": "Remedy Hint",
+            "type": "string"
+          },
+          "rule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rule Id"
+          },
+          "severity": {
+            "enum": [
+              "critical",
+              "advisory",
+              "info"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/$defs/VerdictState"
+          }
+        },
+        "required": [
+          "id",
+          "element_id",
+          "element_kind",
+          "state",
+          "severity",
+          "reason_code",
+          "profile_id",
+          "phase_id",
+          "explanation"
+        ],
+        "title": "Finding",
+        "type": "object"
+      },
+      "ODPairResult": {
+        "additionalProperties": false,
+        "description": "Per origin-destination outcome (FR-010). Never conflates the two graphs.",
+        "properties": {
+          "blocking_finding_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Blocking Finding Ids",
+            "type": "array"
+          },
+          "confirmed_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmed Distance M"
+          },
+          "confirmed_path_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Confirmed Path Edge Ids",
+            "type": "array"
+          },
+          "confirmed_reachable": {
+            "title": "Confirmed Reachable",
+            "type": "boolean"
+          },
+          "confirmed_route_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmed Route Cost"
+          },
+          "destination_id": {
+            "title": "Destination Id",
+            "type": "string"
+          },
+          "destination_node_id": {
+            "title": "Destination Node Id",
+            "type": "string"
+          },
+          "origin_id": {
+            "title": "Origin Id",
+            "type": "string"
+          },
+          "origin_node_id": {
+            "title": "Origin Node Id",
+            "type": "string"
+          },
+          "possible_distance_label": {
+            "default": "hypothetical - assumes unknown edges are usable",
+            "title": "Possible Distance Label",
+            "type": "string"
+          },
+          "possible_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Possible Distance M"
+          },
+          "possible_path_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Possible Path Edge Ids",
+            "type": "array"
+          },
+          "possible_route_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Possible Route Cost"
+          },
+          "possibly_reachable": {
+            "title": "Possibly Reachable",
+            "type": "boolean"
+          },
+          "reason_codes": {
+            "items": {
+              "$ref": "#/$defs/ReasonCode"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "relevant_finding_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Relevant Finding Ids",
+            "type": "array"
+          },
+          "route_note": {
+            "default": "",
+            "title": "Route Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin_id",
+          "destination_id",
+          "origin_node_id",
+          "destination_node_id",
+          "confirmed_reachable",
+          "possibly_reachable"
+        ],
+        "title": "ODPairResult",
+        "type": "object"
+      },
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      },
+      "ResolvedAttribute": {
+        "additionalProperties": false,
+        "description": "Outcome of resolving every eligible record for one (element, field).",
+        "properties": {
+          "canonical_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Canonical Unit"
+          },
+          "conflicting_values": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Conflicting Values",
+            "type": "array"
+          },
+          "conversions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Conversions",
+            "type": "array"
+          },
+          "conversions_explicit": {
+            "default": true,
+            "title": "Conversions Explicit",
+            "type": "boolean"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "explanation": {
+            "default": "",
+            "title": "Explanation",
+            "type": "string"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "known": {
+            "title": "Known",
+            "type": "boolean"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ReasonCode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          }
+        },
+        "required": [
+          "element_id",
+          "field",
+          "known"
+        ],
+        "title": "ResolvedAttribute",
+        "type": "object"
+      },
+      "RuleCriticality": {
+        "enum": [
+          "critical",
+          "advisory"
+        ],
+        "title": "RuleCriticality",
+        "type": "string"
+      },
+      "RuleKind": {
+        "description": "Hard constraints gate traversal. Preference weights never may (INV-05).",
+        "enum": [
+          "hard",
+          "preference"
+        ],
+        "title": "RuleKind",
+        "type": "string"
+      },
+      "RuleScope": {
+        "enum": [
+          "edge",
+          "node"
+        ],
+        "title": "RuleScope",
+        "type": "string"
+      },
+      "RuleVerdict": {
+        "additionalProperties": false,
+        "description": "Result of one rule against one element in one (profile, phase).",
+        "properties": {
+          "basis_label": {
+            "default": "DEMO_RULEPACK_NOT_LEGAL",
+            "title": "Basis Label",
+            "type": "string"
+          },
+          "criticality": {
+            "$ref": "#/$defs/RuleCriticality",
+            "default": "critical"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/$defs/ResolvedAttribute"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "reason_code": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "rule_id": {
+            "title": "Rule Id",
+            "type": "string"
+          },
+          "rule_kind": {
+            "$ref": "#/$defs/RuleKind",
+            "default": "hard"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/$defs/RuleScope"
+          },
+          "state": {
+            "$ref": "#/$defs/VerdictState"
+          }
+        },
+        "required": [
+          "rule_id",
+          "rule_version",
+          "element_id",
+          "scope",
+          "state",
+          "reason_code",
+          "explanation",
+          "profile_id",
+          "phase_id"
+        ],
+        "title": "RuleVerdict",
+        "type": "object"
+      },
+      "VerdictState": {
+        "description": "Four-valued result of a single rule applied to a single element.\n\nNOT_APPLICABLE applies only to one rule proved inapplicable to one element.\nIt is never a way of clearing an element with missing evidence\n(MASTER_PROMPT \u00a75.3, PRD FR-008).",
+        "enum": [
+          "PASS",
+          "FAIL",
+          "UNKNOWN",
+          "NOT_APPLICABLE"
+        ],
+        "title": "VerdictState",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Complete deterministic result for one (scenario, phase, profile, rulepack).",
+    "properties": {
+      "base_graph_hash": {
+        "title": "Base Graph Hash",
+        "type": "string"
+      },
+      "base_graph_version_id": {
+        "title": "Base Graph Version Id",
+        "type": "string"
+      },
+      "counts": {
+        "additionalProperties": {
+          "type": "integer"
+        },
+        "title": "Counts",
+        "type": "object"
+      },
+      "edge_evaluations": {
+        "items": {
+          "$ref": "#/$defs/EdgeEvaluation"
+        },
+        "title": "Edge Evaluations",
+        "type": "array"
+      },
+      "od_results": {
+        "items": {
+          "$ref": "#/$defs/ODPairResult"
+        },
+        "title": "Od Results",
+        "type": "array"
+      },
+      "phase_graph_hash": {
+        "title": "Phase Graph Hash",
+        "type": "string"
+      },
+      "phase_graph_id": {
+        "title": "Phase Graph Id",
+        "type": "string"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "rulepack_hash": {
+        "title": "Rulepack Hash",
+        "type": "string"
+      },
+      "rulepack_id": {
+        "title": "Rulepack Id",
+        "type": "string"
+      },
+      "rulepack_version": {
+        "title": "Rulepack Version",
+        "type": "string"
+      },
+      "scenario_hash": {
+        "title": "Scenario Hash",
+        "type": "string"
+      },
+      "scenario_id": {
+        "title": "Scenario Id",
+        "type": "string"
+      },
+      "verdicts": {
+        "items": {
+          "$ref": "#/$defs/RuleVerdict"
+        },
+        "title": "Verdicts",
+        "type": "array"
+      },
+      "warnings": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Warnings",
+        "type": "array"
+      }
+    },
+    "required": [
+      "scenario_id",
+      "scenario_hash",
+      "phase_id",
+      "profile_id",
+      "rulepack_id",
+      "rulepack_version",
+      "rulepack_hash",
+      "base_graph_version_id",
+      "base_graph_hash",
+      "phase_graph_id",
+      "phase_graph_hash",
+      "edge_evaluations",
+      "verdicts",
+      "od_results",
+      "counts"
+    ],
+    "title": "AnalysisResult",
+    "type": "object"
+  },
+  "BaseGraphVersion": {
+    "$defs": {
+      "CoordinateBasis": {
+        "additionalProperties": false,
+        "description": "Explicit, recorded coordinate basis. Never assumed silently.",
+        "properties": {
+          "crs_note": {
+            "default": "",
+            "title": "Crs Note",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "local_planar_meters",
+              "wgs84_degrees"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "local_origin_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Local Origin Label"
+          },
+          "projected_crs": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Projected Crs"
+          },
+          "unit": {
+            "enum": [
+              "m",
+              "degree"
+            ],
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "unit"
+        ],
+        "title": "CoordinateBasis",
+        "type": "object"
+      },
+      "DataSource": {
+        "additionalProperties": false,
+        "description": "Where a dataset or rule came from, and what class of truth it is.",
+        "properties": {
+          "attribution": {
+            "default": "",
+            "title": "Attribution",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "license": {
+            "default": "unspecified",
+            "title": "License",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "provenance_class": {
+            "$ref": "#/$defs/ProvenanceClass"
+          },
+          "retrieved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Retrieved At"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Version"
+          }
+        },
+        "required": [
+          "name",
+          "provenance_class"
+        ],
+        "title": "DataSource",
+        "type": "object"
+      },
+      "Edge": {
+        "additionalProperties": false,
+        "description": "Structural edge. Safety attributes live in evidence records.",
+        "properties": {
+          "edge_type": {
+            "$ref": "#/$defs/EdgeType",
+            "default": "sidewalk"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "geometry": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "minItems": 2,
+            "title": "Geometry",
+            "type": "array"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "length_m": {
+            "minimum": 0,
+            "title": "Length M",
+            "type": "number"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "provenance_class": {
+            "$ref": "#/$defs/ProvenanceClass",
+            "default": "synthetic"
+          },
+          "u": {
+            "minLength": 1,
+            "title": "U",
+            "type": "string"
+          },
+          "v": {
+            "minLength": 1,
+            "title": "V",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "u",
+          "v",
+          "geometry",
+          "length_m"
+        ],
+        "title": "Edge",
+        "type": "object"
+      },
+      "EdgeType": {
+        "enum": [
+          "sidewalk",
+          "crossing",
+          "temporary_path",
+          "shared_use_path",
+          "ramp"
+        ],
+        "title": "EdgeType",
+        "type": "string"
+      },
+      "EvidenceRecord": {
+        "additionalProperties": false,
+        "description": "One observation about one field of one element.\n\n``value``/``unit`` are exactly what the source reported. Canonicalisation\nhappens in the resolver so the conversion stays auditable.",
+        "properties": {
+          "element_id": {
+            "minLength": 1,
+            "title": "Element Id",
+            "type": "string"
+          },
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "invalidated": {
+            "default": false,
+            "title": "Invalidated",
+            "type": "boolean"
+          },
+          "method": {
+            "minLength": 1,
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
+          "provenance_class": {
+            "$ref": "#/$defs/ProvenanceClass"
+          },
+          "quality": {
+            "default": "medium",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Quality",
+            "type": "string"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewer"
+          },
+          "source": {
+            "minLength": 1,
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "synthetic": {
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "$ref": "#/$defs/VerificationStatus",
+            "default": "unverified"
+          }
+        },
+        "required": [
+          "id",
+          "element_id",
+          "field",
+          "method",
+          "source",
+          "provenance_class"
+        ],
+        "title": "EvidenceRecord",
+        "type": "object"
+      },
+      "Node": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "node_type": {
+            "$ref": "#/$defs/NodeType",
+            "default": "junction"
+          },
+          "provenance_class": {
+            "$ref": "#/$defs/ProvenanceClass",
+            "default": "synthetic"
+          },
+          "x": {
+            "title": "X",
+            "type": "number"
+          },
+          "y": {
+            "title": "Y",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "x",
+          "y"
+        ],
+        "title": "Node",
+        "type": "object"
+      },
+      "NodeType": {
+        "enum": [
+          "junction",
+          "curb_interface",
+          "crossing_interface",
+          "access_node",
+          "origin",
+          "destination"
+        ],
+        "title": "NodeType",
+        "type": "string"
+      },
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      },
+      "VerificationStatus": {
+        "enum": [
+          "verified",
+          "unverified",
+          "disputed"
+        ],
+        "title": "VerificationStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Immutable, content-addressed pedestrian network (FR-002, FR-003).",
+    "properties": {
+      "basis": {
+        "$ref": "#/$defs/CoordinateBasis"
+      },
+      "content_hash": {
+        "default": "",
+        "title": "Content Hash",
+        "type": "string"
+      },
+      "created_at": {
+        "anyOf": [
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Created At"
+      },
+      "edges": {
+        "items": {
+          "$ref": "#/$defs/Edge"
+        },
+        "title": "Edges",
+        "type": "array"
+      },
+      "evidence": {
+        "items": {
+          "$ref": "#/$defs/EvidenceRecord"
+        },
+        "title": "Evidence",
+        "type": "array"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "inactive_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Inactive Edge Ids",
+        "type": "array"
+      },
+      "nodes": {
+        "items": {
+          "$ref": "#/$defs/Node"
+        },
+        "title": "Nodes",
+        "type": "array"
+      },
+      "schema_version": {
+        "default": "1.0.0",
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "source": {
+        "$ref": "#/$defs/DataSource"
+      }
+    },
+    "required": [
+      "id",
+      "basis",
+      "nodes",
+      "edges",
+      "source"
+    ],
+    "title": "BaseGraphVersion",
+    "type": "object"
+  },
+  "CoordinateBasis": {
+    "additionalProperties": false,
+    "description": "Explicit, recorded coordinate basis. Never assumed silently.",
+    "properties": {
+      "crs_note": {
+        "default": "",
+        "title": "Crs Note",
+        "type": "string"
+      },
+      "kind": {
+        "enum": [
+          "local_planar_meters",
+          "wgs84_degrees"
+        ],
+        "title": "Kind",
+        "type": "string"
+      },
+      "local_origin_label": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Local Origin Label"
+      },
+      "projected_crs": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Projected Crs"
+      },
+      "unit": {
+        "enum": [
+          "m",
+          "degree"
+        ],
+        "title": "Unit",
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "unit"
+    ],
+    "title": "CoordinateBasis",
+    "type": "object"
+  },
+  "DataSource": {
+    "$defs": {
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Where a dataset or rule came from, and what class of truth it is.",
+    "properties": {
+      "attribution": {
+        "default": "",
+        "title": "Attribution",
+        "type": "string"
+      },
+      "description": {
+        "default": "",
+        "title": "Description",
+        "type": "string"
+      },
+      "license": {
+        "default": "unspecified",
+        "title": "License",
+        "type": "string"
+      },
+      "name": {
+        "minLength": 1,
+        "title": "Name",
+        "type": "string"
+      },
+      "provenance_class": {
+        "$ref": "#/$defs/ProvenanceClass"
+      },
+      "retrieved_at": {
+        "anyOf": [
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Retrieved At"
+      },
+      "url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Url"
+      },
+      "version": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Version"
+      }
+    },
+    "required": [
+      "name",
+      "provenance_class"
+    ],
+    "title": "DataSource",
+    "type": "object"
+  },
+  "Edge": {
+    "$defs": {
+      "EdgeType": {
+        "enum": [
+          "sidewalk",
+          "crossing",
+          "temporary_path",
+          "shared_use_path",
+          "ramp"
+        ],
+        "title": "EdgeType",
+        "type": "string"
+      },
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Structural edge. Safety attributes live in evidence records.",
+    "properties": {
+      "edge_type": {
+        "$ref": "#/$defs/EdgeType",
+        "default": "sidewalk"
+      },
+      "evidence_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Evidence Ids",
+        "type": "array"
+      },
+      "geometry": {
+        "items": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "type": "array"
+        },
+        "minItems": 2,
+        "title": "Geometry",
+        "type": "array"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "length_m": {
+        "minimum": 0,
+        "title": "Length M",
+        "type": "number"
+      },
+      "name": {
+        "default": "",
+        "title": "Name",
+        "type": "string"
+      },
+      "provenance_class": {
+        "$ref": "#/$defs/ProvenanceClass",
+        "default": "synthetic"
+      },
+      "u": {
+        "minLength": 1,
+        "title": "U",
+        "type": "string"
+      },
+      "v": {
+        "minLength": 1,
+        "title": "V",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "u",
+      "v",
+      "geometry",
+      "length_m"
+    ],
+    "title": "Edge",
+    "type": "object"
+  },
+  "EdgeEvaluation": {
+    "$defs": {
+      "Finding": {
+        "additionalProperties": false,
+        "description": "User-facing explanation derived only from computed data (FR-012).",
+        "properties": {
+          "attributes": {
+            "items": {
+              "$ref": "#/$defs/ResolvedAttribute"
+            },
+            "title": "Attributes",
+            "type": "array"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "element_kind": {
+            "enum": [
+              "edge",
+              "node"
+            ],
+            "title": "Element Kind",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "reason_code": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "remedy_hint": {
+            "default": "",
+            "title": "Remedy Hint",
+            "type": "string"
+          },
+          "rule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rule Id"
+          },
+          "severity": {
+            "enum": [
+              "critical",
+              "advisory",
+              "info"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/$defs/VerdictState"
+          }
+        },
+        "required": [
+          "id",
+          "element_id",
+          "element_kind",
+          "state",
+          "severity",
+          "reason_code",
+          "profile_id",
+          "phase_id",
+          "explanation"
+        ],
+        "title": "Finding",
+        "type": "object"
+      },
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      },
+      "ResolvedAttribute": {
+        "additionalProperties": false,
+        "description": "Outcome of resolving every eligible record for one (element, field).",
+        "properties": {
+          "canonical_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Canonical Unit"
+          },
+          "conflicting_values": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Conflicting Values",
+            "type": "array"
+          },
+          "conversions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Conversions",
+            "type": "array"
+          },
+          "conversions_explicit": {
+            "default": true,
+            "title": "Conversions Explicit",
+            "type": "boolean"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "explanation": {
+            "default": "",
+            "title": "Explanation",
+            "type": "string"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "known": {
+            "title": "Known",
+            "type": "boolean"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ReasonCode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          }
+        },
+        "required": [
+          "element_id",
+          "field",
+          "known"
+        ],
+        "title": "ResolvedAttribute",
+        "type": "object"
+      },
+      "VerdictState": {
+        "description": "Four-valued result of a single rule applied to a single element.\n\nNOT_APPLICABLE applies only to one rule proved inapplicable to one element.\nIt is never a way of clearing an element with missing evidence\n(MASTER_PROMPT \u00a75.3, PRD FR-008).",
+        "enum": [
+          "PASS",
+          "FAIL",
+          "UNKNOWN",
+          "NOT_APPLICABLE"
+        ],
+        "title": "VerdictState",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Aggregated traversal state for one edge in one (profile, phase).",
+    "properties": {
+      "confirmed_eligible": {
+        "title": "Confirmed Eligible",
+        "type": "boolean"
+      },
+      "edge_id": {
+        "title": "Edge Id",
+        "type": "string"
+      },
+      "findings": {
+        "items": {
+          "$ref": "#/$defs/Finding"
+        },
+        "title": "Findings",
+        "type": "array"
+      },
+      "possibly_eligible": {
+        "title": "Possibly Eligible",
+        "type": "boolean"
+      },
+      "reason_codes": {
+        "items": {
+          "$ref": "#/$defs/ReasonCode"
+        },
+        "title": "Reason Codes",
+        "type": "array"
+      },
+      "relevant_check_count": {
+        "title": "Relevant Check Count",
+        "type": "integer"
+      },
+      "state": {
+        "$ref": "#/$defs/VerdictState"
+      },
+      "unknown_only": {
+        "default": false,
+        "title": "Unknown Only",
+        "type": "boolean"
+      },
+      "verdict_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Verdict Ids",
+        "type": "array"
+      }
+    },
+    "required": [
+      "edge_id",
+      "state",
+      "relevant_check_count",
+      "confirmed_eligible",
+      "possibly_eligible"
+    ],
+    "title": "EdgeEvaluation",
+    "type": "object"
+  },
+  "EvidenceRecord": {
+    "$defs": {
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      },
+      "VerificationStatus": {
+        "enum": [
+          "verified",
+          "unverified",
+          "disputed"
+        ],
+        "title": "VerificationStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "One observation about one field of one element.\n\n``value``/``unit`` are exactly what the source reported. Canonicalisation\nhappens in the resolver so the conversion stays auditable.",
+    "properties": {
+      "element_id": {
+        "minLength": 1,
+        "title": "Element Id",
+        "type": "string"
+      },
+      "field": {
+        "minLength": 1,
+        "title": "Field",
+        "type": "string"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "invalidated": {
+        "default": false,
+        "title": "Invalidated",
+        "type": "boolean"
+      },
+      "method": {
+        "minLength": 1,
+        "title": "Method",
+        "type": "string"
+      },
+      "note": {
+        "default": "",
+        "title": "Note",
+        "type": "string"
+      },
+      "observed_at": {
+        "anyOf": [
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Observed At"
+      },
+      "provenance_class": {
+        "$ref": "#/$defs/ProvenanceClass"
+      },
+      "quality": {
+        "default": "medium",
+        "enum": [
+          "high",
+          "medium",
+          "low"
+        ],
+        "title": "Quality",
+        "type": "string"
+      },
+      "reviewer": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Reviewer"
+      },
+      "source": {
+        "minLength": 1,
+        "title": "Source",
+        "type": "string"
+      },
+      "source_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Source Url"
+      },
+      "synthetic": {
+        "default": true,
+        "title": "Synthetic",
+        "type": "boolean"
+      },
+      "unit": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Unit"
+      },
+      "value": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Value"
+      },
+      "verification_status": {
+        "$ref": "#/$defs/VerificationStatus",
+        "default": "unverified"
+      }
+    },
+    "required": [
+      "id",
+      "element_id",
+      "field",
+      "method",
+      "source",
+      "provenance_class"
+    ],
+    "title": "EvidenceRecord",
+    "type": "object"
+  },
+  "Finding": {
+    "$defs": {
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      },
+      "ResolvedAttribute": {
+        "additionalProperties": false,
+        "description": "Outcome of resolving every eligible record for one (element, field).",
+        "properties": {
+          "canonical_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Canonical Unit"
+          },
+          "conflicting_values": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Conflicting Values",
+            "type": "array"
+          },
+          "conversions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Conversions",
+            "type": "array"
+          },
+          "conversions_explicit": {
+            "default": true,
+            "title": "Conversions Explicit",
+            "type": "boolean"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "explanation": {
+            "default": "",
+            "title": "Explanation",
+            "type": "string"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "known": {
+            "title": "Known",
+            "type": "boolean"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ReasonCode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          }
+        },
+        "required": [
+          "element_id",
+          "field",
+          "known"
+        ],
+        "title": "ResolvedAttribute",
+        "type": "object"
+      },
+      "VerdictState": {
+        "description": "Four-valued result of a single rule applied to a single element.\n\nNOT_APPLICABLE applies only to one rule proved inapplicable to one element.\nIt is never a way of clearing an element with missing evidence\n(MASTER_PROMPT \u00a75.3, PRD FR-008).",
+        "enum": [
+          "PASS",
+          "FAIL",
+          "UNKNOWN",
+          "NOT_APPLICABLE"
+        ],
+        "title": "VerdictState",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "User-facing explanation derived only from computed data (FR-012).",
+    "properties": {
+      "attributes": {
+        "items": {
+          "$ref": "#/$defs/ResolvedAttribute"
+        },
+        "title": "Attributes",
+        "type": "array"
+      },
+      "element_id": {
+        "title": "Element Id",
+        "type": "string"
+      },
+      "element_kind": {
+        "enum": [
+          "edge",
+          "node"
+        ],
+        "title": "Element Kind",
+        "type": "string"
+      },
+      "evidence_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Evidence Ids",
+        "type": "array"
+      },
+      "explanation": {
+        "title": "Explanation",
+        "type": "string"
+      },
+      "id": {
+        "title": "Id",
+        "type": "string"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "reason_code": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "remedy_hint": {
+        "default": "",
+        "title": "Remedy Hint",
+        "type": "string"
+      },
+      "rule_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Rule Id"
+      },
+      "severity": {
+        "enum": [
+          "critical",
+          "advisory",
+          "info"
+        ],
+        "title": "Severity",
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/$defs/VerdictState"
+      }
+    },
+    "required": [
+      "id",
+      "element_id",
+      "element_kind",
+      "state",
+      "severity",
+      "reason_code",
+      "profile_id",
+      "phase_id",
+      "explanation"
+    ],
+    "title": "Finding",
+    "type": "object"
+  },
+  "MobilityProfile": {
+    "additionalProperties": false,
+    "description": "Demonstration mobility profile.\n\nHard requirements come from the rulepack; ``preferences`` only weight route\nranking and can never change a hard verdict (INV-05).",
+    "properties": {
+      "description": {
+        "title": "Description",
+        "type": "string"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "is_demo_profile": {
+        "default": true,
+        "title": "Is Demo Profile",
+        "type": "boolean"
+      },
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "notes": {
+        "default": "",
+        "title": "Notes",
+        "type": "string"
+      },
+      "preference_weights": {
+        "additionalProperties": {
+          "type": "number"
+        },
+        "title": "Preference Weights",
+        "type": "object"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description"
+    ],
+    "title": "MobilityProfile",
+    "type": "object"
+  },
+  "Node": {
+    "$defs": {
+      "NodeType": {
+        "enum": [
+          "junction",
+          "curb_interface",
+          "crossing_interface",
+          "access_node",
+          "origin",
+          "destination"
+        ],
+        "title": "NodeType",
+        "type": "string"
+      },
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "evidence_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Evidence Ids",
+        "type": "array"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "name": {
+        "default": "",
+        "title": "Name",
+        "type": "string"
+      },
+      "node_type": {
+        "$ref": "#/$defs/NodeType",
+        "default": "junction"
+      },
+      "provenance_class": {
+        "$ref": "#/$defs/ProvenanceClass",
+        "default": "synthetic"
+      },
+      "x": {
+        "title": "X",
+        "type": "number"
+      },
+      "y": {
+        "title": "Y",
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "x",
+      "y"
+    ],
+    "title": "Node",
+    "type": "object"
+  },
+  "ODPairResult": {
+    "$defs": {
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Per origin-destination outcome (FR-010). Never conflates the two graphs.",
+    "properties": {
+      "blocking_finding_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Blocking Finding Ids",
+        "type": "array"
+      },
+      "confirmed_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Confirmed Distance M"
+      },
+      "confirmed_path_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Confirmed Path Edge Ids",
+        "type": "array"
+      },
+      "confirmed_reachable": {
+        "title": "Confirmed Reachable",
+        "type": "boolean"
+      },
+      "confirmed_route_cost": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Confirmed Route Cost"
+      },
+      "destination_id": {
+        "title": "Destination Id",
+        "type": "string"
+      },
+      "destination_node_id": {
+        "title": "Destination Node Id",
+        "type": "string"
+      },
+      "origin_id": {
+        "title": "Origin Id",
+        "type": "string"
+      },
+      "origin_node_id": {
+        "title": "Origin Node Id",
+        "type": "string"
+      },
+      "possible_distance_label": {
+        "default": "hypothetical - assumes unknown edges are usable",
+        "title": "Possible Distance Label",
+        "type": "string"
+      },
+      "possible_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Possible Distance M"
+      },
+      "possible_path_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Possible Path Edge Ids",
+        "type": "array"
+      },
+      "possible_route_cost": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Possible Route Cost"
+      },
+      "possibly_reachable": {
+        "title": "Possibly Reachable",
+        "type": "boolean"
+      },
+      "reason_codes": {
+        "items": {
+          "$ref": "#/$defs/ReasonCode"
+        },
+        "title": "Reason Codes",
+        "type": "array"
+      },
+      "relevant_finding_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Relevant Finding Ids",
+        "type": "array"
+      },
+      "route_note": {
+        "default": "",
+        "title": "Route Note",
+        "type": "string"
+      }
+    },
+    "required": [
+      "origin_id",
+      "destination_id",
+      "origin_node_id",
+      "destination_node_id",
+      "confirmed_reachable",
+      "possibly_reachable"
+    ],
+    "title": "ODPairResult",
+    "type": "object"
+  },
+  "OriginDestination": {
+    "additionalProperties": false,
+    "description": "OD endpoint bound to a **graph node ID**, never to a nearby coordinate.",
+    "properties": {
+      "essential": {
+        "default": true,
+        "title": "Essential",
+        "type": "boolean"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "kind": {
+        "enum": [
+          "origin",
+          "destination",
+          "both"
+        ],
+        "title": "Kind",
+        "type": "string"
+      },
+      "label": {
+        "default": "",
+        "title": "Label",
+        "type": "string"
+      },
+      "node_id": {
+        "minLength": 1,
+        "title": "Node Id",
+        "type": "string"
+      },
+      "priority": {
+        "default": 1,
+        "maximum": 5,
+        "minimum": 1,
+        "title": "Priority",
+        "type": "integer"
+      },
+      "weight": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Weight"
+      },
+      "weight_source": {
+        "default": "demo_assumption",
+        "title": "Weight Source",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "node_id",
+      "kind"
+    ],
+    "title": "OriginDestination",
+    "type": "object"
+  },
+  "Phase": {
+    "additionalProperties": false,
+    "description": "Construction phase with an explicit ordering convention.\n\nDemo phases use logical ordinals. No construction calendar is invented.",
+    "properties": {
+      "boundary_convention": {
+        "default": "logical_ordinal",
+        "enum": [
+          "[start,end)",
+          "logical_ordinal"
+        ],
+        "title": "Boundary Convention",
+        "type": "string"
+      },
+      "closed_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Closed Edge Ids",
+        "type": "array"
+      },
+      "end_ordinal": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "End Ordinal"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "label": {
+        "default": "",
+        "title": "Label",
+        "type": "string"
+      },
+      "notes": {
+        "default": "",
+        "title": "Notes",
+        "type": "string"
+      },
+      "order": {
+        "minimum": 0,
+        "title": "Order",
+        "type": "integer"
+      },
+      "start_ordinal": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Start Ordinal"
+      },
+      "temporary_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Temporary Edge Ids",
+        "type": "array"
+      }
+    },
+    "required": [
+      "id",
+      "order"
+    ],
+    "title": "Phase",
+    "type": "object"
+  },
+  "ResolvedAttribute": {
+    "$defs": {
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Outcome of resolving every eligible record for one (element, field).",
+    "properties": {
+      "canonical_unit": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Canonical Unit"
+      },
+      "conflicting_values": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Conflicting Values",
+        "type": "array"
+      },
+      "conversions": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Conversions",
+        "type": "array"
+      },
+      "conversions_explicit": {
+        "default": true,
+        "title": "Conversions Explicit",
+        "type": "boolean"
+      },
+      "element_id": {
+        "title": "Element Id",
+        "type": "string"
+      },
+      "evidence_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Evidence Ids",
+        "type": "array"
+      },
+      "explanation": {
+        "default": "",
+        "title": "Explanation",
+        "type": "string"
+      },
+      "field": {
+        "title": "Field",
+        "type": "string"
+      },
+      "known": {
+        "title": "Known",
+        "type": "boolean"
+      },
+      "reason_code": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "value": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Value"
+      }
+    },
+    "required": [
+      "element_id",
+      "field",
+      "known"
+    ],
+    "title": "ResolvedAttribute",
+    "type": "object"
+  },
+  "Rule": {
+    "$defs": {
+      "EdgeType": {
+        "enum": [
+          "sidewalk",
+          "crossing",
+          "temporary_path",
+          "shared_use_path",
+          "ramp"
+        ],
+        "title": "EdgeType",
+        "type": "string"
+      },
+      "NodeType": {
+        "enum": [
+          "junction",
+          "curb_interface",
+          "crossing_interface",
+          "access_node",
+          "origin",
+          "destination"
+        ],
+        "title": "NodeType",
+        "type": "string"
+      },
+      "Operator": {
+        "description": "Whitelisted comparison operators only.\n\nRules are data. There is no ``eval``, no expression language and no imported\nuser code path anywhere in the engine (MASTERPROMPT \u00a75.3).",
+        "enum": [
+          "gte",
+          "lte",
+          "gt",
+          "lt",
+          "eq",
+          "one_of",
+          "exists"
+        ],
+        "title": "Operator",
+        "type": "string"
+      },
+      "RuleCheck": {
+        "additionalProperties": false,
+        "description": "One whitelisted comparison inside a rule.",
+        "properties": {
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "operator": {
+            "$ref": "#/$defs/Operator"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Threshold"
+          },
+          "values": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "required": [
+          "field",
+          "operator"
+        ],
+        "title": "RuleCheck",
+        "type": "object"
+      },
+      "RuleCriticality": {
+        "enum": [
+          "critical",
+          "advisory"
+        ],
+        "title": "RuleCriticality",
+        "type": "string"
+      },
+      "RuleKind": {
+        "description": "Hard constraints gate traversal. Preference weights never may (INV-05).",
+        "enum": [
+          "hard",
+          "preference"
+        ],
+        "title": "RuleKind",
+        "type": "string"
+      },
+      "RuleScope": {
+        "enum": [
+          "edge",
+          "node"
+        ],
+        "title": "RuleScope",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Declarative rule. Data only \u2014 never executable code (MASTER_PROMPT \u00a75.3).",
+    "properties": {
+      "applies_to_edge_types": {
+        "items": {
+          "$ref": "#/$defs/EdgeType"
+        },
+        "title": "Applies To Edge Types",
+        "type": "array"
+      },
+      "applies_to_node_types": {
+        "items": {
+          "$ref": "#/$defs/NodeType"
+        },
+        "title": "Applies To Node Types",
+        "type": "array"
+      },
+      "basis_label": {
+        "default": "DEMO_RULEPACK_NOT_LEGAL",
+        "title": "Basis Label",
+        "type": "string"
+      },
+      "checks": {
+        "items": {
+          "$ref": "#/$defs/RuleCheck"
+        },
+        "minItems": 1,
+        "title": "Checks",
+        "type": "array"
+      },
+      "criticality": {
+        "$ref": "#/$defs/RuleCriticality",
+        "default": "critical"
+      },
+      "description": {
+        "default": "",
+        "title": "Description",
+        "type": "string"
+      },
+      "failure_message": {
+        "default": "",
+        "title": "Failure Message",
+        "type": "string"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/$defs/RuleKind",
+        "default": "hard"
+      },
+      "profiles": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Profiles",
+        "type": "array"
+      },
+      "requires_verified_evidence": {
+        "default": false,
+        "title": "Requires Verified Evidence",
+        "type": "boolean"
+      },
+      "scope": {
+        "$ref": "#/$defs/RuleScope"
+      },
+      "source_reference": {
+        "default": "",
+        "title": "Source Reference",
+        "type": "string"
+      },
+      "version": {
+        "default": "1.0.0",
+        "title": "Version",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "scope",
+      "checks"
+    ],
+    "title": "Rule",
+    "type": "object"
+  },
+  "RulePack": {
+    "$defs": {
+      "AttributeSpec": {
+        "additionalProperties": false,
+        "description": "How a named attribute is interpreted by the rulepack.",
+        "properties": {
+          "accepted_units": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Accepted Units",
+            "type": "array"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "freshness": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FreshnessPolicy"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "quantity": {
+            "enum": [
+              "length_m",
+              "width_mm",
+              "slope_percent",
+              "text"
+            ],
+            "title": "Quantity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "quantity"
+        ],
+        "title": "AttributeSpec",
+        "type": "object"
+      },
+      "DataSource": {
+        "additionalProperties": false,
+        "description": "Where a dataset or rule came from, and what class of truth it is.",
+        "properties": {
+          "attribution": {
+            "default": "",
+            "title": "Attribution",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "license": {
+            "default": "unspecified",
+            "title": "License",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "provenance_class": {
+            "$ref": "#/$defs/ProvenanceClass"
+          },
+          "retrieved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Retrieved At"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Version"
+          }
+        },
+        "required": [
+          "name",
+          "provenance_class"
+        ],
+        "title": "DataSource",
+        "type": "object"
+      },
+      "EdgeType": {
+        "enum": [
+          "sidewalk",
+          "crossing",
+          "temporary_path",
+          "shared_use_path",
+          "ramp"
+        ],
+        "title": "EdgeType",
+        "type": "string"
+      },
+      "FreshnessPolicy": {
+        "additionalProperties": false,
+        "description": "Explicit per-attribute freshness. If absent, evidence never expires.",
+        "properties": {
+          "max_age_days": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Max Age Days"
+          },
+          "requires_verified": {
+            "default": false,
+            "title": "Requires Verified",
+            "type": "boolean"
+          }
+        },
+        "title": "FreshnessPolicy",
+        "type": "object"
+      },
+      "NodeType": {
+        "enum": [
+          "junction",
+          "curb_interface",
+          "crossing_interface",
+          "access_node",
+          "origin",
+          "destination"
+        ],
+        "title": "NodeType",
+        "type": "string"
+      },
+      "Operator": {
+        "description": "Whitelisted comparison operators only.\n\nRules are data. There is no ``eval``, no expression language and no imported\nuser code path anywhere in the engine (MASTERPROMPT \u00a75.3).",
+        "enum": [
+          "gte",
+          "lte",
+          "gt",
+          "lt",
+          "eq",
+          "one_of",
+          "exists"
+        ],
+        "title": "Operator",
+        "type": "string"
+      },
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      },
+      "Rule": {
+        "additionalProperties": false,
+        "description": "Declarative rule. Data only \u2014 never executable code (MASTER_PROMPT \u00a75.3).",
+        "properties": {
+          "applies_to_edge_types": {
+            "items": {
+              "$ref": "#/$defs/EdgeType"
+            },
+            "title": "Applies To Edge Types",
+            "type": "array"
+          },
+          "applies_to_node_types": {
+            "items": {
+              "$ref": "#/$defs/NodeType"
+            },
+            "title": "Applies To Node Types",
+            "type": "array"
+          },
+          "basis_label": {
+            "default": "DEMO_RULEPACK_NOT_LEGAL",
+            "title": "Basis Label",
+            "type": "string"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/$defs/RuleCheck"
+            },
+            "minItems": 1,
+            "title": "Checks",
+            "type": "array"
+          },
+          "criticality": {
+            "$ref": "#/$defs/RuleCriticality",
+            "default": "critical"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "failure_message": {
+            "default": "",
+            "title": "Failure Message",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/$defs/RuleKind",
+            "default": "hard"
+          },
+          "profiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Profiles",
+            "type": "array"
+          },
+          "requires_verified_evidence": {
+            "default": false,
+            "title": "Requires Verified Evidence",
+            "type": "boolean"
+          },
+          "scope": {
+            "$ref": "#/$defs/RuleScope"
+          },
+          "source_reference": {
+            "default": "",
+            "title": "Source Reference",
+            "type": "string"
+          },
+          "version": {
+            "default": "1.0.0",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "scope",
+          "checks"
+        ],
+        "title": "Rule",
+        "type": "object"
+      },
+      "RuleCheck": {
+        "additionalProperties": false,
+        "description": "One whitelisted comparison inside a rule.",
+        "properties": {
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "operator": {
+            "$ref": "#/$defs/Operator"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Threshold"
+          },
+          "values": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "required": [
+          "field",
+          "operator"
+        ],
+        "title": "RuleCheck",
+        "type": "object"
+      },
+      "RuleCriticality": {
+        "enum": [
+          "critical",
+          "advisory"
+        ],
+        "title": "RuleCriticality",
+        "type": "string"
+      },
+      "RuleKind": {
+        "description": "Hard constraints gate traversal. Preference weights never may (INV-05).",
+        "enum": [
+          "hard",
+          "preference"
+        ],
+        "title": "RuleKind",
+        "type": "string"
+      },
+      "RuleScope": {
+        "enum": [
+          "edge",
+          "node"
+        ],
+        "title": "RuleScope",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "attributes": {
+        "additionalProperties": {
+          "$ref": "#/$defs/AttributeSpec"
+        },
+        "title": "Attributes",
+        "type": "object"
+      },
+      "basis": {
+        "default": "",
+        "title": "Basis",
+        "type": "string"
+      },
+      "content_hash": {
+        "default": "",
+        "title": "Content Hash",
+        "type": "string"
+      },
+      "disclaimer": {
+        "default": "",
+        "title": "Disclaimer",
+        "type": "string"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "jurisdiction_scope": {
+        "default": "unspecified",
+        "title": "Jurisdiction Scope",
+        "type": "string"
+      },
+      "legal_applicability": {
+        "default": "unverified",
+        "enum": [
+          "unverified",
+          "reviewed",
+          "not_applicable"
+        ],
+        "title": "Legal Applicability",
+        "type": "string"
+      },
+      "name": {
+        "default": "",
+        "title": "Name",
+        "type": "string"
+      },
+      "rules": {
+        "items": {
+          "$ref": "#/$defs/Rule"
+        },
+        "minItems": 1,
+        "title": "Rules",
+        "type": "array"
+      },
+      "source": {
+        "$ref": "#/$defs/DataSource"
+      },
+      "version": {
+        "default": "1.0.0",
+        "title": "Version",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "rules",
+      "source"
+    ],
+    "title": "RulePack",
+    "type": "object"
+  },
+  "RuleVerdict": {
+    "$defs": {
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      },
+      "ResolvedAttribute": {
+        "additionalProperties": false,
+        "description": "Outcome of resolving every eligible record for one (element, field).",
+        "properties": {
+          "canonical_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Canonical Unit"
+          },
+          "conflicting_values": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Conflicting Values",
+            "type": "array"
+          },
+          "conversions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Conversions",
+            "type": "array"
+          },
+          "conversions_explicit": {
+            "default": true,
+            "title": "Conversions Explicit",
+            "type": "boolean"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "explanation": {
+            "default": "",
+            "title": "Explanation",
+            "type": "string"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "known": {
+            "title": "Known",
+            "type": "boolean"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ReasonCode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          }
+        },
+        "required": [
+          "element_id",
+          "field",
+          "known"
+        ],
+        "title": "ResolvedAttribute",
+        "type": "object"
+      },
+      "RuleCriticality": {
+        "enum": [
+          "critical",
+          "advisory"
+        ],
+        "title": "RuleCriticality",
+        "type": "string"
+      },
+      "RuleKind": {
+        "description": "Hard constraints gate traversal. Preference weights never may (INV-05).",
+        "enum": [
+          "hard",
+          "preference"
+        ],
+        "title": "RuleKind",
+        "type": "string"
+      },
+      "RuleScope": {
+        "enum": [
+          "edge",
+          "node"
+        ],
+        "title": "RuleScope",
+        "type": "string"
+      },
+      "VerdictState": {
+        "description": "Four-valued result of a single rule applied to a single element.\n\nNOT_APPLICABLE applies only to one rule proved inapplicable to one element.\nIt is never a way of clearing an element with missing evidence\n(MASTER_PROMPT \u00a75.3, PRD FR-008).",
+        "enum": [
+          "PASS",
+          "FAIL",
+          "UNKNOWN",
+          "NOT_APPLICABLE"
+        ],
+        "title": "VerdictState",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Result of one rule against one element in one (profile, phase).",
+    "properties": {
+      "basis_label": {
+        "default": "DEMO_RULEPACK_NOT_LEGAL",
+        "title": "Basis Label",
+        "type": "string"
+      },
+      "criticality": {
+        "$ref": "#/$defs/RuleCriticality",
+        "default": "critical"
+      },
+      "element_id": {
+        "title": "Element Id",
+        "type": "string"
+      },
+      "explanation": {
+        "title": "Explanation",
+        "type": "string"
+      },
+      "inputs": {
+        "items": {
+          "$ref": "#/$defs/ResolvedAttribute"
+        },
+        "title": "Inputs",
+        "type": "array"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "reason_code": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "rule_id": {
+        "title": "Rule Id",
+        "type": "string"
+      },
+      "rule_kind": {
+        "$ref": "#/$defs/RuleKind",
+        "default": "hard"
+      },
+      "rule_version": {
+        "title": "Rule Version",
+        "type": "string"
+      },
+      "scope": {
+        "$ref": "#/$defs/RuleScope"
+      },
+      "state": {
+        "$ref": "#/$defs/VerdictState"
+      }
+    },
+    "required": [
+      "rule_id",
+      "rule_version",
+      "element_id",
+      "scope",
+      "state",
+      "reason_code",
+      "explanation",
+      "profile_id",
+      "phase_id"
+    ],
+    "title": "RuleVerdict",
+    "type": "object"
+  },
+  "Scenario": {
+    "$defs": {
+      "EdgeType": {
+        "enum": [
+          "sidewalk",
+          "crossing",
+          "temporary_path",
+          "shared_use_path",
+          "ramp"
+        ],
+        "title": "EdgeType",
+        "type": "string"
+      },
+      "EvidenceRecord": {
+        "additionalProperties": false,
+        "description": "One observation about one field of one element.\n\n``value``/``unit`` are exactly what the source reported. Canonicalisation\nhappens in the resolver so the conversion stays auditable.",
+        "properties": {
+          "element_id": {
+            "minLength": 1,
+            "title": "Element Id",
+            "type": "string"
+          },
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "invalidated": {
+            "default": false,
+            "title": "Invalidated",
+            "type": "boolean"
+          },
+          "method": {
+            "minLength": 1,
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
+          "provenance_class": {
+            "$ref": "#/$defs/ProvenanceClass"
+          },
+          "quality": {
+            "default": "medium",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Quality",
+            "type": "string"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewer"
+          },
+          "source": {
+            "minLength": 1,
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "synthetic": {
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "$ref": "#/$defs/VerificationStatus",
+            "default": "unverified"
+          }
+        },
+        "required": [
+          "id",
+          "element_id",
+          "field",
+          "method",
+          "source",
+          "provenance_class"
+        ],
+        "title": "EvidenceRecord",
+        "type": "object"
+      },
+      "GraphEdit": {
+        "additionalProperties": false,
+        "description": "Typed, auditable graph modification applied to a scenario revision.",
+        "properties": {
+          "op": {
+            "enum": [
+              "add_node",
+              "split_edge",
+              "add_edge",
+              "remove_edge",
+              "set_direction",
+              "link_crossing",
+              "update_attribute",
+              "close_edge",
+              "activate_temporary_edge"
+            ],
+            "title": "Op",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          },
+          "target_id": {
+            "minLength": 1,
+            "title": "Target Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "target_id"
+        ],
+        "title": "GraphEdit",
+        "type": "object"
+      },
+      "OriginDestination": {
+        "additionalProperties": false,
+        "description": "OD endpoint bound to a **graph node ID**, never to a nearby coordinate.",
+        "properties": {
+          "essential": {
+            "default": true,
+            "title": "Essential",
+            "type": "boolean"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "origin",
+              "destination",
+              "both"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          },
+          "node_id": {
+            "minLength": 1,
+            "title": "Node Id",
+            "type": "string"
+          },
+          "priority": {
+            "default": 1,
+            "maximum": 5,
+            "minimum": 1,
+            "title": "Priority",
+            "type": "integer"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Weight"
+          },
+          "weight_source": {
+            "default": "demo_assumption",
+            "title": "Weight Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "node_id",
+          "kind"
+        ],
+        "title": "OriginDestination",
+        "type": "object"
+      },
+      "Phase": {
+        "additionalProperties": false,
+        "description": "Construction phase with an explicit ordering convention.\n\nDemo phases use logical ordinals. No construction calendar is invented.",
+        "properties": {
+          "boundary_convention": {
+            "default": "logical_ordinal",
+            "enum": [
+              "[start,end)",
+              "logical_ordinal"
+            ],
+            "title": "Boundary Convention",
+            "type": "string"
+          },
+          "closed_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Closed Edge Ids",
+            "type": "array"
+          },
+          "end_ordinal": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "End Ordinal"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "title": "Notes",
+            "type": "string"
+          },
+          "order": {
+            "minimum": 0,
+            "title": "Order",
+            "type": "integer"
+          },
+          "start_ordinal": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start Ordinal"
+          },
+          "temporary_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Temporary Edge Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "order"
+        ],
+        "title": "Phase",
+        "type": "object"
+      },
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      },
+      "TemporaryEdge": {
+        "additionalProperties": false,
+        "description": "Ephemeral path that exists only in declared phases.",
+        "properties": {
+          "constructible_in_field": {
+            "default": false,
+            "title": "Constructible In Field",
+            "type": "boolean"
+          },
+          "edge_type": {
+            "$ref": "#/$defs/EdgeType",
+            "default": "temporary_path"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/$defs/EvidenceRecord"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "field_verification_note": {
+            "default": "Modelled edge only. Field constructibility has not been confirmed by any engineer.",
+            "title": "Field Verification Note",
+            "type": "string"
+          },
+          "geometry": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "minItems": 2,
+            "title": "Geometry",
+            "type": "array"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "length_m": {
+            "minimum": 0,
+            "title": "Length M",
+            "type": "number"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "u": {
+            "title": "U",
+            "type": "string"
+          },
+          "v": {
+            "title": "V",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "u",
+          "v",
+          "geometry",
+          "length_m"
+        ],
+        "title": "TemporaryEdge",
+        "type": "object"
+      },
+      "VerificationStatus": {
+        "enum": [
+          "verified",
+          "unverified",
+          "disputed"
+        ],
+        "title": "VerificationStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Immutable revision referencing an immutable base graph version.",
+    "properties": {
+      "base_graph_version_id": {
+        "title": "Base Graph Version Id",
+        "type": "string"
+      },
+      "content_hash": {
+        "default": "",
+        "title": "Content Hash",
+        "type": "string"
+      },
+      "created_at": {
+        "anyOf": [
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Created At"
+      },
+      "edits": {
+        "items": {
+          "$ref": "#/$defs/GraphEdit"
+        },
+        "title": "Edits",
+        "type": "array"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "intervention_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Intervention Ids",
+        "type": "array"
+      },
+      "name": {
+        "default": "",
+        "title": "Name",
+        "type": "string"
+      },
+      "note": {
+        "default": "",
+        "title": "Note",
+        "type": "string"
+      },
+      "origins_destinations": {
+        "items": {
+          "$ref": "#/$defs/OriginDestination"
+        },
+        "title": "Origins Destinations",
+        "type": "array"
+      },
+      "parent_scenario_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Parent Scenario Id"
+      },
+      "phases": {
+        "items": {
+          "$ref": "#/$defs/Phase"
+        },
+        "minItems": 1,
+        "title": "Phases",
+        "type": "array"
+      },
+      "profile_ids": {
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "title": "Profile Ids",
+        "type": "array"
+      },
+      "revision": {
+        "default": 1,
+        "minimum": 1,
+        "title": "Revision",
+        "type": "integer"
+      },
+      "rulepack_hash": {
+        "title": "Rulepack Hash",
+        "type": "string"
+      },
+      "rulepack_id": {
+        "title": "Rulepack Id",
+        "type": "string"
+      },
+      "temporary_edges": {
+        "items": {
+          "$ref": "#/$defs/TemporaryEdge"
+        },
+        "title": "Temporary Edges",
+        "type": "array"
+      }
+    },
+    "required": [
+      "id",
+      "base_graph_version_id",
+      "rulepack_id",
+      "rulepack_hash",
+      "profile_ids",
+      "phases"
+    ],
+    "title": "Scenario",
+    "type": "object"
+  },
+  "TemporaryEdge": {
+    "$defs": {
+      "EdgeType": {
+        "enum": [
+          "sidewalk",
+          "crossing",
+          "temporary_path",
+          "shared_use_path",
+          "ramp"
+        ],
+        "title": "EdgeType",
+        "type": "string"
+      },
+      "EvidenceRecord": {
+        "additionalProperties": false,
+        "description": "One observation about one field of one element.\n\n``value``/``unit`` are exactly what the source reported. Canonicalisation\nhappens in the resolver so the conversion stays auditable.",
+        "properties": {
+          "element_id": {
+            "minLength": 1,
+            "title": "Element Id",
+            "type": "string"
+          },
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "invalidated": {
+            "default": false,
+            "title": "Invalidated",
+            "type": "boolean"
+          },
+          "method": {
+            "minLength": 1,
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
+          "provenance_class": {
+            "$ref": "#/$defs/ProvenanceClass"
+          },
+          "quality": {
+            "default": "medium",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Quality",
+            "type": "string"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewer"
+          },
+          "source": {
+            "minLength": 1,
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "synthetic": {
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "$ref": "#/$defs/VerificationStatus",
+            "default": "unverified"
+          }
+        },
+        "required": [
+          "id",
+          "element_id",
+          "field",
+          "method",
+          "source",
+          "provenance_class"
+        ],
+        "title": "EvidenceRecord",
+        "type": "object"
+      },
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      },
+      "VerificationStatus": {
+        "enum": [
+          "verified",
+          "unverified",
+          "disputed"
+        ],
+        "title": "VerificationStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Ephemeral path that exists only in declared phases.",
+    "properties": {
+      "constructible_in_field": {
+        "default": false,
+        "title": "Constructible In Field",
+        "type": "boolean"
+      },
+      "edge_type": {
+        "$ref": "#/$defs/EdgeType",
+        "default": "temporary_path"
+      },
+      "evidence": {
+        "items": {
+          "$ref": "#/$defs/EvidenceRecord"
+        },
+        "title": "Evidence",
+        "type": "array"
+      },
+      "field_verification_note": {
+        "default": "Modelled edge only. Field constructibility has not been confirmed by any engineer.",
+        "title": "Field Verification Note",
+        "type": "string"
+      },
+      "geometry": {
+        "items": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "type": "array"
+        },
+        "minItems": 2,
+        "title": "Geometry",
+        "type": "array"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "length_m": {
+        "minimum": 0,
+        "title": "Length M",
+        "type": "number"
+      },
+      "name": {
+        "default": "",
+        "title": "Name",
+        "type": "string"
+      },
+      "u": {
+        "title": "U",
+        "type": "string"
+      },
+      "v": {
+        "title": "V",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "u",
+      "v",
+      "geometry",
+      "length_m"
+    ],
+    "title": "TemporaryEdge",
+    "type": "object"
+  }
+}
