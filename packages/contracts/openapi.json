@@ -1249,6 +1249,57 @@
         "summary": "Evaluate"
       }
     },
+    "/api/v1/scenarios/{scenario_id}/phases/{phase_id}/graph": {
+      "get": {
+        "description": "The authoritative materialised graph of one phase.\n\nServed so the client never reconstructs closures or temporary connections by\ntoggling edges itself. An unknown phase id is rejected by the domain and\nsurfaces as a flat 422 - never as \"a phase with no closures\".",
+        "operationId": "scenario_phase_graph_api_v1_scenarios__scenario_id__phases__phase_id__graph_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "phase_id",
+            "required": true,
+            "schema": {
+              "title": "Phase Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Scenario Phase Graph Api V1 Scenarios  Scenario Id  Phases  Phase Id  Graph Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Scenario Phase Graph"
+      }
+    },
     "/api/v1/scenarios/{scenario_id}/revisions": {
       "get": {
         "operationId": "scenario_revisions_api_v1_scenarios__scenario_id__revisions_get",
@@ -1330,6 +1381,48 @@
           }
         },
         "summary": "List Scenario Runs"
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/timeline": {
+      "get": {
+        "description": "Ordered construction timeline for a scenario revision.\n\nOrdering comes from ``Phase.order`` (the domain's only temporal authority);\nphases are never sorted by id or label. ``analysis.state`` is ``NOT_ANALYSED``\nwhen no run exists for the current revision - which is not a verdict.",
+        "operationId": "scenario_timeline_api_v1_scenarios__scenario_id__timeline_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Scenario Timeline Api V1 Scenarios  Scenario Id  Timeline Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Scenario Timeline"
       }
     }
   }

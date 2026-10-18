@@ -484,6 +484,15 @@ class Scenario(StrictModel):
     def phase_by_id(self, phase_id: str) -> Phase | None:
         return next((p for p in self.phases if p.id == phase_id), None)
 
+    def ordered_phases(self) -> list[Phase]:
+        """Phases in authoritative temporal order.
+
+        ``Phase.order`` is the only ordering authority. Orders are validated to be
+        unique (see :meth:`_validated`), they need not be contiguous, and they are
+        never inferred from phase ids, labels or array position.
+        """
+        return sorted(self.phases, key=lambda phase: (phase.order, phase.id))
+
 
 class RuleVerdict(StrictModel):
     """Result of one rule against one element in one (profile, phase)."""

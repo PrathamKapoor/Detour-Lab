@@ -16,6 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
 from detour_lab import ENGINE_VERSION
+from detour_lab.analysis.phases import build_timeline, phase_graph_payload
 from detour_lab.analysis.run import MAX_BLOCKER_PROBES
 from detour_lab.domain.contracts import (
     CoordinateBasis,
@@ -52,6 +53,22 @@ def _error(status_code: int, code: str, message: str, details: dict | None = Non
 
 def get_repository(request: Request) -> Repository:
     return request.app.state.repository
+
+
+def run_summary(record: RunRecord) -> dict:
+    """Run metadata shared by the run list and the phase timeline."""
+    return {
+        "id": record.run_id,
+        "scenario_id": record.scenario_id,
+        "scenario_revision": record.scenario_revision,
+        "phase_id": record.phase_id,
+        "profile_id": record.profile_id,
+        "engine_version": record.engine_version,
+        "evaluation_instant": record.evaluation_instant,
+        "input_hash": record.input_hash,
+        "semantic_hash": record.semantic_hash,
+        "created_at": record.created_at,
+    }
 
 
 def _profile_or_404(profile_id: str) -> MobilityProfile:
@@ -270,6 +287,62 @@ def list_project_scenarios(project_id: str, repository: Repository = Depends(get
             for s in scenarios
         ],
     }
+
+
+@router.get("/scenarios/{scenario_id}/timeline")
+def scenario_timeline(scenario_id: str, repository: Repository = Depends(get_repository)) -> dict:
+    """Ordered construction timeline for a scenario revision.
+
+    Ordering comes from ``Phase.order`` (the domain's only temporal authority);
+    phases are never sorted by id or label. ``analysis.state`` is ``NOT_ANALYSED``
+    when no run exists for the current revision - which is not a verdict.
+    """
+    scenario = repository.get_scenario(scenario_id)
+    base_graph = repository.get_graph_version(scenario.base_graph_version_id)
+    runs = [run_summary(r) for r in repository.list_runs(scenario_id)]
+    entries = build_timeline(
+        scenario,
+        base_graph,
+        runs=runs,
+        profile_ids=tuple(scenario.profile_ids),
+    )
+    return {
+        "scenario_id": scenario.id,
+        "scenario_revision": scenario.revision,
+        "scenario_content_hash": scenario.content_hash,
+        "ordering": "phase_order",
+        "phases": [
+            {
+                "phase_id": entry.phase_id,
+                "order": entry.order,
+                "label": entry.label,
+                "notes": entry.notes,
+                "boundary_convention": entry.boundary_convention,
+                "closed_edge_ids": list(entry.closed_edge_ids),
+                "temporary_edge_ids": list(entry.temporary_edge_ids),
+                "phase_graph_id": entry.phase_graph_id,
+                "phase_graph_hash": entry.phase_graph_hash,
+                "warnings": list(entry.warnings),
+                "analysis": entry.analysis,
+            }
+            for entry in entries
+        ],
+    }
+
+
+@router.get("/scenarios/{scenario_id}/phases/{phase_id}/graph")
+def scenario_phase_graph(
+    scenario_id: str, phase_id: str, repository: Repository = Depends(get_repository)
+) -> dict:
+    """The authoritative materialised graph of one phase.
+
+    Served so the client never reconstructs closures or temporary connections by
+    toggling edges itself. An unknown phase id is rejected by the domain and
+    surfaces as a flat 422 - never as "a phase with no closures".
+    """
+    scenario = repository.get_scenario(scenario_id)
+    base_graph = repository.get_graph_version(scenario.base_graph_version_id)
+    return phase_graph_payload(base_graph, scenario, phase_id)
 
 
 @router.get("/scenarios/{scenario_id}")
