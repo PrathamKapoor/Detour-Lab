@@ -217,3 +217,53 @@ correction and the regression test that now prevents recurrence. Nothing here is
   region scrolls internally.
 - **Regression tests:** `E2E-16 the primary journey works at a small viewport` (asserts zero
   document overflow on three screens) and the visual review of the captured screenshots.
+## P-19 - Temporary edges were never flagged in the phase graph **(Gate 4)**
+
+- **Symptom:** `GET /scenarios/{id}/phases/phase-2/graph` reported
+  `active_temporary_edge_ids: ["TMP-EAST-BYPASS"]` while no edge carried `temporary: true`.
+- **Root cause:** the materialised temporary edge is namespaced (`TMP::TMP-EAST-BYPASS`) to avoid
+  colliding with permanent ids, while `active_temporary_edge_ids` holds the *declared* id. The two id
+  spaces were compared directly.
+- **Fix:** `_is_active_temporary()` accepts either form, so the flag always matches the active set.
+- **Regression test:** `test_phase_graph_reports_authoritative_closures_and_temporaries`,
+  `test_phase_one_has_no_temporary_edge`, and E2E-G4-02 which asserts exactly one temporary edge in
+  phase 2 and none in phase 1.
+- **Prevention:** whenever a domain id is transformed during materialisation, the read API must
+  reconcile both forms rather than assuming one namespace.
+
+## P-20 - Selecting a scenario silently redirected edits to another scenario **(Gate 4)**
+
+- **Symptom:** creating a branch and editing it advanced `scn-demo-baseline` to revision 2 instead
+  of the branch. The branch-isolation E2E failed.
+- **Root cause:** the workspace adopted `scenarios[0]` whenever the selected id was not in the
+  list currently loaded. After `create branch`, the list had not yet refreshed, so the new selection
+  looked "unknown" and was replaced by the first scenario.
+- **Impact:** a write landed on the wrong scenario. Branch isolation and source preservation were
+  both broken until this was found.
+- **Fix:** automatic adoption happens only while nothing is selected
+  (`if (scenarioEntries.length === 0 || scenarioId !== null) return`).
+- **Regression test:** `E2E-G4-10 modifies the branch without changing its source`, which asserts
+  the source's revision and content hash are identical before and after editing the child.
+- **Prevention:** any "adopt a default when nothing valid is selected" effect must distinguish
+  *nothing selected* from *selection not yet in the refreshed list*.
+
+## P-21 - The first-problem explanation invented a preceding phase **(Gate 4)**
+
+- **Symptom:** for a pair already problematic in the earliest declared phase, the UI read
+  "OD-E → OD-GATE is not evaluated in the earlier phase and becomes unreachable in Phase 1".
+- **Root cause:** the explanation always assumed a predecessor and formatted a missing previous
+  phase as "the earlier phase", producing a sentence that was both wrong and self-contradictory.
+- **Fix:** when there is no predecessor, the text states that the pair is *already* in that state in
+  the earliest declared phase.
+- **Regression test:** `temporal.test.ts` explanation cases plus E2E-G4-08, which asserts the text
+  matches either `earliest declared phase` or `becomes`.
+
+## P-22 - An unevaluated phase was not treated as a "first problem" **(Gate 4)**
+
+- **Symptom:** `firstProblematicPhase()` returned `null` when a phase had no analysis, so a reviewer
+  got no pointer to the gap even though it is the first place action is needed.
+- **Root cause:** only `none` and `possible` set the first-problem marker.
+- **Fix:** an unevaluated phase sets it too. The continuity **state** stays `incomplete` - an
+  unevaluated phase is never converted into a failure, only into a visible gap.
+- **Regression test:** `an unevaluated phase is incomplete, never a pass and never a failure` and
+  `says so plainly when the first problem is a missing analysis`.

@@ -1,6 +1,6 @@
 ﻿# FLOW.md — DETOUR LAB execution flow and checkpoint
 
-Last updated: **18 October 2026**, after **Gate 3** completed and verified.
+Last updated: **18 October 2026**, after **Gate 4** completed and verified.
 This file is the single resume point. Update it *before* reporting any step as complete.
 
 ## 1. Verified environment facts (observed, not assumed)
@@ -13,13 +13,13 @@ This file is the single resume point. Update it *before* reporting any step as c
 | Node | v24.21.0, npm 11.19.0 (`npm ping` → PONG) |
 | Python | 3.12.10 in repo venv `.venv` |
 | Backend deps installed | fastapi 0.143.3, pydantic 2.14.1, networkx 3.7, shapely 2.2.0, reportlab 5.0.1, uvicorn 0.54.0, pytest 9.1.1, httpx 0.28.1, hypothesis 6.170.1, ruff 0.17.1 |
-| Backend tests | **282 passed** (`python -m pytest apps/api/tests`), ~16 s |
+| Backend tests | **301 passed** (`python -m pytest apps/api/tests`), ~17 s |
 | Static analysis | `ruff check apps/api` → **All checks passed** |
 | Contracts | `packages/contracts/{openapi.json,types.ts,domain-schema.json}` generated from Pydantic; byte-identical on re-run |
 | Live API | uvicorn on `127.0.0.1:8077`; health, graph, evaluate, manifest and restart checks all exercised |
-| One-command verify | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1` -> **VERIFICATION PASSED**: ruff, 282 backend tests, tsc, eslint, 82 frontend tests, production build, 25 Playwright tests, live HTTP smoke, restart replay, contract determinism |
+| One-command verify | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1` -> **VERIFICATION PASSED**: ruff, 301 backend tests, tsc, eslint, 114 frontend tests, production build, 40 Playwright tests, live HTTP smoke, restart replay, contract determinism |
 | Frontend stack | React 19.3.1, Vite 8.3.4, TypeScript 5.9.3, Vitest 5.0.5, Playwright 1.64.1, ESLint 9.39.5 (pinned in `apps/web/package.json`) |
-| Frontend bundle | `index.js` 304.62 kB (91.16 kB gzip), `index.css` 23.21 kB (5.02 kB gzip) |
+| Frontend bundle | `index.js` ~305 kB (~91 kB gzip), `index.css` ~23 kB (~5 kB gzip) |
 | E2E browsers | Playwright Chromium installed at `%LOCALAPPDATA%\ms-playwright` |
 | Pre-existing code in repo | **None** — repository created empty by this session |
 | Sibling projects in `C:\Pratham` | AegisCPG, freeflow, mental.ai, MORPH, sofa-problem, VeriKernel — untouched |
@@ -120,18 +120,39 @@ R0 = gates 0–3. R1 = gates 4–7. R2 stays out of scope.
       failed requests; screenshots captured under `var/screenshots/`
 - [x] Five genuine defects found and fixed, recorded as P-14..P-18
 
-## 6. Next exact actions (resume here — Gate 4)
+## 5d. Gate 4 checklist - COMPLETE
+
+- [x] Phase model audited and documented **before** writing code: `docs/PHASE_MODEL_AUDIT.md`
+- [x] `Scenario.ordered_phases()` makes `Phase.order` the single ordering authority
+- [x] `GET /scenarios/{id}/timeline` - ordered phases, declared modifications, phase-graph identity,
+      per-phase analysis state (`analysed` / `NOT_ANALYSED` / `stale`)
+- [x] `GET /scenarios/{id}/phases/{phase_id}/graph` - authoritative materialised phase graph, so the
+      browser never reconstructs closures
+- [x] Construction phase explorer: phase rail, previous/next, keyboard selection, details, loading,
+      error and empty states
+- [x] Phase graph rendered with the existing `GraphCanvas` (reused, not duplicated)
+- [x] Evaluate-all-phases orchestration keyed by phase id, `Promise.allSettled`, partial failure
+      reported, no global success on partial failure
+- [x] Transition classification for all nine state pairs plus `not-evaluated`
+- [x] Cross-phase continuity matrix (confirmed / interrupted / uncertain / incomplete)
+- [x] First problematic phase located by `Phase.order`, explained from real data
+- [x] Scenario branching: persisted branch created from the declared plan; source never mutated
+- [x] Branch explorer with revision, parent, content hash and phase scorecard
+- [x] Contracts regenerated; contract determinism re-verified
+- [x] 301 backend tests, 114 frontend tests, 40 Playwright tests, ruff/tsc/eslint/build clean
+- [x] Four genuine defects found and fixed (P-19..P-22)
+
+## 6. Next exact actions (resume here - Gate 5)
 
 1. Re-run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1` before anything.
-2. Read `MASTER_PROMPT.md` gate-4 section and `prompts/05_GATE_4.md` in full.
-3. Extend the API only where Gate 4 requires it (phase timeline ordering, branching navigation);
-   reuse `GET /scenarios/{id}/runs` for history rather than adding a new surface.
-4. Build the timeline against existing `Phase.order` — do not introduce construction dates that
-   the domain does not model (see `docs/ASSUMPTIONS_AND_LIMITATIONS.md`).
-5. Keep the frontend contract discipline: generated types first, normalisation at the boundary,
-   no verdict recomputed in the browser.
-6. Extend `e2e/` with a Gate 4 journey; keep every spec order-independent (fresh DB per run).
-
+2. Read `MASTER_PROMPT.md` gate-5 section and `prompts/06_GATE_5.md` in full.
+3. Reuse what Gate 4 already provides: the phase timeline, the per-phase phase-graph endpoint, the
+   branch mechanism and the scorecard. Do not add a second concept of a "phase graph".
+4. Optimisation must enumerate candidate interventions **against a phase graph** and re-run the
+   real engine for each candidate - never estimate feasibility in the browser.
+5. Costs stay demonstration-only (`CostProvenance.DEMO_ONLY`); do not introduce monetary figures.
+6. Every candidate result is a new persisted branch or revision, never an in-place overwrite.
+7. Extend `e2e/` with a Gate 5 journey using `useIsolatedScenario`-style isolation.
 ## 7. Recovery / resumption rules
 
 - Never trust a summary of previous work; re-run `scripts/verify.ps1` before editing code.

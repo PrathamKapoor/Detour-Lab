@@ -222,3 +222,79 @@ Owner decisions are marked **[OWNER DECISION]**. Synthetic fixture defaults are 
   generator that Gate 2 already verifies for determinism.
 - **Evaluation:** `tests/api-client.test.ts` asserts the client's routes against the generated
   `openapi.json`, so hand-written envelopes cannot drift silently.
+---
+
+## D-020 - The backend serves the materialised phase graph **(Gate 4)**
+
+- **Problem:** `GET /projects/{id}/graph` returns the **base** graph. Gate 3 clients therefore
+  reconstructed a phase by toggling closures from `Phase.closed_edge_ids` in the browser. Gate 4
+  forbids that: graph state must come from the authoritative phase graph.
+- **Options:** (a) keep client-side toggling; (b) add `GET /scenarios/{id}/phases/{phase_id}/graph`.
+- **Decision:** (b). The endpoint materialises the phase with the existing
+  `build_phase_graph()` and returns its edges, closures, active temporary edges, crossings and
+  both the phase-graph id and its content hash.
+- **Why:** one source of truth. It also makes the phase-graph *identity* visible to the client,
+  which is what lets the timeline assert that two different phases really are different graphs.
+- **Trade-off:** one more request per phase switch, mitigated by the resource hook's abort.
+- **Evidence:** `apps/api/tests/test_phase_reads.py::TestPhaseGraph` (9 cases).
+
+## D-021 - A timeline read instead of N+1 client requests **(Gate 4)**
+
+- **Problem:** phase identity, order, closures and "has this phase been analysed?" all needed
+  separate reads; a client would have to load the scenario, the run list and then N phase graphs.
+- **Decision:** `GET /scenarios/{id}/timeline` returns the ordered phases with their declared
+  modifications, phase-graph identity and per-phase analysis state in one payload.
+- **Key rule:** the state for an unanalysed phase is the literal `NOT_ANALYSED`, which is *not* a
+  verdict. A phase whose only runs belong to an older revision reports `stale: true` rather than
+  pretending to be current.
+- **Trade-off:** the timeline must materialise every phase graph to report its hash. For the seeded
+  9-node graph that is negligible; for a very large graph the endpoint would want caching later.
+
+## D-022 - Temporal analysis is presentation logic, not rule logic **(Gate 4)**
+
+- **Problem:** "when does accessibility get lost" needs cross-phase comparison, but the browser
+  must never produce authoritative verdicts.
+- **Decision:** `src/lib/temporal.ts` compares **already-computed** `AnalysisResult` payloads and
+  classifies the difference. It never evaluates a rule and never invents a route.
+- **Explicit non-claims:** a changed edge beside a changed route is reported as a *relevant
+  change*, not a unique root cause - a route may depend on several edges at once. Distances are
+  reported only when the backend proved a route on both sides; no distance is aggregated across
+  phases.
+- **Why:** keeps invariant 6 (the frontend never produces verdicts) intact while still giving the
+  reviewer a cross-phase answer.
+- **Evidence:** `apps/web/tests/temporal.test.ts` (32 cases, incl. every transition pair).
+
+## D-023 - `Phase.order` is the only temporal authority **(Gate 4)**
+
+- **Decision:** ordering comes from `Phase.order` everywhere - the timeline, the impacts, the
+  continuity matrix and the first-problematic-phase search. A new `Scenario.ordered_phases()`
+  makes this explicit in the domain so no caller re-implements it.
+- **Why:** `docs/PHASE_MODEL_AUDIT.md` established that orders are unique but **not necessarily
+  contiguous**, so `order == index` and any lexicographic sort of ids or labels would be wrong.
+- **No calendar:** no start dates, durations or scheduling exist in the domain and none were
+  invented. The explorer is an ordered sequence, not a Gantt chart.
+- **Evidence:** `test_non_contiguous_and_reordered_phases_sort_by_order_not_id`,
+  and the frontend tests for ordering by `order`.
+
+## D-024 - Scenario selection is never silently overridden **(Gate 4)**
+
+- **Problem (found by E2E-G4-10):** the workspace adopted the first scenario whenever the current
+  selection was not present in the just-refreshed list. Creating a branch and selecting it
+  immediately therefore reverted the selection to `scn-demo-baseline`, and the next edit was applied
+  to the **source** scenario - silently breaking branch isolation.
+- **Decision:** a scenario is adopted automatically only while nothing is selected. An explicit
+  selection is never overridden by a list that has not caught up.
+- **Why:** a wrong write to the wrong scenario is the most damaging class of bug in this product.
+- **Prevention:** branch-isolation E2E tests assert the source's revision *and* content hash are
+  unchanged after editing the child.
+
+## D-025 - Branch creation copies the declared plan, not the edits **(Gate 4)**
+
+- **Decision:** `POST /projects/{id}/scenarios` from an existing scenario copies phases,
+  origins/destinations and temporary edges, and records `parent_scenario_id`. It does **not** copy
+  `edits`.
+- **Why:** a branch is "an alternative plan", i.e. a different arrangement from the same declared
+  sequence. Copying accumulated edits would make it impossible to model "what if we had done this
+  differently from the start".
+- **Trade-off:** to continue from a specific edit, the engineer applies that edit to the new branch.
+- **Evidence:** `E2E-G4-09`, `E2E-G4-10`, and the backend branch tests from Gate 3.

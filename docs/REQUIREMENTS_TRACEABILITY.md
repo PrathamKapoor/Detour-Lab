@@ -145,3 +145,26 @@ Measured p50/p95 latency belongs to Gate 7 and must be reported as measured, not
 
 **Not claimed:** no manual screen-reader or keyboard-only audit with real assistive technology has
 been performed; axe findings are reported, not conformance (FR-014 status above).
+## Gate 4 traceability (construction phase intelligence)
+
+| ID | Requirement | Implementation | API dependency | Tests | Status |
+|---|---|---|---|---|---|
+| G4-01 | Construction phase explorer in authoritative order | `features/phases/PhaseExplorer.tsx`, `Scenario.ordered_phases()` | `GET /scenarios/{id}/timeline` | `test_phase_reads.py::TestTimelineOrdering`, E2E-G4-01/03 | VERIFIED |
+| G4-02 | Phase-specific graph visualisation | `features/network/GraphCanvas.tsx` fed by `PhaseGraphResponse` | `GET /scenarios/{id}/phases/{phase_id}/graph` | `TestPhaseGraph` (9), E2E-G4-02 | VERIFIED |
+| G4-03 | Phase-aware scenario editing | `features/scenario/ScenarioEditor.tsx` | `PATCH /scenarios/{id}` with `close_edge(phases=[…])` | E2E-G4-10/14/15 | VERIFIED |
+| G4-04 | Full phase replay (first/prev/next/last) | `PhaseExplorer` phase rail + navigation buttons | timeline + phase graph | E2E-G4-03 | VERIFIED |
+| G4-05 | Evaluate every phase | `workspace.evaluateAllPhases()` (`Promise.allSettled`, per-phase identity) | N × `POST /evaluate` | E2E-G4-05/16 | VERIFIED |
+| G4-06 | Phase transition impact analysis | `lib/temporal.ts::computeImpacts` | two stored results | `temporal.test.ts` (9 transition cases) | VERIFIED |
+| G4-07 | Cross-phase continuity | `lib/temporal.ts::computeContinuity`, continuity matrix | stored results | `temporal.test.ts` (4 continuity cases), E2E-G4-06/07 | VERIFIED |
+| G4-08 | First problematic phase | `lib/temporal.ts::firstProblematicPhase` / `explainFirstProblem` | stored results | `temporal.test.ts`, E2E-G4-08 | VERIFIED |
+| G4-09 | Persisted scenario branches | `features/branches/BranchExplorer.tsx`, `ApiClient.createBranchFrom` | `POST /projects/{id}/scenarios` | E2E-G4-09/10 | VERIFIED |
+| G4-10 | Branch comparison | `BranchExplorer` branch table + scorecard | scenario list, evaluate | E2E-G4-11 | VERIFIED |
+| G4-11 | Phase-aware scorecard | `BranchExplorer.buildScorecard` | stored result counts | E2E-G4-11 | VERIFIED |
+| INV-11 | `Phase.order` is the ordering authority | `Scenario.ordered_phases()` | - | `test_non_contiguous_and_reordered_phases_sort_by_order_not_id`, ordering unit tests | VERIFIED |
+| INV-12 | An unevaluated phase is never "verified" | `NOT_ANALYSED` state in the timeline | timeline | `test_fresh_scenario_reports_not_analysed`, `test_not_analysed_is_not_a_verdict` | VERIFIED |
+| INV-04 (G4) | Distinct phase states get distinct hashes | `build_phase_graph` content hash | timeline + phase graph | `test_different_phase_states_have_different_graph_hashes` | VERIFIED |
+| INV-02 (G4) | Phase editing cannot rewrite the source | branch creation reads the source | `POST /projects/{id}/scenarios` | `E2E-G4-10` (source revision + hash unchanged) | VERIFIED |
+
+**Not claimed:** no phase-level accessibility audit has been performed with real assistive
+technology; axe runs on the primary views only. Cross-phase continuity is a modelling summary over
+reachability and does not establish legal compliance.

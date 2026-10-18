@@ -1,4 +1,4 @@
-# DETOUR LAB
+﻿# DETOUR LAB
 
 Pre-construction pedestrian detour **decision support and model verification**.
 
@@ -21,8 +21,9 @@ unreachable — with the exact rule, evidence and units behind every verdict.
 | 0 | Evidence, repository, docs, dependency-verified skeleton, boot + smoke test | **PASSED** — see `FLOW.md` |
 | 1 | Deterministic domain: immutable graph, evidence resolution, four-valued rules, confirmed/possible routing, canonical hashing | **PASSED** |
 | 2 | SQLite persistence, full API contracts, atomic import, JSON manifest, replay | **PASSED** — 282 backend tests |
-| 3 | Real accessible web UI, offline end-to-end journey | **PASSED** — 82 frontend tests, 25 Playwright tests |
-| 4–7 | Phase timeline, Fix This Plan, Failure Lab, PDF packet, audit | NOT STARTED |
+| 3 | Real accessible web UI, offline end-to-end journey | **PASSED** — 114 frontend tests, Playwright suite |
+| 4 | Construction phase intelligence: timeline, phase graphs, temporal analysis, branching | **PASSED** |
+| 5–7 | Fix This Plan, Failure Lab, PDF packet, audit | NOT STARTED |
 | R2 | Photo measurement, multi-jurisdiction packs, RBAC, scale | OUT OF SCOPE |
 
 Nothing above is a claim about field accuracy. Current results come from a **synthetic** fixture.
@@ -112,6 +113,28 @@ $env:DETOUR_LAB_API_URL = "http://127.0.0.1:9000"; npm run dev
 The whole journey is executed automatically by `npm run e2e` (see `e2e/demo-journey.spec.ts`),
 which also fails on any console error and writes screenshots to `var/screenshots/`.
 
+
+## Construction phase walkthrough (Gate 4)
+
+1. Open the seeded project and choose **Phases** in the sidebar.
+2. The phase rail lists the scenario's phases in authoritative `Phase.order`. The seeded demo has
+   two: *Phase 1 - main footway resurfacing* and *Phase 2 - east link reconstruction*. It is an
+   ordered sequence, not a calendar - the application never invents construction dates.
+3. Select a phase. The **phase graph** is served by
+   `GET /api/v1/scenarios/{id}/phases/{phase_id}/graph` and shows that phase's closures and temporary
+   connections. Closed edges stay visible so their position stays legible, but they are excluded
+   from routing.
+4. Press **Evaluate all phases**. Each phase gets its own stored run, identified by phase id.
+5. The **continuity matrix** shows, per origin-destination pair and per phase, whether the
+   connection is model-confirmed, possible-only, has no route, or was not analysed.
+6. **Temporal findings** names the first problematic phase in order and explains it from the
+   stored results and the edges whose active state changed between those two phases.
+7. Choose **Branches**, create an alternative plan, and open either scenario. The branch is a
+   separate persisted scenario; editing it never changes the source.
+
+For the seeded demo, phase 2 opens the temporary east bypass and yet `OD-E → OD-LIB` stays
+*possible-only*, because the unresolved curb evidence at `N_EK` is not resolved by the bypass. The
+application reports that rather than implying the bypass improved the outcome.
 ## Endpoints (synthetic seeded dataset, persisted in `var/detour_lab.sqlite3`)
 
 | Method + path | Purpose |
@@ -122,6 +145,8 @@ which also fails on any console error and writes screenshots to `var/screenshots
 | `GET /api/v1/projects/{id}/graph` | Graph version, basis, directed edges, evidence, unlinked crossings |
 | `POST /api/v1/projects/{id}/scenarios` · `GET /api/v1/projects/{id}/scenarios` | Create / list scenarios |
 | `GET /api/v1/scenarios/{id}` · `PATCH /api/v1/scenarios/{id}` | Load a scenario / append validated edits (optimistic concurrency) |
+| `GET /api/v1/scenarios/{id}/timeline` | Ordered phases (`Phase.order`) with closures, temporary connections, phase-graph hash and analysis state |
+| `GET /api/v1/scenarios/{id}/phases/{phase_id}/graph` | The authoritative materialised graph of one phase |
 | `GET /api/v1/scenarios/{id}/revisions` · `GET /api/v1/scenarios/{id}/runs` | Immutable revision history / stored runs for a scenario |
 | `POST /api/v1/scenarios/{id}/evaluate` | Deterministic evaluation; returns a stored run |
 | `GET /api/v1/runs/{id}` · `GET /api/v1/runs/{id}/manifest` | Run result / canonical JSON manifest |
@@ -177,7 +202,7 @@ DETOUR-LAB/
     persistence/  SQLite schema, migrations, repository
     reporting/    canonical manifest, contract generation
     api/          FastAPI boundary (versioned routes + error envelope)
-  apps/api/tests/ 282 backend tests
+  apps/api/tests/ 301 backend tests
   packages/contracts/ generated openapi.json, types.ts, domain-schema.json
   apps/web/
     src/api/       typed client, envelope handling, boundary normalisation

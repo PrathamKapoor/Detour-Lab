@@ -108,3 +108,19 @@ simulates an unreachable service by aborting the request; E2E-12 reproduces a re
 
 Each run uses its own SQLite database (`var/e2e-<timestamp>.sqlite3`), seeded by the backend, so no
 spec inherits state from a previous run. Specs are still written to be order-independent within a run.
+## Gate 4 layers (added)
+
+| Layer | Tool | Count | Notes |
+|---|---|---|---|
+| Phase reads | pytest | 19 | `test_phase_reads.py`: ordering, uniqueness, hash separation, `NOT_ANALYSED`, stale history, closure/temporary flags, unknown phase rejection |
+| Temporal logic | Vitest | 32 | `temporal.test.ts`: all 9 transition pairs, material/non-material, ordering, continuity (4 states), first problem, explanations |
+| Backend total | pytest | **301** | no Gate 0-3 regression |
+| Frontend total | Vitest | **114** | no Gate 3 regression |
+| Browser E2E | Playwright | **40** | 26 from Gates 3 + 14 new `E2E-G4-*` |
+
+`E2E-G4-*` coverage: 01 ordered multi-phase load, 02 phase change alters the authoritative graph,
+03 keyboard-only navigation, 04 single-phase analysis, 05 evaluate-all, 06/07 confirmed, possible-only
+and no-route states, 08 first problematic phase, 09 branch creation, 10 branch isolation (source
+revision **and** hash unchanged), 11 branch comparison, 12 reload persistence, 14 invalid phase
+rejection, 15 HTTP 409, 16 partial batch failure, 17 historical vs current, 18 manifest export.
+Responsive (E2E-16) and accessibility (E2E-15) continue to run in both projects.
