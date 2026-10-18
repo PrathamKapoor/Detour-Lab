@@ -1,4 +1,4 @@
-# TEST_PLAN.md
+﻿# TEST_PLAN.md
 
 Scope, layers and gates for DETOUR LAB. Layer counts are **measured**, not estimated:
 `270 passed` on Windows/Python 3.12.10 in ~29 s at the Gate 2 checkpoint.
@@ -91,3 +91,20 @@ INV-01 (4), INV-02 (2), INV-03 (3), INV-04 (2), INV-05 (3), INV-06 (2), INV-07 (
 - Optimiser correctness — not implemented.
 - Accessibility conformance — automated checks plus one documented keyboard pass come at Gate 3;
   even then, conformance must not be claimed from automated tests alone.
+## Gate 3 layers (added)
+
+| Layer | Tool | Count | Command |
+|---|---|---|---|
+| Frontend unit / component | Vitest + Testing Library | 82 | `npm run test` (in `apps/web`) |
+| — geometry | Vitest | 25 | bounds, fit, transform, parallel edges, degenerate cases |
+| — API client | Vitest | 22 | envelope, 400/404/409/422/500, timeout, abort, malformed, OpenAPI parity |
+| — presentation | Vitest | 17 | units, signed grades, verdict/evidence vocabulary, reachability |
+| — components | Vitest + Testing Library | 18 | canvas, entity table, inspector, badges, error panel |
+| Types / lint / build | tsc, ESLint, Vite | - | `npm run typecheck`, `npm run lint`, `npm run build` |
+| Browser E2E | Playwright + Chromium | 25 | `npm run e2e` |
+
+E2E coverage: E2E-01..E2E-18 are implemented as real assertions against the live backend; E2E-13
+simulates an unreachable service by aborting the request; E2E-12 reproduces a real 409.
+
+Each run uses its own SQLite database (`var/e2e-<timestamp>.sqlite3`), seeded by the backend, so no
+spec inherits state from a previous run. Specs are still written to be order-independent within a run.

@@ -1,4 +1,4 @@
-# ENGINEERING_POSTMORTEMS.md
+﻿# ENGINEERING_POSTMORTEMS.md
 
 Genuine failures encountered while building DETOUR LAB, with the observed error, root cause,
 correction and the regression test that now prevents recurrence. Nothing here is invented.
@@ -155,3 +155,65 @@ correction and the regression test that now prevents recurrence. Nothing here is
 - `StarletteDeprecationWarning: Using httpx with starlette.testclient is deprecated; install
   httpx2 instead` — emitted by FastAPI's own test client. Harmless today; the API contract tests
   pass. Revisit when FastAPI/Starlette ship the successor transport.
+---
+
+## P-14 - Editing a scenario silently renamed it (Gate 3)
+
+- **Symptom:** after one scenario edit, the frontend's scenario list reported an id of
+  `scn-demo-baseline#r2`, and the follow-up fetch of that id returned 404. The planning UI showed
+  "No scenario selected" even though the scenario existed.
+- **Root cause:** `Repository.apply_scenario_edit` rebuilt the scenario payload and set
+  `payload["id"] = f"{scenario_id}#r{revision}"` and `parent_scenario_id = scenario_id`. The row key
+  stayed the original id, but the stored payload's own id changed, so `list_scenarios` began
+  advertising an id that `get_scenario` could not resolve. Gate 1-2 tests never caught it because
+  they asserted on the returned payload rather than on the list-then-fetch round trip.
+- **Minimal reproduction:** `PATCH /api/v1/scenarios/scn-demo-baseline` with one edit, then
+  `GET /api/v1/projects/demo-project-synthetic/scenarios` and fetch the returned id.
+- **Fix:** an edit now changes only `revision`, `content_hash`, `note` and `edits`. Identity is
+  stable; branching to a different scenario remains an explicit operation.
+- **Regression test:** `test_editing_does_not_rename_the_scenario`, plus the Playwright demo
+  journey, which saves an edit and then reloads.
+- **Prevention:** any endpoint a client can follow must be round-trip tested through the *list*
+  endpoint, not only by direct id.
+
+## P-15 - Degenerate graph bounds produced an infinite view transform (Gate 3)
+
+- **Symptom:** `fitBounds` returned `scale = Infinity` for an empty graph, so the SVG viewBox and
+  every projected coordinate became non-finite.
+- **Root cause:** `EMPTY_BOUNDS` reported `width: 0, height: 0` and `fitBounds` divided by it
+  without a floor.
+- **Fix:** the empty bounds carry the same minimum span as a single-point graph, and `fitBounds`
+  floors both axes defensively.
+- **Regression test:** `fitBounds > never produces an infinite transform for degenerate bounds`
+  and `renders an empty graph without crashing`.
+
+## P-16 - One malformed coordinate discarded valid extent on the other axis (Gate 3)
+
+- **Symptom:** a node with `x = NaN` but a valid `y` caused `computeBounds` to drop that node
+  entirely, shrinking the fitted view around the wrong data.
+- **Root cause:** the coordinate pair was validated as a unit instead of axis by axis.
+- **Fix:** each coordinate is checked independently; only non-finite values are dropped.
+- **Regression test:** `computeBounds > ignores non-finite coordinates rather than poisoning the
+  bounds`.
+
+## P-17 - The E2E helper read results from the previous run (Gate 3)
+
+- **Symptom:** a profile-switching test passed against stale numbers: switching from profile A to
+  profile B appeared to change nothing.
+- **Root cause:** the helper waited only for the reachability table to be *visible*, which it
+  already was, because the previous run's result stays on screen while the next run is in flight.
+- **Fix:** the helper now waits for the returned run identity to match the requested profile and
+  phase, and asserts that a fresh run id was produced.
+- **Prevention:** an assertion on "something is rendered" is not an assertion on "the thing you
+  asked for arrived"; wait on the identity of the result.
+
+## P-18 - Panels were clipped and the workspace overflowed the viewport (Gate 3)
+
+- **Symptom:** the run-identity and reachability tables were cut off mid-row, and the document was
+  131 px wider than a 390 px viewport.
+- **Root cause:** flex and grid children default to `min-width/min-height: auto`, so dense tables
+  forced their panels wider than the column and stretched the shell past `100vh`.
+- **Fix:** panels are constrained with `min-width: 0`, keep their natural height, and the main
+  region scrolls internally.
+- **Regression tests:** `E2E-16 the primary journey works at a small viewport` (asserts zero
+  document overflow on three screens) and the visual review of the captured screenshots.

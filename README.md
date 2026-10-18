@@ -20,8 +20,8 @@ unreachable — with the exact rule, evidence and units behind every verdict.
 |---|---|---|
 | 0 | Evidence, repository, docs, dependency-verified skeleton, boot + smoke test | **PASSED** — see `FLOW.md` |
 | 1 | Deterministic domain: immutable graph, evidence resolution, four-valued rules, confirmed/possible routing, canonical hashing | **PASSED** |
-| 2 | SQLite persistence, full API contracts, atomic import, JSON manifest, replay | **PASSED** — 270 backend tests |
-| 3 | Real accessible web UI, offline end-to-end journey | NOT STARTED |
+| 2 | SQLite persistence, full API contracts, atomic import, JSON manifest, replay | **PASSED** — 282 backend tests |
+| 3 | Real accessible web UI, offline end-to-end journey | **PASSED** — 82 frontend tests, 25 Playwright tests |
 | 4–7 | Phase timeline, Fix This Plan, Failure Lab, PDF packet, audit | NOT STARTED |
 | R2 | Photo measurement, multi-jurisdiction packs, RBAC, scale | OUT OF SCOPE |
 
@@ -30,7 +30,7 @@ Nothing above is a claim about field accuracy. Current results come from a **syn
 ## Prerequisites
 
 - Python 3.12 (`python --version`)
-- Node.js 20+ and npm (needed from Gate 3 onward)
+- Node.js 20+ and npm (`node --version`, `npm --version`)
 - Network access to PyPI/npm for the first install only
 
 No API keys, no cloud services, no basemap subscription, no remote geocoding.
@@ -42,15 +42,22 @@ pwsh -File scripts\setup.ps1          # Windows PowerShell 5.1: powershell -NoPr
 bash scripts/setup.sh                 # macOS / Linux
 ```
 
+`scripts/setup.ps1` also installs the frontend dependencies (`apps/web`) and, once, the Chromium
+runtime used by the end-to-end tests.
+
 ## Verify (one command, prints real output)
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1 -SkipFrontend
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1
 ```
 
-This runs static analysis, the full pytest suite, starts a real `uvicorn` process, hits
-`/api/v1/health` and the evaluation endpoint over HTTP, prints the computed OD matrix, and asserts
-that two identical HTTP evaluations return byte-identical payloads.
+Runs, in order: ruff, the backend pytest suite, frontend type-check, eslint, vitest, the production
+Vite build, Playwright end-to-end tests against a real backend, a live HTTP smoke test that asserts
+two identical evaluations are byte-identical, a restart-persistence check, and contract-generation
+determinism.
+
+Useful switches: `-SkipFrontend` (prints `SKIPPED: frontend checks`, never a pass), `-SkipE2E`,
+`-Port <n>`.
 
 ## Run the API
 
@@ -59,7 +66,53 @@ $env:PYTHONPATH = "$PWD\apps\api"
 .\.venv\Scripts\python.exe -m uvicorn detour_lab.api.main:app --app-dir apps\api --port 8077
 ```
 
-Useful endpoints (synthetic seeded dataset, persisted in `var/detour_lab.sqlite3`):
+## Run the application (API + web UI)
+
+Two terminals. The backend must be running first; the UI proxies `/api` to it.
+
+```powershell
+# Terminal 1 — API on http://127.0.0.1:8077
+$env:PYTHONPATH = "$PWD\apps\api"
+.\.venv\Scripts\python.exe -m uvicorn detour_lab.api.main:app --app-dir apps\api --port 8077
+
+# Terminal 2 — planning studio on http://127.0.0.1:5173
+cd apps\web
+npm install          # once
+npm run dev
+```
+
+Open <http://127.0.0.1:5173>. No tiles, geocoding or third-party services are contacted; the study
+area is rendered from API geometry in local planar metres.
+
+To point the UI at a different backend port:
+
+```powershell
+$env:DETOUR_LAB_API_URL = "http://127.0.0.1:9000"; npm run dev
+```
+
+## Demo walkthrough (about two minutes)
+
+1. **Projects** — the seeded `demo-project-synthetic` is flagged *Synthetic demo data*. Open it.
+2. **Network** — the graph renders from `GET /api/v1/projects/{id}/graph`. Select `E_K1` in the
+   *Entity table* tab (keyboard works) and read its attributes, its evidence records and the
+   modeled state. The dashed ring marks a geometric crossing that is **not** a connection.
+3. **Analysis** — choose profile A / phase 1 and press *Run analysis*. Reachability appears with
+   *Model-confirmed*, *Possible only* and *No route* kept distinct, plus run id, semantic hash,
+   rulepack version and counts.
+4. **Compare** — press *Use as baseline*.
+5. **Scenario** — back in *Network*, select `E_WM`, then in *Scenario* press
+   *Close selected edge*, then *Apply 1 edit*. The revision advances to 2 after the backend
+   confirms it.
+6. **Analysis** again — the closure shows up as *lost* confirmed connections in *Compare*.
+7. **Evidence** — inspect the unresolved attributes and exactly why each is unresolved.
+8. **Reports** — the canonical manifest fetched from `GET /api/v1/runs/{id}/manifest`, downloadable
+   as JSON.
+9. Reload the page: the saved closure is still there, because it was persisted server-side.
+
+The whole journey is executed automatically by `npm run e2e` (see `e2e/demo-journey.spec.ts`),
+which also fails on any console error and writes screenshots to `var/screenshots/`.
+
+## Endpoints (synthetic seeded dataset, persisted in `var/detour_lab.sqlite3`)
 
 | Method + path | Purpose |
 |---|---|
@@ -67,8 +120,9 @@ Useful endpoints (synthetic seeded dataset, persisted in `var/detour_lab.sqlite3
 | `GET /api/v1/projects` · `POST /api/v1/projects` | List / create projects |
 | `POST /api/v1/projects/{id}/imports` | Validate and ingest a dataset atomically |
 | `GET /api/v1/projects/{id}/graph` | Graph version, basis, directed edges, evidence, unlinked crossings |
-| `POST /api/v1/projects/{id}/scenarios` · `PATCH /api/v1/scenarios/{id}` | Create a scenario / append validated edits (optimistic concurrency) |
-| `GET /api/v1/scenarios/{id}/revisions` | Immutable revision history with content hashes |
+| `POST /api/v1/projects/{id}/scenarios` · `GET /api/v1/projects/{id}/scenarios` | Create / list scenarios |
+| `GET /api/v1/scenarios/{id}` · `PATCH /api/v1/scenarios/{id}` | Load a scenario / append validated edits (optimistic concurrency) |
+| `GET /api/v1/scenarios/{id}/revisions` · `GET /api/v1/scenarios/{id}/runs` | Immutable revision history / stored runs for a scenario |
 | `POST /api/v1/scenarios/{id}/evaluate` | Deterministic evaluation; returns a stored run |
 | `GET /api/v1/runs/{id}` · `GET /api/v1/runs/{id}/manifest` | Run result / canonical JSON manifest |
 | `GET /api/v1/rulesets` | Rulepack (with `legal_applicability`) and the two demo profiles |
@@ -123,14 +177,32 @@ DETOUR-LAB/
     persistence/  SQLite schema, migrations, repository
     reporting/    canonical manifest, contract generation
     api/          FastAPI boundary (versioned routes + error envelope)
-  apps/api/tests/ 270 backend tests
+  apps/api/tests/ 282 backend tests
   packages/contracts/ generated openapi.json, types.ts, domain-schema.json
-  apps/web/       (Gate 3) React + TypeScript + Vite
+  apps/web/
+    src/api/       typed client, envelope handling, boundary normalisation
+    src/lib/       geometry, formatting, status vocabulary, data-loading hook
+    src/components/ design-system primitives (Panel, StatusBadge, Dialog, Tabs, fields)
+    src/features/  projects, network (SVG studio + inspector + entity table), scenario,
+                   analysis, comparison, evidence centre, reports
+    e2e/           Playwright journeys against the real backend
   data/demo/      synthetic seeded dataset
   docs/           traceability, test plan, postmortems, assumptions
   scripts/        setup + verify (PowerShell and shell)
   DECISIONS.md    why each choice was made
   FLOW.md         resume point and gate status
+```
+
+## Frontend tests
+
+```powershell
+cd apps\web
+npm run typecheck     # tsc, strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
+npm run lint          # eslint
+npm run test          # vitest: geometry, API client, presentation, components
+npm run build         # production bundle
+npm run e2e           # Playwright: real backend, real browser, fresh database per run
+npm run e2e:install   # one-off Chromium download
 ```
 
 ## Safety properties (all enforced by tests)
@@ -148,6 +220,19 @@ DETOUR-LAB/
 See `docs/ASSUMPTIONS_AND_LIMITATIONS.md`. The most important ones: no real jurisdiction is encoded,
 no field survey exists, there is no basemap by design, and no external accessibility or engineering
 review has been obtained.
+
+Frontend-specific, stated plainly:
+
+- The graph canvas is one visualisation of the data; the entity table and every inspector are
+  equivalent controls. No action exists only on the canvas.
+- Reopening a closure creates an immutable branch scenario rather than editing the closure out
+  (`DECISIONS.md` D-018).
+- Measurements can only be entered for attributes the demonstration rulepack evaluates; the
+  attribute list is not user-extensible in R0.
+- Automated accessibility checks (axe) report findings, not conformance; no manual audit with
+  assistive technologies has been performed.
+- The 3D/photogrammetry, cost and optimiser features of Gates 4–7 do not exist yet and are not
+  represented in the interface.
 
 ## Licence
 

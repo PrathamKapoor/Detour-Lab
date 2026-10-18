@@ -1,4 +1,4 @@
-# REQUIREMENTS_TRACEABILITY.md
+﻿# REQUIREMENTS_TRACEABILITY.md
 
 Legend — **Status**: `NOT IMPLEMENTED` · `PARTIALLY IMPLEMENTED` · `IMPLEMENTED AND TESTED` ·
 `IMPLEMENTED BUT NOT VERIFIED` · `BLOCKED` · `DEFERRED`.
@@ -31,7 +31,7 @@ replay verified (`test_persistence.py`, `test_api_contracts.py`, `test_api_integ
 | FR-011 | Differential before/after view incl. lost OD pairs | phase graphs + `AnalysisResult.od_results` | `test_b09_*`, `test_b25_*` | PARTIALLY IMPLEMENTED — per-phase results exist; the before/after **comparison view** is Gate 3/4 work |
 | FR-012 | Explainability: edge/rule/inputs/evidence/remedy per finding | `rules/engine.py::_finding_from` | `test_explanation_never_claims_certification`, `test_b04_*` | IMPLEMENTED AND TESTED |
 | FR-013 | Deterministic replay | `domain/hashing.py` | `test_b28_*`, 20-run loop, HTTP replay in `verify.ps1` | IMPLEMENTED AND TESTED |
-| FR-014 | Accessible UI: keyboard + text/table alternatives | — | — | NOT IMPLEMENTED (Gate 3) |
+| FR-014 | Accessible UI: keyboard + text/table alternatives | `src/features/network/EntityTable.tsx`, `src/components/Dialog.tsx` (focus trap), `src/App.tsx` (skip link), `src/styles/*` | E2E-04, E2E-15b, E2E-15 (axe, 3 views), `components.test.tsx` keyboard cases | IMPLEMENTED AND TESTED (automated checks only; no manual AT audit) |
 | FR-015 | Offline demo with documented synthetic/verified labels | `data/demo/…localplanar.json`, `ingestion/schema.py` | `TestLocalPlanarDataset` | IMPLEMENTED AND TESTED (backend); UI delivery at Gate 3 |
 | FR-016 | Structured JSON export incl. unknowns + attribution | `reporting/manifest.py`, `GET /api/v1/runs/{id}/manifest` | `TestManifest` (6 cases), `test_b27_*` | IMPLEMENTED AND TESTED |
 
@@ -46,7 +46,7 @@ replay verified (`test_persistence.py`, `test_api_contracts.py`, `test_api_integ
 | INV-05 | Rule failure invalidates route; weights cannot override | `TestInv05PreferenceCannotOverrideHardConstraints` (3) | IMPLEMENTED AND TESTED |
 | INV-06 | Results identify rulepack/profile/graph/scenario/engine | `TestInv06ReportIdentifiesVersions` (2) | IMPLEMENTED AND TESTED |
 | INV-07 | Proposal cannot overwrite the original scenario | `TestInv07BaselineIsImmutable` (2) | IMPLEMENTED AND TESTED |
-| INV-08 | No approval/certification language | `TestInv08NoCertificationLanguage` (3) | IMPLEMENTED AND TESTED (backend surfaces; UI copy audit at Gate 3) |
+| INV-08 | No approval/certification language | `TestInv08NoCertificationLanguage` (3); UI copy audited in `src/lib/status.ts` + `tests/presentation.test.ts` | IMPLEMENTED AND TESTED |
 
 ## P1 differentiators (PRD §6)
 
@@ -123,3 +123,25 @@ PENDING rather than claimed.
 Not yet benchmarked. `scripts/verify.ps1` reports wall-clock only for the verification run itself.
 Graph sizes stay far below the ≤1 000 node / ≤3 000 edge target (seed: 9 nodes, 12 edges).
 Measured p50/p95 latency belongs to Gate 7 and must be reported as measured, not estimated.
+## Gate 3 frontend traceability (R0)
+
+| Capability | Implementation | API dependency | Tests | Verified status |
+|---|---|---|---|---|
+| Project dashboard | `src/features/projects/ProjectDashboard.tsx` | `GET /api/v1/projects`, `GET /projects/{id}/graph`, `GET /rulesets` | E2E-01; `tests/components.test.tsx` | VERIFIED |
+| Offline SVG network studio | `src/features/network/GraphCanvas.tsx`, `src/lib/geometry.ts` | `GET /projects/{id}/graph` | `geometry.test.ts` (25), E2E-02, E2E-06b | VERIFIED |
+| Edge/node inspector with evidence | `src/features/network/GraphInspector.tsx` | graph `evidence[]`, `result.verdicts[]` | `components.test.tsx` | VERIFIED |
+| Keyboard-equivalent graph control | `src/features/network/EntityTable.tsx` | graph `nodes[]`/`edges[]` | E2E-04, E2E-15b | VERIFIED |
+| Scenario editor (closure, measurement) | `src/features/scenario/ScenarioEditor.tsx`, `src/app/workspace.tsx` | `GET /scenarios/{id}`, `PATCH /scenarios/{id}` | E2E-09, E2E-10, E2E-12b | VERIFIED |
+| Reopen a closure (branch) | `createBranch` in `src/app/workspace.tsx` | `POST /projects/{id}/scenarios` | backend `test_creating_a_branch_appears_in_the_list` | VERIFIED |
+| Concurrency conflict handling | `saveEdits` / `conflict` in `src/app/workspace.tsx` | HTTP 409 envelope | E2E-12, E2E-12b | VERIFIED |
+| Mobility profile + phase analysis | `src/features/analysis/AnalysisWorkspace.tsx` | `POST /scenarios/{id}/evaluate` | E2E-05, E2E-06, E2E-08 | VERIFIED |
+| Four-valued results preserved | `src/lib/status.ts`, `StatusBadge` | `AnalysisResult.verdicts[].state` | `presentation.test.ts` | VERIFIED |
+| Confirmed vs possible-only routes | `AnalysisWorkspace` OD table, `REACHABILITY_META` | `od_results[]` | E2E-08, E2E-06b | VERIFIED |
+| Before/after comparison | `src/features/analysis/ComparisonView.tsx` | two stored runs | E2E-11 | VERIFIED |
+| Evidence centre | `src/features/evidence/EvidenceCentre.tsx` | graph `evidence[]`, `verdicts[].inputs[]` | E2E-08 | VERIFIED |
+| Canonical manifest + export | `src/features/reports/ReportsPanel.tsx` | `GET /runs/{id}/manifest` | E2E-14 | VERIFIED |
+| Error handling (offline, 4xx, 409, malformed) | `src/api/client.ts`, `useResource` | flat error envelope | `api-client.test.ts` (22), E2E-13 | VERIFIED |
+| Responsive layout | `src/styles/app.css` | - | E2E-16 desktop + mobile | VERIFIED |
+
+**Not claimed:** no manual screen-reader or keyboard-only audit with real assistive technology has
+been performed; axe findings are reported, not conformance (FR-014 status above).

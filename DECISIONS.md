@@ -1,4 +1,4 @@
-# DECISIONS.md — DETOUR LAB
+﻿# DECISIONS.md — DETOUR LAB
 
 Format per entry: **Decision** → **Alternatives considered** → **Why** → **Consequence / revisit trigger**.
 Status labels used throughout: `(IMPLEMENTED AND TESTED)`, `(IMPLEMENTED BUT NOT VERIFIED)`,
@@ -167,3 +167,58 @@ Owner decisions are marked **[OWNER DECISION]**. Synthetic fixture defaults are 
 | O-3 | Jurisdictionally reviewed rulepack | Required for any legal-facing claim | `DEMO_RULEPACK_NOT_LEGAL`, `legal_applicability=unverified` |
 | O-4 | Named accessibility/domain reviewers | PRD §16 "External validation required" | Unmet; documented as a limitation |
 | O-5 | Verified local unit prices | Cost model currently demonstration-only | Explicitly labelled illustrative ranges |
+---
+
+## D-016 - Three read endpoints were added before any frontend code **(Gate 3)**
+
+- **Problem:** the Gate 2 API could create, patch, evaluate and export, but a client could not
+  *load* a scenario at all, could not list the scenarios of a project, and could not list the runs
+  of a scenario. A planning UI therefore could not know which revision it must submit, which
+  phases exist, or what the previous run was.
+- **Options:** (a) build the UI against those gaps; (b) add the three reads.
+- **Decision:** add `GET /projects/{id}/scenarios`, `GET /scenarios/{id}` and
+  `GET /scenarios/{id}/runs`. They are pure reads of already-stored state - no new domain
+  behaviour, no schema change, backward compatible.
+- **Trade-off:** the API surface grows by three routes. Accepted: without them the R0 journey is
+  not implementable honestly.
+- **Evaluation:** `apps/api/tests/test_scenario_read_endpoints.py` (11 tests) plus the OpenAPI
+  route assertion.
+
+## D-017 - No router, query library or state framework **(Gate 3)**
+
+- **Problem:** a single workspace needs ~8 resources, explicit cancellation and strict stale-data
+  rules. React Router, TanStack Query and Zustand would each have solved part of that.
+- **Options:** adopt the libraries; or write a ~90-line `useResource` hook plus a context store.
+- **Decision:** a small `useResource` hook (abort on dependency change, clear data when the key
+  changes, never show a stale payload) and one `WorkspaceProvider`.
+- **Why:** the hard requirements are *correctness under staleness*, not caching. A cache library's
+  value is mostly cache invalidation, which this app must not do aggressively - after any save the
+  affected resources are re-read from the server.
+- **Trade-off:** no request deduplication; the workspace issues a handful of requests per
+  navigation. Measured as negligible against a local 9-node graph.
+- **Evaluation:** if the resource count grows past ~20 or request volume becomes measurable, adopt
+  a query library.
+
+## D-018 - Reopening a closure creates an immutable branch **(Gate 3)**
+
+- **Problem:** the R0 API appends edits but never rewrites a phase declaration, so there is no
+  "reopen" edit. The baseline must stay immutable (FR-005, INV-07).
+- **Options:** (a) hide reopening; (b) add a mutating "reopen" operation; (c) create a branch
+  scenario whose phase omits that closure.
+- **Decision:** (c). The editor states this explicitly and offers "Reopen via branch".
+- **Why:** it matches how the engine already treats proposals - as a new immutable object - rather
+  than adding a mutation that would break content addressing.
+- **Trade-off:** the user gets a second scenario rather than an edited one. Honest and reviewable.
+
+## D-019 - A hand-written `useResource` plus a boundary normaliser, not schema codegen **(Gate 3)**
+
+- **Problem:** the generated `packages/contracts/types.ts` covers domain models but not HTTP
+  envelopes, and marks defaulted list fields optional (correctly - Pydantic declares
+  `default_factory`).
+- **Decision:** import generated types unmodified; declare only the response envelopes by hand
+  (documented in `src/api/types.ts`); normalise results once at the client boundary
+  (`src/api/normalize.ts`) so components never read `undefined.length`.
+- **Why:** the alternative - regenerating schemas - would have required changing the backend
+  generator that Gate 2 already verifies for determinism.
+- **Evaluation:** `tests/api-client.test.ts` asserts the client's routes against the generated
+  `openapi.json`, so hand-written envelopes cannot drift silently.
