@@ -1,0 +1,137 @@
+/* Construction phase explorer (Gate 4). */
+
+.phases {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.phases__grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+}
+
+/* --------------------------------------------------------------- timeline -- */
+.phase-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.phase-rail > li {
+  flex: 1 1 190px;
+  min-width: 0;
+}
+
+.phase-marker {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  background: var(--surface-inset);
+  border: 1px solid var(--line-default);
+  border-top: 3px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.phase-marker:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.phase-marker--selected {
+  border-top-color: var(--status-info);
+  background: var(--surface-selected);
+  color: var(--text-primary);
+}
+
+.phase-marker__order {
+  font-size: var(--text-lg);
+  line-height: 1;
+  color: var(--status-info);
+}
+
+.phase-marker__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.phase-marker__meta {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------- continuity -- */
+.continuity .continuity__order {
+  display: block;
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.cell {
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+/* Glyph-free: the wording is the signal, the tint only reinforces it. */
+.cell--confirmed {
+  color: var(--status-pass);
+  font-weight: 600;
+}
+
+.cell--possible {
+  color: var(--status-unknown);
+  font-weight: 600;
+}
+
+.cell--none {
+  color: var(--status-fail);
+  font-weight: 600;
+}
+
+.cell--not-evaluated {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.finding-explanations {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.finding-explanations li {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--status-info);
+}
+
+@media (max-width: 700px) {
+  .phase-rail {
+    flex-direction: column;
+  }
+
+  .continuity {
+    display: block;
+    overflow-x: auto;
+  }
+}

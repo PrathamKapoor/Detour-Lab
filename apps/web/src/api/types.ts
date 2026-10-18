@@ -204,6 +204,72 @@ export type ScenarioList = {
 
 export type ScenarioEdit = NonNullable<Scenario['edits']>[number]
 
+/**
+ * Phase reads (Gate 4).
+ *
+ * The timeline and the phase graph are served by the backend precisely so the
+ * browser never reconstructs closures or temporary connections itself.
+ */
+export interface PhaseAnalysisState {
+  analysed: boolean
+  /** `analysed` or `NOT_ANALYSED`. NOT_ANALYSED is *not* a verdict. */
+  state: 'analysed' | 'NOT_ANALYSED'
+  run_id: string | null
+  profile_id: string | null
+  semantic_hash: string | null
+  scenario_revision: number | null
+  /** True when only older-revision runs exist for this phase. */
+  stale: boolean
+  historical_run_count?: number
+}
+
+export interface PhaseTimelineEntry {
+  phase_id: string
+  order: number
+  label: string
+  notes: string
+  boundary_convention: string
+  closed_edge_ids: string[]
+  temporary_edge_ids: string[]
+  phase_graph_id: string
+  phase_graph_hash: string
+  warnings: string[]
+  analysis: PhaseAnalysisState
+}
+
+export interface ScenarioTimeline {
+  scenario_id: string
+  scenario_revision: number
+  scenario_content_hash: string
+  ordering: 'phase_order'
+  phases: PhaseTimelineEntry[]
+}
+
+export interface PhaseEdge extends GraphEdge {
+  closed: boolean
+  temporary: boolean
+  inactive: boolean
+}
+
+export interface PhaseGraphResponse {
+  scenario_id: string
+  scenario_revision: number
+  scenario_content_hash: string
+  phase_id: string
+  phase_order: number | null
+  phase_label: string
+  phase_notes: string
+  boundary_convention: string
+  phase_graph_id: string
+  phase_graph_hash: string
+  closed_edge_ids: string[]
+  active_temporary_edge_ids: string[]
+  warnings: string[]
+  nodes: Node[]
+  edges: PhaseEdge[]
+  crossings: UnlinkedCrossing[]
+}
+
 export interface ManifestResponse {
   schema_version: string
   engine_version: string

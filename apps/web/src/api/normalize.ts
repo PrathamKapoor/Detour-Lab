@@ -10,6 +10,12 @@
  */
 
 import type {
+  PhaseEdge,
+  PhaseGraphResponse,
+  PhaseTimelineEntry,
+  ScenarioTimeline,
+} from './types'
+import type {
   AnalysisResult,
   EdgeEvaluation,
   Finding,
@@ -65,6 +71,87 @@ export interface NormalisedAnalysisResult extends Omit<AnalysisResult, 'edge_eva
   counts: Record<string, number>
 }
 
+/**
+ * Phase reads (Gate 4).
+ *
+ * The same rule as the analysis result applies: a phase payload that is not
+ * recognisable raises a visible error rather than becoming an empty timeline or
+ * a phase graph with no closures - "no data" and "no closures" are different
+ * claims and must never be confused.
+ */
+function requiredString(source: Record<string, unknown>, key: string, where: string): string {
+  const value = source[key]
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error(`${where} is missing required field "${key}"`)
+  }
+  return value
+}
+
+function requiredNumber(source: Record<string, unknown>, key: string, where: string): number {
+  const value = source[key]
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`${where} is missing required field "${key}"`)
+  }
+  return value
+}
+
+export function normaliseTimeline(raw: unknown): ScenarioTimeline {
+  if (!raw || typeof raw !== 'object') throw new Error('Timeline payload was not an object')
+  const body = raw as Record<string, unknown>
+  requiredString(body, 'scenario_id', 'Timeline')
+  const phases = array<Record<string, unknown>>(body.phases)
+  for (const phase of phases) {
+    requiredString(phase, 'phase_id', 'Timeline phase')
+    requiredNumber(phase, 'order', `Timeline phase ${String(phase.phase_id)}`)
+    requiredString(phase, 'phase_graph_hash', `Timeline phase ${String(phase.phase_id)}`)
+    if (!phase.analysis || typeof phase.analysis !== 'object') {
+      throw new Error(`Timeline phase ${String(phase.phase_id)} is missing its analysis state`)
+    }
+  }
+  return {
+    ...(body as unknown as ScenarioTimeline),
+    phases: phases.map((phase) => ({
+      ...(phase as unknown as PhaseTimelineEntry),
+      closed_edge_ids: array<string>(phase.closed_edge_ids),
+      temporary_edge_ids: array<string>(phase.temporary_edge_ids),
+      warnings: array<string>(phase.warnings),
+    })),
+  }
+}
+
+export function normalisePhaseGraph(raw: unknown): PhaseGraphResponse {
+  if (!raw || typeof raw !== 'object') throw new Error('Phase graph payload was not an object')
+  const body = raw as Record<string, unknown>
+  requiredString(body, 'phase_id', 'Phase graph')
+  requiredString(body, 'phase_graph_hash', 'Phase graph')
+  requiredNumber(body, 'scenario_revision', 'Phase graph')
+  const edges = array<Record<string, unknown>>(body.edges)
+  for (const edge of edges) {
+    requiredString(edge, 'id', 'Phase graph edge')
+    // Geometry must be coordinate pairs; a malformed one would silently distort
+    // the rendering, so it is rejected here rather than drawn.
+    const geometry = edge.geometry
+    if (!Array.isArray(geometry) || geometry.length < 2) {
+      throw new Error(`Phase graph edge ${String(edge.id)} has no usable geometry`)
+    }
+  }
+  return {
+    ...(body as unknown as PhaseGraphResponse),
+    closed_edge_ids: array<string>(body.closed_edge_ids),
+    active_temporary_edge_ids: array<string>(body.active_temporary_edge_ids),
+    warnings: array<string>(body.warnings),
+    nodes: array(body.nodes),
+    edges: edges.map((edge) => ({
+      ...(edge as unknown as PhaseEdge),
+      closed: Boolean(edge.closed),
+      temporary: Boolean(edge.temporary),
+      inactive: Boolean(edge.inactive),
+    })),
+    crossings: array(body.crossings),
+  }
+}
+
+/** Shared by analysis results and phase payloads. */
 function array<T>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : []
 }

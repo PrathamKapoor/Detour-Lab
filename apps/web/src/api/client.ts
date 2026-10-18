@@ -26,7 +26,9 @@ import type {
   ScenarioEdit,
   ScenarioList,
   ScenarioListResponse,
+  PhaseGraphResponse,
   ScenarioRunList,
+  ScenarioTimeline,
 } from './types'
 
 export const DEFAULT_TIMEOUT_MS = 20_000
@@ -229,6 +231,54 @@ export class ApiClient {
       run: response.run,
       result: withNormalisedResult(response.result),
     }))
+  }
+
+  /** Ordered construction timeline; ordering comes from `Phase.order`. */
+  getTimeline(scenarioId: string, signal?: AbortSignal): Promise<ScenarioTimeline> {
+    return this.request<ScenarioTimeline>(
+      `/api/v1/scenarios/${encodeURIComponent(scenarioId)}/timeline`,
+      { signal },
+    )
+  }
+
+  /** The authoritative materialised graph of one phase. */
+  getPhaseGraph(scenarioId: string, phaseId: string, signal?: AbortSignal): Promise<PhaseGraphResponse> {
+    return this.request<PhaseGraphResponse>(
+      `/api/v1/scenarios/${encodeURIComponent(scenarioId)}/phases/${encodeURIComponent(phaseId)}/graph`,
+      { signal },
+    )
+  }
+
+  /**
+ * Creates an independent branch of an existing scenario.
+ *
+ * The source is read, never written: its phases, origins/destinations and
+ * temporary edges are copied into a new scenario identity, so the branch has its
+ * own revision history and content hash. Edits are intentionally **not**
+ * copied - a branch starts from the declared construction plan.
+ */
+async createBranchFrom(
+    projectId: string,
+    sourceScenarioId: string,
+    newScenarioId: string,
+    name: string,
+    signal?: AbortSignal,
+  ): Promise<ScenarioList> {
+    const source = await this.getScenario(sourceScenarioId, signal)
+    return this.createScenario(
+      projectId,
+      {
+        id: newScenarioId,
+        name,
+        parent_scenario_id: source.id,
+        base_graph_version_id: source.base_graph_version_id,
+        phases: source.phases,
+        origins_destinations: source.origins_destinations,
+        temporary_edges: source.temporary_edges,
+        note: `Branch of ${source.id} at revision ${source.revision}.`,
+      },
+      signal,
+    )
   }
 
   getRun(runId: string, signal?: AbortSignal): Promise<RunResponse> {

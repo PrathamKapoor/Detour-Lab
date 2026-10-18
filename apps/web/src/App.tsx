@@ -7,7 +7,10 @@ import { NetworkStudio } from '@/features/network/NetworkStudio'
 import { ProjectDashboard } from '@/features/projects/ProjectDashboard'
 import { ReportsPanel } from '@/features/reports/ReportsPanel'
 import { ScenarioEditor } from '@/features/scenario/ScenarioEditor'
+import { PhaseExplorer } from '@/features/phases/PhaseExplorer'
+import { BranchExplorer } from '@/features/branches/BranchExplorer'
 import '@/features/network/graph.css'
+import '@/features/phases/phases.css'
 import '@/styles/app.css'
 
 const NAV: { id: ViewId; label: string; hint: string }[] = [
@@ -15,7 +18,9 @@ const NAV: { id: ViewId; label: string; hint: string }[] = [
   { id: 'network', label: 'Network', hint: 'Graph, attributes, evidence' },
   { id: 'scenario', label: 'Scenario', hint: 'Closures and measurements' },
   { id: 'analysis', label: 'Analysis', hint: 'Profile, phase, findings' },
+  { id: 'phases', label: 'Phases', hint: 'Timeline and continuity' },
   { id: 'evidence', label: 'Evidence', hint: 'Unresolved attributes' },
+  { id: 'branches', label: 'Branches', hint: 'Alternative plans' },
   { id: 'compare', label: 'Compare', hint: 'Baseline against modified' },
   { id: 'reports', label: 'Reports', hint: 'Canonical manifest' },
 ]
@@ -99,9 +104,11 @@ function Shell() {
           {view === 'network' ? <NetworkStudio /> : null}
           {view === 'scenario' ? <ScenarioEditor /> : null}
           {view === 'analysis' ? <AnalysisWorkspace /> : null}
+          {view === 'phases' ? <PhaseExplorer /> : null}
           {view === 'compare' ? <ComparisonView /> : null}
           {view === 'reports' ? <ReportsPanel /> : null}
           {view === 'evidence' ? <EvidenceCentre /> : null}
+          {view === 'branches' ? <BranchExplorer /> : null}
         </div>
       </main>
     </div>

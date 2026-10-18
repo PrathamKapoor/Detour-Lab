@@ -12,17 +12,29 @@ import { ApiError } from '@/api/client'
 import type {
   ManifestResponse,
   NormalisedAnalysisResult,
+  PhaseGraphResponse,
+  PhaseTimelineEntry,
   Project,
   ProjectGraph,
   RuleSetResponse,
   ScenarioEdit,
   ScenarioList,
   ScenarioSummary,
+  ScenarioTimeline,
   StoredRunSummary,
 } from '@/api/types'
 import { useResource } from '@/lib/useResource'
 
-export type ViewId = 'projects' | 'network' | 'scenario' | 'analysis' | 'evidence' | 'compare' | 'reports'
+export type ViewId =
+  | 'projects'
+  | 'network'
+  | 'scenario'
+  | 'analysis'
+  | 'evidence'
+  | 'phases'
+  | 'branches'
+  | 'compare'
+  | 'reports'
 
 export interface RunSnapshot {
   run: StoredRunSummary
@@ -87,6 +99,26 @@ export interface WorkspaceState {
   manifest: ManifestResponse | null
   manifestError: ApiError | null
   loadManifest: (runId: string) => Promise<void>
+  /* phase timeline (Gate 4) ---------------------------------------------- */
+  timeline: ScenarioTimeline | null
+  timelineLoading: boolean
+  timelineError: ApiError | null
+  reloadTimeline: () => void
+  orderedPhases: readonly PhaseTimelineEntry[]
+  selectedPhaseId: string | null
+  selectPhase: (phaseId: string) => void
+  phaseGraph: PhaseGraphResponse | null
+  phaseGraphLoading: boolean
+  phaseGraphError: ApiError | null
+  /** Per-phase analysis results, keyed by phase id. Absent means not evaluated. */
+  phaseResults: Readonly<Record<string, NormalisedAnalysisResult>>
+  phaseRuns: Readonly<Record<string, StoredRunSummary>>
+  evaluateAllPhases: () => Promise<void>
+  evaluatingPhases: Readonly<Record<string, 'running' | 'done' | 'failed'>>
+  batchError: ApiError | null
+  evaluatePhase: (phaseId: string) => Promise<void>
+  /** Active closure/temporary set of a phase, for temporal comparison. */
+  graphFor: (phaseId: string) => { closed: readonly string[]; temporary: readonly string[] } | null
   /* navigation --------------------------------------------------------- */
   view: ViewId
   setView: (view: ViewId) => void
@@ -124,6 +156,13 @@ export function WorkspaceProvider({ children, api }: { children: ReactNode; api:
   const [branchError, setBranchError] = useState<ApiError | null>(null)
   const [branching, setBranching] = useState(false)
   const [view, setView] = useState<ViewId>('projects')
+  const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null)
+  const [phaseResults, setPhaseResults] = useState<Record<string, NormalisedAnalysisResult>>({})
+  const [phaseRuns, setPhaseRuns] = useState<Record<string, StoredRunSummary>>({})
+  const [evaluatingPhases, setEvaluatingPhases] = useState<Record<string, 'running' | 'done' | 'failed'>>(
+    {},
+  )
+  const [batchError, setBatchError] = useState<ApiError | null>(null)
 
   const projects = useResource((signal) => api.listProjects(signal), [api])
   const rulesets = useResource((signal) => api.rulesets(signal), [api])
@@ -148,10 +187,11 @@ export function WorkspaceProvider({ children, api }: { children: ReactNode; api:
     { enabled: Boolean(projectId) },
   )
   const scenarioEntries = useMemo(() => scenarioList.data?.scenarios ?? [], [scenarioList.data])
+  // Adopt a default scenario only when nothing is selected yet. An explicit
+  // selection must never be overridden by a list that has not refreshed yet.
   useEffect(() => {
-    if (scenarioEntries.length === 0) return
-    const known = scenarioEntries.some((entry) => entry.id === scenarioId)
-    if (!known) setScenarioId(scenarioEntries[0]!.id)
+    if (scenarioEntries.length === 0 || scenarioId !== null) return
+    setScenarioId(scenarioEntries[0]!.id)
   }, [scenarioEntries, scenarioId])
 
   const scenario = useResource(
@@ -300,7 +340,128 @@ export function WorkspaceProvider({ children, api }: { children: ReactNode; api:
     [api, projectId, loadedScenario, scenarioList],
   )
 
-  const loadManifest = useCallback(
+  /**
+ * Phase timeline and phase graph (Gate 4).
+ *
+ * Both are reads of authoritative backend state: the browser never derives which
+ * edges are closed in a phase by toggling the base graph itself.
+ */
+const timeline = useResource(
+  (signal) => api.getTimeline(scenarioId as string, signal),
+  [api, scenarioId],
+  { enabled: Boolean(scenarioId) },
+)
+
+const orderedPhases = useMemo(
+  () => (timeline.data ? [...timeline.data.phases].sort((a, b) => a.order - b.order) : []),
+  [timeline.data],
+)
+
+// Adopt the first scenario only while nothing is selected. An explicit choice is
+// never overridden just because the refreshed list has not caught up yet - that
+// would silently redirect an edit at a different scenario.
+useEffect(() => {
+  if (orderedPhases.length === 0) return
+  if (selectedPhaseId === null) setSelectedPhaseId(orderedPhases[0]!.phase_id)
+}, [orderedPhases, selectedPhaseId])
+
+// A different scenario invalidates every per-phase result: they belong to the
+// scenario revision they were produced from.
+useEffect(() => {
+  setPhaseResults({})
+  setPhaseRuns({})
+  setEvaluatingPhases({})
+}, [scenarioId])
+
+const phaseGraph = useResource(
+  (signal) => api.getPhaseGraph(scenarioId as string, selectedPhaseId as string, signal),
+  [api, scenarioId, selectedPhaseId],
+  { enabled: Boolean(scenarioId && selectedPhaseId) },
+)
+
+const graphFor = useCallback(
+  (phaseId: string) => {
+    const entry = orderedPhases.find((phase) => phase.phase_id === phaseId)
+    if (!entry) return null
+    return { closed: entry.closed_edge_ids, temporary: entry.temporary_edge_ids }
+  },
+  [orderedPhases],
+)
+
+const evaluatePhase = useCallback(
+  async (phaseId: string) => {
+    if (!scenarioId) return
+    setEvaluatingPhases((previous) => ({ ...previous, [phaseId]: 'running' }))
+    try {
+      const response = await api.evaluate(scenarioId, {
+        profile_id: profileId,
+        phase_id: phaseId,
+        evaluation_instant: evaluationInstant,
+      })
+      setPhaseResults((previous) => ({ ...previous, [phaseId]: response.result }))
+      setPhaseRuns((previous) => ({ ...previous, [phaseId]: response.run }))
+      setEvaluatingPhases((previous) => ({ ...previous, [phaseId]: 'done' }))
+    } catch (error) {
+      setEvaluatingPhases((previous) => ({ ...previous, [phaseId]: 'failed' }))
+      setBatchError(error instanceof ApiError ? error : new ApiError(0, { code: 'UNEXPECTED' }, String(error)))
+    }
+  },
+  [api, scenarioId, profileId, evaluationInstant],
+)
+
+/**
+ * Evaluate every ordered phase for the current profile.
+ *
+ * Phases are identified by their own id, never by request position, so a slow
+ * response cannot be filed under the wrong phase. A partial failure is reported
+ * per phase; the batch is never marked globally successful.
+ */
+const evaluateAllPhases = useCallback(async () => {
+  if (!scenarioId) return
+  setBatchError(null)
+  setEvaluatingPhases(Object.fromEntries(orderedPhases.map((phase) => [phase.phase_id, 'running'])))
+  const outcomes = await Promise.allSettled(
+    orderedPhases.map((phase) =>
+      api
+        .evaluate(scenarioId, {
+          profile_id: profileId,
+          phase_id: phase.phase_id,
+          evaluation_instant: evaluationInstant,
+        })
+        .then((response) => ({ phaseId: phase.phase_id, response })),
+    ),
+  )
+
+  const results: Record<string, NormalisedAnalysisResult> = {}
+  const runs: Record<string, StoredRunSummary> = {}
+  const statuses: Record<string, 'running' | 'done' | 'failed'> = {}
+  const failures: ApiError[] = []
+
+  for (const outcome of outcomes) {
+    if (outcome.status === 'fulfilled') {
+      results[outcome.value.phaseId] = outcome.value.response.result
+      runs[outcome.value.phaseId] = outcome.value.response.run
+      statuses[outcome.value.phaseId] = 'done'
+    } else {
+      const error =
+        outcome.reason instanceof ApiError
+          ? outcome.reason
+          : new ApiError(0, { code: 'UNEXPECTED' }, String(outcome.reason))
+      failures.push(error)
+    }
+  }
+
+  setPhaseResults((previous) => ({ ...previous, ...results }))
+  setPhaseRuns((previous) => ({ ...previous, ...runs }))
+  setEvaluatingPhases((previous) => ({
+    ...previous,
+    ...statuses,
+    ...Object.fromEntries(failures.length > 0 ? orderedPhases.map((p) => [p.phase_id, 'failed' as const]) : []),
+  }))
+  if (failures.length > 0) setBatchError(failures[0]!)
+}, [api, scenarioId, orderedPhases, profileId, evaluationInstant])
+
+const loadManifest = useCallback(
     async (runId: string) => {
       setManifestError(null)
       try {
@@ -379,6 +540,23 @@ export function WorkspaceProvider({ children, api }: { children: ReactNode; api:
       manifest,
       manifestError,
       loadManifest,
+      timeline: timeline.data,
+      timelineLoading: timeline.loading,
+      timelineError: timeline.error,
+      reloadTimeline: timeline.reload,
+      orderedPhases,
+      selectedPhaseId,
+      selectPhase: setSelectedPhaseId,
+      phaseGraph: phaseGraph.data,
+      phaseGraphLoading: phaseGraph.loading,
+      phaseGraphError: phaseGraph.error,
+      phaseResults,
+      phaseRuns,
+      evaluateAllPhases,
+      evaluatePhase,
+      graphFor,
+      evaluatingPhases,
+      batchError,
       view,
       setView,
     }),
@@ -429,6 +607,22 @@ export function WorkspaceProvider({ children, api }: { children: ReactNode; api:
       manifest,
       manifestError,
       loadManifest,
+      timeline.data,
+      timeline.loading,
+      timeline.error,
+      timeline.reload,
+      orderedPhases,
+      selectedPhaseId,
+      phaseGraph.data,
+      phaseGraph.loading,
+      phaseGraph.error,
+      phaseResults,
+      phaseRuns,
+      evaluateAllPhases,
+      evaluatePhase,
+      graphFor,
+      evaluatingPhases,
+      batchError,
       view,
     ],
   )

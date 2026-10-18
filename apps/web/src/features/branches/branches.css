@@ -1,0 +1,22 @@
+/* Scenario branch explorer (Gate 4). */
+
+.branches {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.branches .field {
+  gap: var(--space-2);
+}
+
+.branches td[data-selected='true'] {
+  background: var(--surface-selected);
+}
+
+@media (max-width: 700px) {
+  .branches table {
+    display: block;
+    overflow-x: auto;
+  }
+}

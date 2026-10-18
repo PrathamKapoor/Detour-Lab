@@ -1,4 +1,4 @@
-# Python
+﻿# Python
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -11,6 +11,7 @@ venv/
 
 # Node / frontend
 node_modules/
+*.tsbuildinfo
 dist/
 .vite/
 coverage/
