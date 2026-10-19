@@ -19,6 +19,7 @@ What this service guarantees
 from __future__ import annotations
 
 import time
+import uuid
 from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
@@ -158,30 +159,30 @@ def run_experiments(
                 clock=clock,
             )
         except FaultValidationError as exc:
-            # An unrepresentable fault is reported as an invalid experiment with
+            # An unrepresentable fault is recorded as an invalid experiment with
             # its reason, so a suite can never look "tested" when it was refused.
-            outcomes.append(
-                _invalid_outcome(
-                    faults=fault_set,
-                    suite_id=suite_id,
-                    error_stage="validation",
-                    code=exc.code,
-                    message=str(exc),
-                    details=exc.details,
-                    scenario=scenario,
-                    graph=graph,
-                    project_id=project_id,
-                    phase_ids=list(phase_ids),
-                    profile_ids=selected_profiles,
-                    evaluation_instant=evaluation_instant,
-                )
+            # It is persisted like any other outcome: a refusal that disappeared
+            # would be indistinguishable from a suite that was never requested.
+            outcome = _invalid_outcome(
+                faults=fault_set,
+                suite_id=suite_id,
+                error_stage="validation",
+                code=exc.code,
+                message=str(exc),
+                details=exc.details,
+                scenario=scenario,
+                graph=graph,
+                project_id=project_id,
+                phase_ids=list(phase_ids),
+                profile_ids=selected_profiles,
+                evaluation_instant=evaluation_instant,
             )
-            continue
-
-        if suite_id is not None and outcome.suite_id is None:
-            outcome = outcome.model_copy(update={"suite_id": suite_id})
-            outcome = outcome.model_copy(update={"semantic_hash": semantic_hash(outcome.semantic_body())})
-        outcome = outcome.model_copy(update={"suite_id": suite_id})
+        else:
+            if outcome.suite_id != suite_id:
+                outcome = outcome.model_copy(update={"suite_id": suite_id})
+                outcome = outcome.model_copy(
+                    update={"semantic_hash": semantic_hash(outcome.semantic_body())}
+                )
         outcomes.append(outcome)
 
         if persist:
@@ -224,7 +225,10 @@ def _invalid_outcome(
 
     outcome = ExperimentOutcome(
         engine_version=ENGINE_VERSION,
-        experiment_id="fxp-invalid",
+        # A refused experiment still gets its own execution identity, so several
+        # refusals in one request cannot collide on the primary key and two
+        # different refusals are never conflated in history.
+        experiment_id=f"fxp-{uuid.uuid4().hex[:12]}",
         created_at=utc_now_iso(),
         duration_ms=0.0,
         limits=ExperimentLimits(),

@@ -132,7 +132,11 @@ class EvidenceQueueScope(StrictModel):
     rulepack_version: str
     rulepack_hash: str
     evaluation_instant: str
-    #: Phases that were inspected for cross-phase relevance but not analysed.
+    #: Extra phases inspected for cross-phase relevance. These do **not** add
+    #: entries of their own: the queue's scope is the selected analysis, so every
+    #: entry carries real origin-destination linkage. Listing them here says
+    #: only that each in-scope issue was also checked against these phases, so a
+    #: gap that persists elsewhere is visible on the entry it belongs to.
     additional_phases_inspected: list[str] = Field(default_factory=list)
     scope_note: str = (
         "The queue lists attributes that the authoritative resolver cannot resolve for at least one "

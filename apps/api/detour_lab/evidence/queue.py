@@ -340,10 +340,11 @@ def _build_issue(
     conversions = {c["evidence_id"]: c for c in resolved.conversions if "evidence_id" in c}
     observations = [_to_comparison(r, conversions.get(r.id)) for r in records]
 
-    # Cross-phase detection uses the resolver again, never a guess.
+    # Cross-phase detection re-runs the resolver against the other phase's own
+    # snapshot. It deliberately does NOT short-circuit on "no records here":
+    # an attribute with no observation at all is unresolved in that phase too,
+    # and skipping it would hide exactly the case worth reporting.
     for phase_id, registry in sorted(cross_phase_registries.items()):
-        if not registry.for_field(element_id, attribute_name):
-            continue
         other = resolve_attribute(
             element_id=element_id,
             field=attribute_name,
@@ -371,13 +372,16 @@ def _build_issue(
     )
 
     status_value = resolved.reason_code.value if resolved.reason_code else ReasonCode.NO_EVIDENCE.value
+    # Identity describes the *problem*, not the context it was observed in. The
+    # affected-phase list is derived and can widen as more phases are inspected,
+    # so it is deliberately excluded: the same unresolved attribute keeps one
+    # stable issue id regardless of how broad the reviewer's selection was.
     issue_id = "EQ-" + semantic_hash(
         {
             "scenario_content_hash": scenario.content_hash,
             "element_id": element_id,
             "attribute": attribute_name,
             "resolution_status": status_value,
-            "phase_ids": sorted(affected_phase_ids),
             "profile_ids": sorted(affected_profile_ids),
             "evidence_ids": sorted(r.id for r in records),
         }

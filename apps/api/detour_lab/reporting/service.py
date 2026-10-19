@@ -27,6 +27,7 @@ from typing import Any
 
 from detour_lab.analysis.run import run_analysis
 from detour_lab.domain.contracts import MobilityProfile, RulePack, Scenario
+from detour_lab.domain.enums import VerdictState
 from detour_lab.evidence.queue import derive_evidence_queue
 from detour_lab.failure.compare import RobustnessSummary, summarise_robustness
 from detour_lab.failure.model import ExperimentOutcome, ExperimentStatus, FaultKind
@@ -493,8 +494,42 @@ def _findings_and_od(runs: list[RunRecord]) -> tuple[list[ReportODRow], list[Rep
             )
         for verdict in result.verdicts:
             totals[verdict.state.value] = totals.get(verdict.state.value, 0) + 1
+        # Findings are rebuilt from the **verdicts**, not only from
+        # ``edge_evaluations``. ``AnalysisResult`` persists edge findings but not
+        # node findings, and a node finding is exactly the kind a reviewer must
+        # see: a failing kerb interface or an unevidenced crossing control. Using
+        # only the edge findings would silently drop them from the packet.
+        rule_versions = {
+            (v.rule_id, v.element_id): v.rule_version for v in result.verdicts
+        }
+        for verdict in result.verdicts:
+            if verdict.state not in (VerdictState.FAIL, VerdictState.UNKNOWN):
+                continue
+            findings.append(
+                ReportFinding(
+                    finding_id=f"F-{verdict.element_id}-{verdict.rule_id}",
+                    element_id=verdict.element_id,
+                    element_kind=verdict.scope.value,
+                    state=verdict.state.value,
+                    severity="critical" if verdict.criticality.value == "critical" else "advisory",
+                    reason_code=verdict.reason_code.value,
+                    rule_id=verdict.rule_id,
+                    rule_version=rule_versions[(verdict.rule_id, verdict.element_id)],
+                    rulepack_version=result.rulepack_version,
+                    profile_id=run.profile_id,
+                    phase_id=run.phase_id,
+                    explanation=verdict.explanation,
+                    evidence_ids=sorted({eid for a in verdict.inputs for eid in a.evidence_ids}),
+                    attributes=[a.model_dump(mode="json") for a in verdict.inputs],
+                )
+            )
         for edge_evaluation in result.edge_evaluations:
+            # Closure findings carry no rule and no inputs; the rule-derived
+            # findings above already cover everything else, so only these are
+            # read from the edge evaluations.
             for finding in edge_evaluation.findings:
+                if finding.rule_id is not None:
+                    continue
                 findings.append(
                     ReportFinding(
                         finding_id=finding.id,
@@ -503,15 +538,8 @@ def _findings_and_od(runs: list[RunRecord]) -> tuple[list[ReportODRow], list[Rep
                         state=finding.state.value,
                         severity=finding.severity,
                         reason_code=finding.reason_code.value,
-                        rule_id=finding.rule_id,
-                        rule_version=next(
-                            (
-                                v.rule_version
-                                for v in result.verdicts
-                                if v.rule_id == finding.rule_id and v.element_id == finding.element_id
-                            ),
-                            None,
-                        ),
+                        rule_id=None,
+                        rule_version=None,
                         rulepack_version=result.rulepack_version,
                         profile_id=run.profile_id,
                         phase_id=run.phase_id,
@@ -520,7 +548,15 @@ def _findings_and_od(runs: list[RunRecord]) -> tuple[list[ReportODRow], list[Rep
                         attributes=[a.model_dump(mode="json") for a in finding.attributes],
                     )
                 )
-    findings.sort(key=lambda f: (f.phase_id, f.profile_id, f.element_id, f.finding_id))
+    deduplicated: dict[tuple[str, str, str, str], ReportFinding] = {}
+    for finding in findings:
+        deduplicated.setdefault(
+            (finding.finding_id, finding.profile_id, finding.phase_id, finding.state), finding
+        )
+    findings = sorted(
+        deduplicated.values(),
+        key=lambda f: (f.phase_id, f.profile_id, f.element_id, f.finding_id),
+    )
     return od_rows, findings, totals
 
 
@@ -678,6 +714,7 @@ def _alternative_plan(search: StoredOptimizationRun) -> ReportAlternativePlan:
         domain_combination_count=int(domain.get("domain_combination_count", 0)),
         truncated_by=list(domain.get("truncated_by", [])),
         scope_note=status.get("scope_note", ""),
+        semantic_hash=search.semantic_hash,
         permitted_interventions=[
             {
                 "id": i.id,
