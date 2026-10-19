@@ -53,6 +53,11 @@ describe('API contract parity with the generated OpenAPI document', () => {
       '/api/v1/runs/{run_id}',
       '/api/v1/runs/{run_id}/manifest',
       '/api/v1/rulesets',
+      '/api/v1/scenarios/{scenario_id}/optimization/interventions',
+      '/api/v1/scenarios/{scenario_id}/optimization/search',
+      '/api/v1/scenarios/{scenario_id}/optimization/searches',
+      '/api/v1/optimization/searches/{search_id}',
+      '/api/v1/optimization/promote',
     ]
     for (const route of routes) {
       expect(paths, `missing route ${route}`).toHaveProperty(route)
@@ -116,6 +121,55 @@ describe('ApiClient success paths', () => {
     await client.getGraph('proj/../etc')
     const [url] = spy.mock.calls[0] as unknown as [string]
     expect(url).toBe('/api/v1/projects/proj%2F..%2Fetc/graph')
+  })
+
+  it('runs a bounded search with the declared limits', async () => {
+    const spy = vi.fn(async () => jsonResponse({ search_id: 'opt-1', candidates: [] }))
+    const fetchImpl = spy as unknown as typeof fetch
+
+    const client = clientWith(fetchImpl)
+    await client.startOptimizationSearch('scn-1', {
+      phase_id: 'phase-1',
+      config: { max_interventions: 2, max_candidates: 60, monetary_objective: 'off' },
+    })
+
+    const [url, init] = spy.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toBe('/api/v1/scenarios/scn-1/optimization/search')
+    expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body as string).config.max_interventions).toBe(2)
+  })
+
+  it('scopes the intervention catalogue to one phase and replays stored searches', async () => {
+    const spy = vi.fn(async () => jsonResponse({ searches: [] }))
+    const fetchImpl = spy as unknown as typeof fetch
+
+    const client = clientWith(fetchImpl)
+    await client.listInterventions('scn-1', 'phase-2')
+    await client.getOptimizationSearch('opt/1')
+
+    const [catalogueUrl] = spy.mock.calls[0] as unknown as [string]
+    expect(catalogueUrl).toBe('/api/v1/scenarios/scn-1/optimization/interventions?phase_id=phase-2')
+    const [replayUrl] = spy.mock.calls[1] as unknown as [string]
+    expect(replayUrl).toBe('/api/v1/optimization/searches/opt%2F1')
+  })
+
+  it('promotes a candidate with the optimistic source revision', async () => {
+    const spy = vi.fn(async () => jsonResponse({ branch: { scenario_id: 'scn-new' } }, 201))
+    const fetchImpl = spy as unknown as typeof fetch
+
+    const client = clientWith(fetchImpl)
+    await client.promoteProposal({
+      search_id: 'opt-1',
+      proposal_id: 'cand-1',
+      new_scenario_id: 'scn-new',
+      new_scenario_name: 'Fix',
+      expected_source_revision: 3,
+    })
+
+    const [url, init] = spy.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toBe('/api/v1/optimization/promote')
+    expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body as string).expected_source_revision).toBe(3)
   })
 })
 

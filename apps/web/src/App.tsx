@@ -9,6 +9,7 @@ import { ReportsPanel } from '@/features/reports/ReportsPanel'
 import { ScenarioEditor } from '@/features/scenario/ScenarioEditor'
 import { PhaseExplorer } from '@/features/phases/PhaseExplorer'
 import { BranchExplorer } from '@/features/branches/BranchExplorer'
+import { OptimizationStudio } from '@/features/optimization/OptimizationStudio'
 import '@/features/network/graph.css'
 import '@/features/phases/phases.css'
 import '@/styles/app.css'
@@ -19,6 +20,7 @@ const NAV: { id: ViewId; label: string; hint: string }[] = [
   { id: 'scenario', label: 'Scenario', hint: 'Closures and measurements' },
   { id: 'analysis', label: 'Analysis', hint: 'Profile, phase, findings' },
   { id: 'phases', label: 'Phases', hint: 'Timeline and continuity' },
+  { id: 'optimization', label: 'Fix This Plan', hint: 'Interventions and verification' },
   { id: 'evidence', label: 'Evidence', hint: 'Unresolved attributes' },
   { id: 'branches', label: 'Branches', hint: 'Alternative plans' },
   { id: 'compare', label: 'Compare', hint: 'Baseline against modified' },
@@ -51,7 +53,7 @@ function Shell() {
           </span>
           <span className="app-context">
             <span className="app-context__label">Scenario</span>
-            <span className="mono">
+            <span className="mono" data-testid="context-scenario">
               {scenarioSummary ? `${scenarioSummary.id} r${scenarioSummary.revision}` : '—'}
             </span>
           </span>
@@ -105,6 +107,7 @@ function Shell() {
           {view === 'scenario' ? <ScenarioEditor /> : null}
           {view === 'analysis' ? <AnalysisWorkspace /> : null}
           {view === 'phases' ? <PhaseExplorer /> : null}
+          {view === 'optimization' ? <OptimizationStudio /> : null}
           {view === 'compare' ? <ComparisonView /> : null}
           {view === 'reports' ? <ReportsPanel /> : null}
           {view === 'evidence' ? <EvidenceCentre /> : null}

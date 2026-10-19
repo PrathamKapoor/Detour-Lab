@@ -22,11 +22,14 @@ import type { NormalisedAnalysisResult } from './normalize'
 export type { NormalisedAnalysisResult }
 import type {
   AnalysisResult,
+  CandidateEvaluation,
   CoordinateBasis,
   DataSource,
   Edge,
   EdgeEvaluation,
   EvidenceRecord,
+  ExcludedIntervention,
+  Intervention,
   MobilityProfile,
   Node,
   ODPairResult,
@@ -35,6 +38,8 @@ import type {
   Rule,
   RulePack,
   Scenario,
+  SearchConfig,
+  SolverStatus,
   TemporaryEdge,
 } from '@contracts/types'
 
@@ -47,23 +52,47 @@ import type {
  */
 export type {
   AnalysisResult,
+  BaselineOD,
+  BaselineProfile,
+  BudgetCheck,
+  CandidateAssumption,
+  CandidateCostLine,
+  CandidateCostSummary,
+  CandidateEvaluation,
+  CandidateProposal,
+  CandidateVerification,
   CoordinateBasis,
+  CostProvenance,
   DataSource,
+  DomainSummary,
   EdgeType,
   EdgeEvaluation,
   EvidenceRecord,
+  ExcludedIntervention,
+  Intervention,
+  InterventionCost,
+  InterventionEffect,
+  InterventionPhaseChange,
+  InterventionPrecondition,
   MobilityProfile,
   Node,
   ODPairResult,
+  ODTransition,
   OriginDestination,
   Phase,
   ProvenanceClass,
+  RankingPolicy,
   ReasonCode,
   ResolvedAttribute,
   Rule,
   RulePack,
   RuleVerdict,
   Scenario,
+  SearchBudget,
+  SearchConfig,
+  SearchOutcome,
+  SearchStatus,
+  SolverStatus,
   TemporaryEdge,
   VerificationStatus,
   VerdictState,
@@ -342,5 +371,100 @@ export interface ManifestResponse {
   }
   semantic_hash: string
   canonical_json_bytes: number
+}
+
+/**
+ * Fix This Plan reads (Gate 5).
+ *
+ * Every candidate, verdict and delta in these payloads was computed by the
+ * backend engine against the source plan; the browser renders them and never
+ * derives its own verdict, route or cost.
+ */
+export interface InterventionCatalogItem extends Intervention {
+  applicable: boolean
+  eligibility_reasons: string[]
+}
+
+export interface InterventionCatalog {
+  library: { id: string; version: string; notice: string; source: string }
+  scenario_id: string
+  scenario_revision: number
+  phase_id: string
+  declared_phases: string[]
+  evaluated_as_of: string
+  interventions: InterventionCatalogItem[]
+  eligible_intervention_ids: string[]
+  excluded: ExcludedIntervention[]
+  precondition_rejected: Record<string, unknown>[]
+}
+
+export interface OptimizationSearchRequest {
+  phase_id: string
+  profile_ids?: string[]
+  evaluation_instant?: string
+  config?: SearchConfig
+}
+
+export interface OptimizationSearchSummary {
+  search_id: string
+  scenario_id: string
+  scenario_revision: number
+  phase_id: string
+  evaluation_instant: string
+  engine_version: string
+  semantic_hash: string
+  input_hash: string
+  created_at: string
+  solver_status: SolverStatus | null
+  exhaustive: boolean | null
+  best_proposal_id: string | null
+  candidate_count: number
+}
+
+export interface OptimizationSearchList {
+  scenario_id: string
+  searches: OptimizationSearchSummary[]
+}
+
+export interface PromotionRequest {
+  search_id: string
+  proposal_id: string
+  new_scenario_id: string
+  new_scenario_name: string
+  expected_source_revision: number
+}
+
+export interface PromotionProfileMatch {
+  profile_id: string
+  preview_semantic_hash: string
+  persisted_semantic_hash: string
+  match: boolean
+}
+
+export interface PromotionResult {
+  engine_version: string
+  search_id: string
+  proposal_id: string
+  classification: CandidateEvaluation['classification']
+  source: { scenario_id: string; revision: number; content_hash: string; unchanged: boolean }
+  branch: {
+    scenario_id: string
+    name: string
+    revision: number
+    parent_scenario_id: string | null
+    content_hash: string
+    intervention_ids: string[]
+  }
+  verification: {
+    content_hash_match: boolean
+    per_profile: PromotionProfileMatch[]
+    all_match: boolean
+  }
+  od_summary: {
+    restored_all_profiles: string[]
+    restored_any_profile: string[]
+    regressed_pairs: string[]
+  }
+  disclaimers: string[]
 }
 

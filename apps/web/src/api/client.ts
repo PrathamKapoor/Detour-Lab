@@ -14,7 +14,13 @@
 import { normaliseAnalysisResult } from './normalize'
 import type {
   ApiErrorBody,
+  InterventionCatalog,
+  OptimizationSearchList,
+  OptimizationSearchRequest,
+  PromotionRequest,
+  PromotionResult,
   RunSummary,
+  SearchOutcome,
   StoredRunSummary,
   EvaluateResponse,
   HealthResponse,
@@ -297,6 +303,56 @@ async createBranchFrom(
 
   rulesets(signal?: AbortSignal): Promise<RuleSetResponse> {
     return this.request<RuleSetResponse>('/api/v1/rulesets', { signal })
+  }
+
+  // ------------------------------------------------------------ Fix This Plan
+  /** The bundled intervention library as applicable to one phase. */
+  listInterventions(
+    scenarioId: string,
+    phaseId: string,
+    signal?: AbortSignal,
+  ): Promise<InterventionCatalog> {
+    const query = `?phase_id=${encodeURIComponent(phaseId)}`
+    return this.request<InterventionCatalog>(
+      `/api/v1/scenarios/${encodeURIComponent(scenarioId)}/optimization/interventions${query}`,
+      { signal },
+    )
+  }
+
+  /** Runs one bounded search; the response is the stored payload. */
+  startOptimizationSearch(
+    scenarioId: string,
+    payload: OptimizationSearchRequest,
+    signal?: AbortSignal,
+  ): Promise<SearchOutcome> {
+    return this.request<SearchOutcome>(
+      `/api/v1/scenarios/${encodeURIComponent(scenarioId)}/optimization/search`,
+      { method: 'POST', body: JSON.stringify(payload), signal },
+    )
+  }
+
+  listOptimizationSearches(scenarioId: string, signal?: AbortSignal): Promise<OptimizationSearchList> {
+    return this.request<OptimizationSearchList>(
+      `/api/v1/scenarios/${encodeURIComponent(scenarioId)}/optimization/searches`,
+      { signal },
+    )
+  }
+
+  /** One stored search payload, for deterministic replay. */
+  getOptimizationSearch(searchId: string, signal?: AbortSignal): Promise<SearchOutcome> {
+    return this.request<SearchOutcome>(
+      `/api/v1/optimization/searches/${encodeURIComponent(searchId)}`,
+      { signal },
+    )
+  }
+
+  /** Applies one candidate to a new scenario branch; the server re-verifies it. */
+  promoteProposal(payload: PromotionRequest, signal?: AbortSignal): Promise<PromotionResult> {
+    return this.request<PromotionResult>('/api/v1/optimization/promote', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      signal,
+    })
   }
 }
 
