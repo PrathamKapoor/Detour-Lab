@@ -11,7 +11,7 @@ from detour_lab.api.state import DEMO_PROJECT_ID, DEMO_SCENARIO_ID, seed_dataset
 from detour_lab.domain.contracts import GraphEdit, Scenario
 from detour_lab.domain.hashing import semantic_hash
 from detour_lab.ingestion.schema import load_local_planar_dataset
-from detour_lab.persistence.db import Database
+from detour_lab.persistence.db import SCHEMA_VERSION, Database
 from detour_lab.persistence.repository import NotFoundError, OptimisticConflictError, Repository
 from detour_lab.reporting.manifest import build_manifest, manifest_semantic_hash
 from detour_lab.rules.engine import load_rulepack
@@ -64,7 +64,7 @@ class TestMigrations:
         first = database.migrate()
         assert first
         assert database.migrate() == []
-        assert database.applied_version() == 1
+        assert database.applied_version() == SCHEMA_VERSION
 
     def test_foreign_keys_are_enforced(self, db_path):
         database = Database(db_path)
@@ -284,7 +284,7 @@ class TestRestartPersistence:
 
         # Simulate a restart: brand-new Database/Repository objects over the same file.
         reopened = Repository(Database(db_path))
-        assert reopened.database.applied_version() == 1
+        assert reopened.database.applied_version() == SCHEMA_VERSION
         assert reopened.counts()["analysis_runs"] == 1
 
         reloaded_run = reopened.get_run(record.run_id)

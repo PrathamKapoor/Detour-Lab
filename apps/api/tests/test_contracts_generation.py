@@ -77,6 +77,12 @@ class TestTypeScriptMapper:
             ({"type": "integer"}, "number"),
             ({"type": "boolean"}, "boolean"),
             ({"type": "array", "items": {"type": "string"}}, "string[]"),
+            # A union item type must stay parenthesised: without it the union
+            # would bind inside the array element type only.
+            (
+                {"type": "array", "items": {"enum": ["candidate_limit", "duration_limit"]}},
+                '("candidate_limit" | "duration_limit")[]',
+            ),
             ({"$ref": "#/$defs/Node"}, "Node"),
             ({"anyOf": [{"type": "string"}, {"type": "null"}]}, "string | null"),
             ({"enum": ["PASS", "FAIL"]}, '"PASS" | "FAIL"'),

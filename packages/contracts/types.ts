@@ -43,6 +43,121 @@ export interface BaseGraphVersion {
   content_hash?: string;
 }
 
+export interface BaselineOD {
+  origin_id: string;
+  destination_id: string;
+  confirmed_reachable: boolean;
+  possibly_reachable: boolean;
+  confirmed_distance_m?: number | null;
+  possible_distance_m?: number | null;
+}
+
+export interface BaselineProfile {
+  profile_id: string;
+  semantic_hash: string;
+  phase_graph_id: string;
+  phase_graph_hash: string;
+  od_results: BaselineOD[];
+}
+
+export interface BudgetCheck {
+  status: "not_requested" | "within" | "exceeds" | "cannot_certify_unknown_cost";
+  budget_amount?: number | null;
+  budget_currency?: string | null;
+  basis?: string | null;
+  detail?: string;
+}
+
+export interface CandidateAssumption {
+  intervention_id: string;
+  element_id: string;
+  field: string;
+  value_display: string;
+  unit?: string | null;
+  provenance_class: string;
+  verification_status: string;
+  note: string;
+  requires_field_verification?: boolean;
+}
+
+export interface CandidateCostLine {
+  intervention_id: string;
+  cost_id: string;
+  label: string;
+  provenance: CostProvenance;
+  currency: string;
+  quantity: number;
+  unit: string;
+  total_nominal?: number | null;
+  total_max?: number | null;
+  note?: string;
+}
+
+export interface CandidateCostSummary {
+  currency?: string | null;
+  nominal?: number | null;
+  maximum?: number | null;
+  unknown?: boolean;
+  mixed_currency?: boolean;
+  provenance_notes?: string[];
+  lines?: CandidateCostLine[];
+}
+
+export interface CandidateEvaluation {
+  proposal: CandidateProposal;
+  classification: "certified" | "requires_verification" | "no_improvement" | "rejected";
+  intervention_ids: string[];
+  intervention_count: number;
+  restored_all_profiles?: string[];
+  restored_any_profile?: string[];
+  regressed_pairs?: string[];
+  verifications: CandidateVerification[];
+  assumptions?: CandidateAssumption[];
+  applied_phase_changes?: Record<string, unknown>[];
+  introduced_fail_verdict_count?: number;
+  introduced_unknown_verdict_count?: number;
+  cost: CandidateCostSummary;
+  budget: BudgetCheck;
+  preview_scenario_hash: string;
+  preview_phase_graph_hash: string;
+  rank?: number | null;
+  pareto_optimal?: boolean;
+  tie_group?: number | null;
+  evaluation_failure?: Record<string, unknown> | null;
+}
+
+export interface CandidateProposal {
+  proposal_id: string;
+  intervention_ids: string[];
+  eligible: boolean;
+  rejection_reasons?: string[];
+  restored_required_od?: boolean | null;
+  requires_verification?: boolean;
+  passed_profiles?: string[];
+  failed_profiles?: string[];
+  cost_nominal?: number | null;
+  cost_max?: number | null;
+  cost_unknown?: boolean;
+  added_distance_m?: number | null;
+  solver_status?: SolverStatus;
+}
+
+export interface CandidateVerification {
+  profile_id: string;
+  source_semantic_hash: string;
+  candidate_semantic_hash: string;
+  candidate_phase_graph_id: string;
+  candidate_phase_graph_hash: string;
+  od_transitions: ODTransition[];
+  restored_pairs: string[];
+  gained_possible_pairs: string[];
+  regressed_pairs: string[];
+  new_fail_verdicts: Record<string, string>[];
+  new_unknown_verdicts: Record<string, string>[];
+  added_distance_m?: number | null;
+  comparable_route_count?: number;
+}
+
 export interface CoordinateBasis {
   kind: "local_planar_meters" | "wgs84_degrees";
   unit: "m" | "degree";
@@ -50,6 +165,8 @@ export interface CoordinateBasis {
   crs_note?: string;
   projected_crs?: string | null;
 }
+
+export type CostProvenance = "demo_only" | "user_entered" | "sourced" | "unknown";
 
 export interface DataSource {
   name: string;
@@ -60,6 +177,18 @@ export interface DataSource {
   provenance_class: ProvenanceClass;
   version?: string | null;
   retrieved_at?: string | null;
+}
+
+export interface DomainSummary {
+  eligible_intervention_ids: string[];
+  excluded_interventions: ExcludedIntervention[];
+  domain_combination_count: number;
+  evaluated_count?: number;
+  truncated_by?: ("candidate_limit" | "duration_limit")[];
+  exhausted?: boolean;
+  dependency_blocked?: Record<string, unknown>[];
+  mutually_exclusive_blocked?: Record<string, unknown>[];
+  precondition_rejected?: Record<string, unknown>[];
 }
 
 export interface Edge {
@@ -107,6 +236,11 @@ export interface EvidenceRecord {
   note?: string;
 }
 
+export interface ExcludedIntervention {
+  intervention_id: string;
+  reasons: string[];
+}
+
 export interface Finding {
   id: string;
   element_id: string;
@@ -133,6 +267,61 @@ export interface GraphEdit {
   target_id: string;
   params?: Record<string, unknown>;
   reason?: string;
+}
+
+export interface Intervention {
+  id: string;
+  name?: string;
+  description?: string;
+  enabled?: boolean;
+  allowed_ops: string[];
+  target_element_ids?: string[];
+  phases?: string[];
+  requires_intervention_ids?: string[];
+  excludes_intervention_ids?: string[];
+  preconditions?: InterventionPrecondition[];
+  effect?: InterventionEffect | null;
+  costs?: InterventionCost[];
+  constructible_in_field?: boolean;
+  geometry_provided?: boolean;
+  note?: string;
+}
+
+export interface InterventionCost {
+  id: string;
+  label: string;
+  provenance?: CostProvenance;
+  currency?: string;
+  quantity: number;
+  unit?: string;
+  unit_price_min?: number | null;
+  unit_price_nominal?: number | null;
+  unit_price_max?: number | null;
+  setup_cost_nominal?: number | null;
+  removal_cost_nominal?: number | null;
+  note?: string;
+}
+
+export interface InterventionEffect {
+  edits?: GraphEdit[];
+  temporary_edges?: TemporaryEdge[];
+  phase_changes?: InterventionPhaseChange[];
+}
+
+export interface InterventionPhaseChange {
+  phase_id: string;
+  close_edge_ids?: string[];
+  unclose_edge_ids?: string[];
+  activate_temporary_edge_ids?: string[];
+  deactivate_temporary_edge_ids?: string[];
+}
+
+export interface InterventionPrecondition {
+  check: "edge_exists" | "node_exists" | "phase_exists" | "edge_closed_in_phase" | "edge_open_in_phase" | "temporary_edge_active_in_phase" | "field_known" | "field_unknown";
+  target_id: string;
+  phase_id?: string | null;
+  field?: string | null;
+  description?: string;
 }
 
 export interface MobilityProfile {
@@ -176,6 +365,18 @@ export interface ODPairResult {
   reason_codes?: ReasonCode[];
 }
 
+export interface ODTransition {
+  origin_id: string;
+  destination_id: string;
+  before_confirmed: boolean;
+  before_possible: boolean;
+  after_confirmed: boolean;
+  after_possible: boolean;
+  before_distance_m?: number | null;
+  after_distance_m?: number | null;
+  added_distance_m?: number | null;
+}
+
 export type Operator = "gte" | "lte" | "gt" | "lt" | "eq" | "one_of" | "exists";
 
 export interface OriginDestination {
@@ -202,6 +403,14 @@ export interface Phase {
 }
 
 export type ProvenanceClass = "measured" | "external_source" | "derived" | "assumed" | "synthetic" | "synthetic_fixture";
+
+export interface RankingPolicy {
+  id?: string;
+  version?: string;
+  monetary_default?: string;
+  order?: string[];
+  description?: string;
+}
 
 export type ReasonCode = "RULE_PASS" | "RULE_FAIL" | "RULE_NOT_APPLICABLE" | "RULE_UNKNOWN_ATTRIBUTE" | "NO_EVIDENCE" | "CONFLICTING_EVIDENCE" | "UNSUPPORTED_UNIT" | "INVALID_NUMERIC_VALUE" | "EVIDENCE_EXPIRED" | "EVIDENCE_NOT_VERIFIED" | "EVIDENCE_INVALIDATED" | "NO_FRESHNESS_POLICY" | "EDGE_CLOSED_IN_PHASE" | "EDGE_NOT_ACTIVE_IN_PHASE" | "NODE_BLOCKED" | "NO_APPLICABLE_RULES" | "DUPLICATE_ID" | "UNKNOWN_NODE_REFERENCE" | "SELF_LOOP" | "CROSSING_WITHOUT_NODE" | "CONFIRMED_ROUTE_FOUND" | "POSSIBLE_ROUTE_ONLY" | "NO_ROUTE" | "ORIGIN_NODE_MISSING" | "DESTINATION_NODE_MISSING" | "DEMO_RULEPACK_NOT_LEGAL" | "SYNTHETIC_DATA_NOTICE" | "NOT_CERTIFIED";
 
@@ -298,6 +507,59 @@ export interface Scenario {
   created_at?: string | null;
   content_hash?: string;
 }
+
+export interface SearchBudget {
+  amount: number;
+  currency?: string;
+  basis?: "nominal" | "conservative_max";
+}
+
+export interface SearchConfig {
+  max_interventions?: number;
+  max_candidates?: number;
+  max_duration_ms?: number;
+  excluded_intervention_ids?: string[];
+  budget?: SearchBudget | null;
+  monetary_objective?: "off" | "nominal";
+}
+
+export interface SearchOutcome {
+  schema_version?: string;
+  engine_version: string;
+  search_id: string;
+  created_at: string;
+  duration_ms: number;
+  scenario_id: string;
+  scenario_revision: number;
+  scenario_content_hash: string;
+  base_graph_version_id: string;
+  base_graph_hash: string;
+  rulepack_id: string;
+  rulepack_hash: string;
+  phase_id: string;
+  profile_ids: string[];
+  evaluation_instant: string;
+  config: SearchConfig;
+  domain: DomainSummary;
+  baseline: BaselineProfile[];
+  candidates: CandidateEvaluation[];
+  ranking_policy: RankingPolicy;
+  status: SearchStatus;
+  input_hash?: string;
+  semantic_hash?: string;
+  disclaimers?: string[];
+}
+
+export interface SearchStatus {
+  solver_status: SolverStatus;
+  exhaustive: boolean;
+  limits_hit?: string[];
+  best_proposal_id?: string | null;
+  scope_note?: string;
+  notes?: string[];
+}
+
+export type SolverStatus = "OPTIMAL_IN_ENUMERATED_DOMAIN" | "FEASIBLE_NOT_PROVEN_OPTIMAL" | "NO_FEASIBLE_IN_ENUMERATED_DOMAIN" | "INVALID_INPUT" | "INCOMPLETE_OR_UNKNOWN";
 
 export interface TemporaryEdge {
   id: string;

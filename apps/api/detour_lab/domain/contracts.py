@@ -45,6 +45,9 @@ __all__ = [
     "Finding",
     "FreshnessPolicy",
     "Intervention",
+    "InterventionEffect",
+    "InterventionPhaseChange",
+    "InterventionPrecondition",
     "MobilityProfile",
     "Node",
     "ODPairResult",
@@ -620,6 +623,89 @@ class InterventionCost(StrictModel):
         )
 
 
+class InterventionPhaseChange(StrictModel):
+    """Declared change to one construction phase's closure/temporary-edge sets.
+
+    This is how "change the activation phase of a designated closure" is
+    expressed without inventing a new graph operation: the candidate's derived
+    scenario carries a phase whose declared sets differ from the source.
+    """
+
+    phase_id: str = Field(min_length=1)
+    close_edge_ids: list[str] = Field(default_factory=list)
+    unclose_edge_ids: list[str] = Field(default_factory=list)
+    activate_temporary_edge_ids: list[str] = Field(default_factory=list)
+    deactivate_temporary_edge_ids: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _nonempty(self) -> Self:
+        if not (
+            self.close_edge_ids
+            or self.unclose_edge_ids
+            or self.activate_temporary_edge_ids
+            or self.deactivate_temporary_edge_ids
+        ):
+            raise ValueError("a phase change must modify at least one declared set")
+        return self
+
+
+class InterventionPrecondition(StrictModel):
+    """Declarative precondition evaluated against the source plan.
+
+    Whitelisted checks only (MASTER_PROMPT §7.2); an unevaluable precondition is
+    a rejection, never a silent pass.
+    """
+
+    check: Literal[
+        "edge_exists",
+        "node_exists",
+        "phase_exists",
+        "edge_closed_in_phase",
+        "edge_open_in_phase",
+        "temporary_edge_active_in_phase",
+        "field_known",
+        "field_unknown",
+    ]
+    target_id: str = Field(min_length=1)
+    phase_id: str | None = None
+    field: str | None = None
+    description: str = ""
+
+    @model_validator(mode="after")
+    def _arguments(self) -> Self:
+        needs_phase = {"edge_closed_in_phase", "edge_open_in_phase", "temporary_edge_active_in_phase"}
+        if self.check in needs_phase and not self.phase_id:
+            raise ValueError(f"precondition {self.check!r} requires phase_id")
+        if self.check in {"field_known", "field_unknown"} and not self.field:
+            raise ValueError(f"precondition {self.check!r} requires field")
+        return self
+
+
+class InterventionEffect(StrictModel):
+    """Concrete, typed effect of selecting an intervention.
+
+    Three channels, all of which map onto existing, audited machinery:
+
+    * ``edits`` - :class:`GraphEdit` operations appended to the scenario plan;
+    * ``temporary_edges`` - :class:`TemporaryEdge` declarations the plan adds;
+    * ``phase_changes`` - modifications to declared phase sets (closures and
+      temporary-edge activation), materialised as a changed phase list.
+
+    Declared geometry, values and evidence inside an effect are **demo fixture
+    data authored in this repository**; the engine never synthesises any of it.
+    """
+
+    edits: list[GraphEdit] = Field(default_factory=list)
+    temporary_edges: list[TemporaryEdge] = Field(default_factory=list)
+    phase_changes: list[InterventionPhaseChange] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _nonempty(self) -> Self:
+        if not (self.edits or self.temporary_edges or self.phase_changes):
+            raise ValueError("an intervention effect must contain at least one change")
+        return self
+
+
 class Intervention(StrictModel):
     """Candidate modification from the bounded, editable library (FR-102)."""
 
@@ -629,14 +715,28 @@ class Intervention(StrictModel):
     enabled: bool = True
     allowed_ops: list[str] = Field(min_length=1)
     target_element_ids: list[str] = Field(default_factory=list)
+    #: Applicability phases. An empty list means "offered in every phase".
     phases: list[str] = Field(default_factory=list)
     requires_intervention_ids: list[str] = Field(default_factory=list)
     excludes_intervention_ids: list[str] = Field(default_factory=list)
-    precondition_expression: dict[str, Any] | None = None
-    active_phase_ids: list[str] = Field(default_factory=list)
+    preconditions: list[InterventionPrecondition] = Field(default_factory=list)
+    effect: InterventionEffect | None = None
     costs: list[InterventionCost] = Field(default_factory=list)
+    #: False means: modelled only. Field constructibility has not been confirmed.
     constructible_in_field: bool = False
     geometry_provided: bool = False
+    note: str = ""
+
+    @model_validator(mode="after")
+    def _enabled_interventions_are_concrete(self) -> Self:
+        if self.enabled and self.effect is None:
+            raise ValueError(
+                f"enabled intervention {self.id!r} must declare an effect; a suggestion with no "
+                "materialisable change cannot be verified"
+            )
+        if self.id in self.requires_intervention_ids or self.id in self.excludes_intervention_ids:
+            raise ValueError(f"intervention {self.id!r} must not reference itself in its constraints")
+        return self
 
 
 class CandidateProposal(StrictModel):

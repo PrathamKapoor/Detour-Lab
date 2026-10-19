@@ -6,6 +6,7 @@ import pytest
 from detour_lab import ENGINE_VERSION, MANIFEST_SCHEMA_VERSION
 from detour_lab.api.main import create_app
 from detour_lab.api.state import DEMO_PROJECT_ID, DEMO_SCENARIO_ID
+from detour_lab.persistence.db import SCHEMA_VERSION
 from fastapi.testclient import TestClient
 
 EVAL_INSTANT = "2026-03-01T00:00:00Z"
@@ -25,7 +26,7 @@ class TestHealthAndSchema:
         assert body["rulepack_id"] == "DEMO_RULEPACK_NOT_LEGAL"
         assert body["rulepack_hash"].startswith("sha256:")
         assert body["legal_applicability"] == "unverified"
-        assert body["database_schema_version"] == 1
+        assert body["database_schema_version"] == SCHEMA_VERSION
         assert body["row_counts"]["projects"] == 1
         assert body["row_counts"]["evidence"] == 37
 
@@ -41,6 +42,11 @@ class TestHealthAndSchema:
             "/api/v1/scenarios/{scenario_id}/evaluate",
             "/api/v1/runs/{run_id}",
             "/api/v1/runs/{run_id}/manifest",
+            "/api/v1/scenarios/{scenario_id}/optimization/interventions",
+            "/api/v1/scenarios/{scenario_id}/optimization/search",
+            "/api/v1/scenarios/{scenario_id}/optimization/searches",
+            "/api/v1/optimization/searches/{search_id}",
+            "/api/v1/optimization/promote",
         ):
             assert route in paths, f"{route} missing from the OpenAPI document"
 

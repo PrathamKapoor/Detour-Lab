@@ -17,6 +17,7 @@ __all__ = [
     "database_path",
     "default_basis",
     "default_source",
+    "interventions_path",
     "repo_root",
     "rulepack_path",
     "seed_dataset_path",
@@ -38,6 +39,11 @@ def seed_dataset_path() -> Path:
 
 def rulepack_path() -> Path:
     return repo_root() / "apps" / "api" / "detour_lab" / "rules" / "rulepacks" / "DEMO_RULEPACK_NOT_LEGAL.v1.json"
+
+
+def interventions_path() -> Path:
+    """Bundled demonstration intervention library (immutable, versioned data)."""
+    return repo_root() / "data" / "demo" / "interventions.demo.json"
 
 
 def database_path() -> Path:

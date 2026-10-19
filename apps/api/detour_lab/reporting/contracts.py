@@ -25,12 +25,19 @@ __all__ = ["CONTRACT_MODELS", "generate_contracts", "model_to_typescript"]
 from detour_lab.domain.contracts import (
     AnalysisResult,
     BaseGraphVersion,
+    CandidateProposal,
     CoordinateBasis,
     DataSource,
     Edge,
     EdgeEvaluation,
     EvidenceRecord,
     Finding,
+    GraphEdit,
+    Intervention,
+    InterventionCost,
+    InterventionEffect,
+    InterventionPhaseChange,
+    InterventionPrecondition,
     MobilityProfile,
     Node,
     ODPairResult,
@@ -42,6 +49,24 @@ from detour_lab.domain.contracts import (
     RuleVerdict,
     Scenario,
     TemporaryEdge,
+)
+from detour_lab.optimization.model import (
+    BaselineOD,
+    BaselineProfile,
+    BudgetCheck,
+    CandidateAssumption,
+    CandidateCostLine,
+    CandidateCostSummary,
+    CandidateEvaluation,
+    CandidateVerification,
+    DomainSummary,
+    ExcludedIntervention,
+    ODTransition,
+    RankingPolicy,
+    SearchBudget,
+    SearchConfig,
+    SearchOutcome,
+    SearchStatus,
 )
 
 #: Domain models exposed to the frontend, in dependency order. The generated
@@ -59,6 +84,7 @@ CONTRACT_MODELS: tuple[type[BaseModel], ...] = (
     Phase,
     TemporaryEdge,
     Scenario,
+    GraphEdit,
     Rule,
     RulePack,
     MobilityProfile,
@@ -67,6 +93,28 @@ CONTRACT_MODELS: tuple[type[BaseModel], ...] = (
     EdgeEvaluation,
     ODPairResult,
     AnalysisResult,
+    InterventionCost,
+    InterventionPhaseChange,
+    InterventionPrecondition,
+    InterventionEffect,
+    Intervention,
+    CandidateProposal,
+    SearchBudget,
+    SearchConfig,
+    ExcludedIntervention,
+    DomainSummary,
+    BaselineOD,
+    BaselineProfile,
+    ODTransition,
+    CandidateVerification,
+    CandidateAssumption,
+    CandidateCostLine,
+    CandidateCostSummary,
+    BudgetCheck,
+    CandidateEvaluation,
+    RankingPolicy,
+    SearchStatus,
+    SearchOutcome,
 )
 
 _HEADER = """// GENERATED FILE - do not edit by hand.
@@ -111,7 +159,12 @@ def _ts_type(schema: dict[str, Any]) -> str:
         case "null":
             return "null"
         case "array":
-            return f"{_ts_type(schema.get('items', {}))}[]"
+            item_type = _ts_type(schema.get("items", {}))
+            # A union item type must keep its parentheses: without them
+            # `"a" | "b"[]` would bind as `"a" | ("b"[])`.
+            if " | " in item_type:
+                item_type = f"({item_type})"
+            return f"{item_type}[]"
         case "object" | None:
             if "additionalProperties" in schema:
                 return f"Record<string, {_ts_type(schema['additionalProperties'])}>"

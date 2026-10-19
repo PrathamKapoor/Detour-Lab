@@ -26,7 +26,7 @@ from typing import Any
 
 __all__ = ["SCHEMA_VERSION", "Database", "MigrationError", "utc_now_iso"]
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 class MigrationError(RuntimeError):
@@ -169,6 +169,29 @@ MIGRATIONS: tuple[Migration, ...] = (
             )
             """,
             "CREATE INDEX IF NOT EXISTS idx_runs_scenario ON analysis_runs(scenario_id, created_at)",
+        ),
+    ),
+    Migration(
+        version=2,
+        name="bounded_optimization_runs",
+        statements=(
+            """
+            CREATE TABLE IF NOT EXISTS optimization_runs (
+                id                  TEXT PRIMARY KEY,
+                project_id          TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                scenario_id         TEXT NOT NULL REFERENCES scenarios(id) ON DELETE CASCADE,
+                scenario_revision   INTEGER NOT NULL,
+                phase_id            TEXT NOT NULL,
+                engine_version      TEXT NOT NULL,
+                evaluation_instant  TEXT NOT NULL,
+                input_hash          TEXT NOT NULL,
+                semantic_hash       TEXT NOT NULL,
+                payload_json        TEXT NOT NULL,
+                created_at          TEXT NOT NULL
+            )
+            """,
+            "CREATE INDEX IF NOT EXISTS idx_optimization_runs_scenario"
+            " ON optimization_runs(scenario_id, created_at)",
         ),
     ),
 )

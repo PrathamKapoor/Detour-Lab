@@ -1,0 +1,370 @@
+{
+  "schema_version": "1.0.0",
+  "library_id": "DEMO_INTERVENTIONS_NOT_ENGINEERED",
+  "version": "1.0.0",
+  "notice": "Synthetic demonstration intervention library for the DETOUR LAB demo project. Every value (geometry, measurements, costs) is authored demo fixture data, not a field survey, engineering finding, sourced price or legal threshold. Costs are labelled demo-only and are never used for ranking by default; unknown costs are displayed as Not estimated and are never treated as zero.",
+  "interventions": [
+    {
+      "id": "INT-MODEL-CURB-N_EK",
+      "name": "Model a flush transition at the east crossing curb (N_EK)",
+      "description": "Candidate type 'add a modelled curb transition at a designated permitted location': adds a modelled flush curb transition record at the east crossing interface of the synthetic network. This can resolve an UNKNOWN curb verdict in the modelled checks; it is not an observed condition and does not certify constructibility.",
+      "enabled": true,
+      "allowed_ops": ["update_attribute"],
+      "target_element_ids": ["N_EK"],
+      "phases": [],
+      "requires_intervention_ids": [],
+      "excludes_intervention_ids": [],
+      "preconditions": [
+        {
+          "check": "node_exists",
+          "target_id": "N_EK",
+          "description": "The east crossing curb interface must exist in the phase graph."
+        },
+        {
+          "check": "field_unknown",
+          "target_id": "N_EK",
+          "field": "curb_transition",
+          "description": "Do not model over an attribute that the rulepack already resolves."
+        }
+      ],
+      "effect": {
+        "edits": [
+          {
+            "op": "update_attribute",
+            "target_id": "N_EK",
+            "params": {
+              "field": "curb_transition",
+              "value": "flush",
+              "unit": null,
+              "method": "modelled_intervention_fixture",
+              "source": "demo intervention library",
+              "verification_status": "unverified",
+              "quality": "low",
+              "provenance_class": "assumed",
+              "synthetic": true,
+              "note": "Modelled intervention: proposed flush transition at the east crossing interface. Demonstration value; requires field verification before any construction use."
+            },
+            "reason": "Candidate intervention INT-MODEL-CURB-N_EK."
+          }
+        ],
+        "temporary_edges": [],
+        "phase_changes": []
+      },
+      "costs": [
+        {
+          "id": "INT-MODEL-CURB-N_EK-cost",
+          "label": "Modelled curb transition (illustrative demo figure)",
+          "provenance": "demo_only",
+          "currency": "INR",
+          "quantity": 1,
+          "unit": "transition",
+          "unit_price_min": null,
+          "unit_price_nominal": 18000,
+          "unit_price_max": 32000,
+          "setup_cost_nominal": 0,
+          "removal_cost_nominal": 0,
+          "note": "Illustrative demonstration value; no market source consulted. Not a verified price."
+        }
+      ],
+      "constructible_in_field": false,
+      "geometry_provided": false,
+      "note": "Demonstration candidate. Field constructibility is unconfirmed."
+    },
+    {
+      "id": "INT-REMEASURE-ALT-TRACK",
+      "name": "Enter the pre-survey measurements for the rear access track (E_ALT)",
+      "description": "Candidate type 'enable a pre-surveyed alternate connection': enters width and slope values for the rear access track standing in for a pre-survey sheet, so the model can check the route. The values are synthetic fixture data; they are not a real survey and require field verification.",
+      "enabled": true,
+      "allowed_ops": ["update_attribute"],
+      "target_element_ids": ["E_ALT"],
+      "phases": [],
+      "requires_intervention_ids": [],
+      "excludes_intervention_ids": [],
+      "preconditions": [
+        {
+          "check": "edge_exists",
+          "target_id": "E_ALT",
+          "description": "The rear access track must exist in the phase graph."
+        },
+        {
+          "check": "field_unknown",
+          "target_id": "E_ALT",
+          "field": "width_mm",
+          "description": "Only enter measurements that the rulepack does not already resolve."
+        },
+        {
+          "check": "field_unknown",
+          "target_id": "E_ALT",
+          "field": "slope_percent",
+          "description": "Only enter measurements that the rulepack does not already resolve."
+        }
+      ],
+      "effect": {
+        "edits": [
+          {
+            "op": "update_attribute",
+            "target_id": "E_ALT",
+            "params": {
+              "field": "width_mm",
+              "value": 1400,
+              "unit": "mm",
+              "method": "pre_survey_entry_fixture",
+              "source": "demo intervention library (stands in for a pre-survey sheet)",
+              "verification_status": "unverified",
+              "quality": "medium",
+              "provenance_class": "synthetic_fixture",
+              "synthetic": true,
+              "note": "Demonstration: stands in for an entered pre-survey width. Replace with a real survey record before any field use."
+            },
+            "reason": "Candidate intervention INT-REMEASURE-ALT-TRACK (width)."
+          },
+          {
+            "op": "update_attribute",
+            "target_id": "E_ALT",
+            "params": {
+              "field": "slope_percent",
+              "value": 3.0,
+              "unit": "percent",
+              "method": "pre_survey_entry_fixture",
+              "source": "demo intervention library (stands in for a pre-survey sheet)",
+              "verification_status": "unverified",
+              "quality": "medium",
+              "provenance_class": "synthetic_fixture",
+              "synthetic": true,
+              "note": "Demonstration: stands in for an entered pre-survey slope. Replace with a real survey record before any field use."
+            },
+            "reason": "Candidate intervention INT-REMEASURE-ALT-TRACK (slope)."
+          }
+        ],
+        "temporary_edges": [],
+        "phase_changes": []
+      },
+      "costs": [
+        {
+          "id": "INT-REMEASURE-ALT-TRACK-cost",
+          "label": "Pre-survey of the rear access track (illustrative demo figure)",
+          "provenance": "demo_only",
+          "currency": "INR",
+          "quantity": 43.9,
+          "unit": "m",
+          "unit_price_min": null,
+          "unit_price_nominal": 120,
+          "unit_price_max": 300,
+          "setup_cost_nominal": null,
+          "removal_cost_nominal": null,
+          "note": "Illustrative demonstration unit rate; no market source consulted. Not a verified price."
+        }
+      ],
+      "constructible_in_field": false,
+      "geometry_provided": false,
+      "note": "Demonstration candidate standing in for a user-entered pre-survey."
+    },
+    {
+      "id": "INT-BYPASS-IN-PHASE-1",
+      "name": "Activate the east bypass during phase 1 as well",
+      "description": "Candidate type 'change the activation phase of a designated closure/connection': the declared temporary connection TMP-EAST-BYPASS is activated in phase 1 in addition to its declared phase-2 window. Declared for phase 1 only.",
+      "enabled": true,
+      "allowed_ops": ["activate_temporary_edge"],
+      "target_element_ids": ["TMP-EAST-BYPASS"],
+      "phases": ["phase-1"],
+      "requires_intervention_ids": [],
+      "excludes_intervention_ids": ["INT-TEMP-BACKLANE-TRACK"],
+      "preconditions": [
+        {
+          "check": "temporary_edge_active_in_phase",
+          "target_id": "TMP-EAST-BYPASS",
+          "phase_id": "phase-2",
+          "description": "The bypass must already be staged in phase 2 of the source plan."
+        }
+      ],
+      "effect": {
+        "edits": [],
+        "temporary_edges": [],
+        "phase_changes": [
+          {
+            "phase_id": "phase-1",
+            "close_edge_ids": [],
+            "unclose_edge_ids": [],
+            "activate_temporary_edge_ids": ["TMP-EAST-BYPASS"],
+            "deactivate_temporary_edge_ids": []
+          }
+        ]
+      },
+      "costs": [
+        {
+          "id": "INT-BYPASS-IN-PHASE-1-cost",
+          "label": "Stage the east bypass in phase 1 (illustrative demo figure)",
+          "provenance": "demo_only",
+          "currency": "INR",
+          "quantity": 1,
+          "unit": "staging",
+          "unit_price_min": null,
+          "unit_price_nominal": 9000,
+          "unit_price_max": 15000,
+          "setup_cost_nominal": null,
+          "removal_cost_nominal": null,
+          "note": "Illustrative demonstration value; no market source consulted. Not a verified price."
+        }
+      ],
+      "constructible_in_field": false,
+      "geometry_provided": false,
+      "note": "Demonstration exclusion: this synthetic fixture models a planner rule that at most one additional temporary track may be staged in phase 1, so it excludes INT-TEMP-BACKLANE-TRACK. It is a demonstration planning constraint, not an engineering or safety finding."
+    },
+    {
+      "id": "INT-TEMP-BACKLANE-TRACK",
+      "name": "Add a temporary back-lane track to the main gate (width unknown)",
+      "description": "Candidate type 'add a predetermined temporary path edge with documented geometry': a straight synthetic track from the back-lane west end to the campus main gate, with documented geometry, slope and surface records but deliberately no width measurement. The missing width keeps the edge UNKNOWN, so this candidate can never become model-confirmed as-is.",
+      "enabled": true,
+      "allowed_ops": ["activate_temporary_edge"],
+      "target_element_ids": ["TMP-BACKLANE-LINK"],
+      "phases": ["phase-1"],
+      "requires_intervention_ids": [],
+      "excludes_intervention_ids": [],
+      "preconditions": [
+        {
+          "check": "node_exists",
+          "target_id": "N_B1",
+          "description": "The back-lane west end must exist in the phase graph."
+        },
+        {
+          "check": "node_exists",
+          "target_id": "N_S",
+          "description": "The campus main gate must exist in the phase graph."
+        }
+      ],
+      "effect": {
+        "edits": [],
+        "temporary_edges": [
+          {
+            "id": "TMP-BACKLANE-LINK",
+            "u": "N_B1",
+            "v": "N_S",
+            "geometry": [[0.0, 18.0], [40.0, 18.0]],
+            "length_m": 40.0,
+            "edge_type": "temporary_path",
+            "name": "Modelled temporary back-lane link (demo)",
+            "evidence": [
+              {
+                "id": "EV-TMP-BACKLANE-LINK-slope",
+                "element_id": "TMP-BACKLANE-LINK",
+                "field": "slope_percent",
+                "value": 2.0,
+                "unit": "percent",
+                "method": "fixture",
+                "source": "demo intervention library",
+                "source_url": null,
+                "observed_at": null,
+                "verification_status": "unverified",
+                "quality": "low",
+                "reviewer": null,
+                "invalidated": false,
+                "provenance_class": "synthetic_fixture",
+                "synthetic": true,
+                "note": "Demonstration fixture value for a modelled temporary track."
+              },
+              {
+                "id": "EV-TMP-BACKLANE-LINK-surface",
+                "element_id": "TMP-BACKLANE-LINK",
+                "field": "surface",
+                "value": "asphalt",
+                "unit": null,
+                "method": "fixture",
+                "source": "demo intervention library",
+                "source_url": null,
+                "observed_at": null,
+                "verification_status": "unverified",
+                "quality": "low",
+                "reviewer": null,
+                "invalidated": false,
+                "provenance_class": "synthetic_fixture",
+                "synthetic": true,
+                "note": "Demonstration fixture value for a modelled temporary track."
+              }
+            ],
+            "constructible_in_field": false,
+            "field_verification_note": "Modelled intervention edge. Geometry and slope are synthetic fixture values; a width measurement is intentionally absent, so the edge stays UNKNOWN."
+          }
+        ],
+        "phase_changes": [
+          {
+            "phase_id": "phase-1",
+            "close_edge_ids": [],
+            "unclose_edge_ids": [],
+            "activate_temporary_edge_ids": ["TMP-BACKLANE-LINK"],
+            "deactivate_temporary_edge_ids": []
+          }
+        ]
+      },
+      "costs": [
+        {
+          "id": "INT-TEMP-BACKLANE-TRACK-cost",
+          "label": "Temporary back-lane track (price not estimated)",
+          "provenance": "demo_only",
+          "currency": "INR",
+          "quantity": 1,
+          "unit": "track",
+          "unit_price_min": null,
+          "unit_price_nominal": null,
+          "unit_price_max": null,
+          "setup_cost_nominal": null,
+          "removal_cost_nominal": null,
+          "note": "No price estimate exists for this demo item; it is displayed as Not estimated and is never treated as zero."
+        }
+      ],
+      "constructible_in_field": false,
+      "geometry_provided": true,
+      "note": "Demonstration candidate whose designed width measurement is unknown; expected outcome is a requires-verification bucket entry, not a certified one."
+    },
+    {
+      "id": "INT-REOPEN-E_ES1-P2",
+      "name": "Keep the east link's north half open during phase 2 (with a modelled curb)",
+      "description": "Candidate type 'change the activation phase of a designated closure': phase 2 no longer closes E_ES1. The candidate is proposed together with the modelled east curb transition, because the reopened half alone still dead-ends at an unresolved curb interface. Declared for phase 2 only.",
+      "enabled": true,
+      "allowed_ops": ["close_edge"],
+      "target_element_ids": ["E_ES1"],
+      "phases": ["phase-2"],
+      "requires_intervention_ids": ["INT-MODEL-CURB-N_EK"],
+      "excludes_intervention_ids": [],
+      "preconditions": [
+        {
+          "check": "edge_closed_in_phase",
+          "target_id": "E_ES1",
+          "phase_id": "phase-2",
+          "description": "E_ES1 must really be closed in phase 2 of the source plan for this change to mean anything."
+        }
+      ],
+      "effect": {
+        "edits": [],
+        "temporary_edges": [],
+        "phase_changes": [
+          {
+            "phase_id": "phase-2",
+            "close_edge_ids": [],
+            "unclose_edge_ids": ["E_ES1"],
+            "activate_temporary_edge_ids": [],
+            "deactivate_temporary_edge_ids": []
+          }
+        ]
+      },
+      "costs": [
+        {
+          "id": "INT-REOPEN-E_ES1-P2-cost",
+          "label": "Keep the east link north half open (illustrative demo figure)",
+          "provenance": "demo_only",
+          "currency": "INR",
+          "quantity": 1,
+          "unit": "phase stage",
+          "unit_price_min": null,
+          "unit_price_nominal": 6000,
+          "unit_price_max": null,
+          "setup_cost_nominal": null,
+          "removal_cost_nominal": null,
+          "note": "Illustrative demonstration value with no declared upper bound; the conservative maximum cannot be certified. No market source consulted."
+        }
+      ],
+      "constructible_in_field": false,
+      "geometry_provided": false,
+      "note": "Demonstration candidate with a declared dependency; the engine expands the dependency and reports it instead of silently dropping the item."
+    }
+  ]
+}

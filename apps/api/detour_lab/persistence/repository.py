@@ -39,7 +39,14 @@ from detour_lab.graph.model import PedestrianGraph
 from detour_lab.persistence.db import Database, dumps, loads, utc_now_iso
 from detour_lab.scenarios.apply import GraphEditError
 
-__all__ = ["NotFoundError", "OptimisticConflictError", "Repository", "RunRecord"]
+__all__ = [
+    "NotFoundError",
+    "OptimisticConflictError",
+    "Repository",
+    "RunRecord",
+    "ScenarioIdExistsError",
+    "StoredOptimizationRun",
+]
 
 
 class NotFoundError(LookupError):
@@ -62,6 +69,30 @@ class OptimisticConflictError(RuntimeError):
         self.code = "REVISION_CONFLICT"
         self.expected = expected
         self.actual = actual
+
+
+class ScenarioIdExistsError(RuntimeError):
+    """A scenario id collision during promotion (HTTP 409)."""
+
+    def __init__(self, scenario_id: str) -> None:
+        super().__init__(f"scenario {scenario_id!r} already exists")
+        self.code = "SCENARIO_ID_EXISTS"
+        self.scenario_id = scenario_id
+
+
+@dataclass(frozen=True, slots=True)
+class StoredOptimizationRun:
+    search_id: str
+    project_id: str
+    scenario_id: str
+    scenario_revision: int
+    phase_id: str
+    engine_version: str
+    evaluation_instant: str
+    input_hash: str
+    semantic_hash: str
+    created_at: str
+    payload: dict[str, Any]
 
 
 @dataclass(frozen=True, slots=True)
@@ -438,6 +469,128 @@ class Repository:
             for row in rows
         ]
 
+    def promote_scenario(
+        self,
+        *,
+        scenario: Scenario,
+        source_scenario_id: str,
+        expected_source_revision: int,
+    ) -> Scenario:
+        """Insert a promoted branch atomically (MASTER_PROMPT §7.9).
+
+        One transaction: the source revision is verified against the caller's
+        expectation, the branch id must be free, and both rows are inserted.
+        Any failure leaves nothing behind, and the source is never touched.
+        """
+        with self.database.transaction() as connection:
+            source = connection.execute(
+                "SELECT project_id, revision FROM scenarios WHERE id = ?", (source_scenario_id,)
+            ).fetchone()
+            if source is None:
+                raise NotFoundError("scenario", source_scenario_id)
+            actual = int(source["revision"])
+            if actual != expected_source_revision:
+                raise OptimisticConflictError(source_scenario_id, expected_source_revision, actual)
+            clash = connection.execute("SELECT 1 FROM scenarios WHERE id = ?", (scenario.id,)).fetchone()
+            if clash is not None:
+                raise ScenarioIdExistsError(scenario.id)
+            created = (scenario.created_at or datetime.now(UTC)).isoformat()
+            payload = dumps(scenario.model_dump(mode="json"))
+            connection.execute(
+                "INSERT INTO scenarios (id, project_id, parent_scenario_id, base_graph_version_id,"
+                " rulepack_id, rulepack_hash, revision, content_hash, payload_json, created_at)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    scenario.id,
+                    source["project_id"],
+                    scenario.parent_scenario_id,
+                    scenario.base_graph_version_id,
+                    scenario.rulepack_id,
+                    scenario.rulepack_hash,
+                    scenario.revision,
+                    scenario.content_hash,
+                    payload,
+                    created,
+                ),
+            )
+            connection.execute(
+                "INSERT INTO scenario_revisions (scenario_id, revision, content_hash, payload_json, created_at)"
+                " VALUES (?, ?, ?, ?, ?)",
+                (scenario.id, scenario.revision, scenario.content_hash, payload, created),
+            )
+        return scenario
+
+    # ----------------------------------------------------- optimisation runs
+    def store_optimization_run(
+        self,
+        *,
+        search_id: str,
+        scenario_id: str,
+        scenario_revision: int,
+        phase_id: str,
+        engine_version: str,
+        evaluation_instant: str,
+        input_hash: str,
+        semantic_hash: str,
+        payload: dict[str, Any],
+        created_at: str,
+    ) -> None:
+        """Persist one bounded search. The payload stays canonical JSON."""
+        with self.database.transaction() as connection:
+            source = connection.execute(
+                "SELECT project_id FROM scenarios WHERE id = ?", (scenario_id,)
+            ).fetchone()
+            if source is None:
+                raise NotFoundError("scenario", scenario_id)
+            connection.execute(
+                "INSERT INTO optimization_runs (id, project_id, scenario_id, scenario_revision,"
+                " phase_id, engine_version, evaluation_instant, input_hash, semantic_hash,"
+                " payload_json, created_at)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    search_id,
+                    source["project_id"],
+                    scenario_id,
+                    scenario_revision,
+                    phase_id,
+                    engine_version,
+                    evaluation_instant,
+                    input_hash,
+                    semantic_hash,
+                    dumps(payload),
+                    created_at,
+                ),
+            )
+
+    def get_optimization_run(self, search_id: str) -> StoredOptimizationRun:
+        with self.database.read() as connection:
+            row = connection.execute(
+                "SELECT * FROM optimization_runs WHERE id = ?", (search_id,)
+            ).fetchone()
+        if row is None:
+            raise NotFoundError("optimization search", search_id)
+        return StoredOptimizationRun(
+            search_id=row["id"],
+            project_id=row["project_id"],
+            scenario_id=row["scenario_id"],
+            scenario_revision=int(row["scenario_revision"]),
+            phase_id=row["phase_id"],
+            engine_version=row["engine_version"],
+            evaluation_instant=row["evaluation_instant"],
+            input_hash=row["input_hash"],
+            semantic_hash=row["semantic_hash"],
+            created_at=row["created_at"],
+            payload=loads(row["payload_json"]),
+        )
+
+    def list_optimization_runs(self, scenario_id: str) -> list[StoredOptimizationRun]:
+        with self.database.read() as connection:
+            rows = connection.execute(
+                "SELECT id FROM optimization_runs WHERE scenario_id = ? ORDER BY created_at, id",
+                (scenario_id,),
+            ).fetchall()
+        return [self.get_optimization_run(row["id"]) for row in rows]
+
     # ----------------------------------------------------------------------- runs
     def evaluate_and_store(
         self,
@@ -560,6 +713,7 @@ class Repository:
                 "scenarios",
                 "scenario_revisions",
                 "analysis_runs",
+                "optimization_runs",
             ):
                 out[table] = int(
                     connection.execute(f"SELECT COUNT(*) AS c FROM {table}").fetchone()["c"]

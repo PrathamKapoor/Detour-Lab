@@ -443,6 +443,45 @@
         "title": "Phase",
         "type": "object"
       },
+      "PromoteRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_source_revision": {
+            "minimum": 1.0,
+            "title": "Expected Source Revision",
+            "type": "integer"
+          },
+          "new_scenario_id": {
+            "minLength": 1,
+            "title": "New Scenario Id",
+            "type": "string"
+          },
+          "new_scenario_name": {
+            "minLength": 1,
+            "title": "New Scenario Name",
+            "type": "string"
+          },
+          "proposal_id": {
+            "minLength": 1,
+            "title": "Proposal Id",
+            "type": "string"
+          },
+          "search_id": {
+            "minLength": 1,
+            "title": "Search Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "search_id",
+          "proposal_id",
+          "new_scenario_id",
+          "new_scenario_name",
+          "expected_source_revision"
+        ],
+        "title": "PromoteRequest",
+        "type": "object"
+      },
       "ProvenanceClass": {
         "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
         "enum": [
@@ -607,6 +646,136 @@
         "title": "ScenarioRequest",
         "type": "object"
       },
+      "SearchBudget": {
+        "additionalProperties": false,
+        "description": "User-entered budget. No exchange rates are ever invented.",
+        "properties": {
+          "amount": {
+            "minimum": 0.0,
+            "title": "Amount",
+            "type": "number"
+          },
+          "basis": {
+            "default": "nominal",
+            "enum": [
+              "nominal",
+              "conservative_max"
+            ],
+            "title": "Basis",
+            "type": "string"
+          },
+          "currency": {
+            "default": "INR",
+            "maxLength": 12,
+            "minLength": 1,
+            "title": "Currency",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "title": "SearchBudget",
+        "type": "object"
+      },
+      "SearchConfig": {
+        "additionalProperties": false,
+        "description": "Explicit, auditable search limits (MASTER_PROMPT \u00a77.3).",
+        "properties": {
+          "budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SearchBudget"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "excluded_intervention_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Excluded Intervention Ids",
+            "type": "array"
+          },
+          "max_candidates": {
+            "default": 60,
+            "maximum": 500.0,
+            "minimum": 1.0,
+            "title": "Max Candidates",
+            "type": "integer"
+          },
+          "max_duration_ms": {
+            "default": 30000,
+            "maximum": 600000.0,
+            "minimum": 1.0,
+            "title": "Max Duration Ms",
+            "type": "integer"
+          },
+          "max_interventions": {
+            "default": 2,
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Max Interventions",
+            "type": "integer"
+          },
+          "monetary_objective": {
+            "default": "off",
+            "enum": [
+              "off",
+              "nominal"
+            ],
+            "title": "Monetary Objective",
+            "type": "string"
+          }
+        },
+        "title": "SearchConfig",
+        "type": "object"
+      },
+      "SearchRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/SearchConfig"
+          },
+          "evaluation_instant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Instant"
+          },
+          "phase_id": {
+            "minLength": 1,
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "profile_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Ids"
+          }
+        },
+        "required": [
+          "phase_id"
+        ],
+        "title": "SearchRequest",
+        "type": "object"
+      },
       "TemporaryEdge": {
         "additionalProperties": false,
         "description": "Ephemeral path that exists only in declared phases.",
@@ -760,6 +929,95 @@
           }
         },
         "summary": "Health"
+      }
+    },
+    "/api/v1/optimization/promote": {
+      "post": {
+        "description": "Apply one candidate to a **new** scenario branch, then re-verify it.",
+        "operationId": "promote_api_v1_optimization_promote_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Promote Api V1 Optimization Promote Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Promote",
+        "tags": [
+          "optimization"
+        ]
+      }
+    },
+    "/api/v1/optimization/searches/{search_id}": {
+      "get": {
+        "description": "The full stored payload of one search (the replay source).",
+        "operationId": "get_search_api_v1_optimization_searches__search_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "search_id",
+            "required": true,
+            "schema": {
+              "title": "Search Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Search Api V1 Optimization Searches  Search Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Search",
+        "tags": [
+          "optimization"
+        ]
       }
     },
     "/api/v1/projects": {
@@ -1247,6 +1505,167 @@
           }
         },
         "summary": "Evaluate"
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/optimization/interventions": {
+      "get": {
+        "description": "The bundled intervention library as applicable to the selected phase.",
+        "operationId": "list_interventions_api_v1_scenarios__scenario_id__optimization_interventions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "phase_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Interventions Api V1 Scenarios  Scenario Id  Optimization Interventions Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Interventions",
+        "tags": [
+          "optimization"
+        ]
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/optimization/search": {
+      "post": {
+        "description": "Run one bounded search. Persisted; the response is the stored payload.",
+        "operationId": "start_search_api_v1_scenarios__scenario_id__optimization_search_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Start Search Api V1 Scenarios  Scenario Id  Optimization Search Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Search",
+        "tags": [
+          "optimization"
+        ]
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/optimization/searches": {
+      "get": {
+        "description": "Search history for this scenario, oldest first, for replay comparisons.",
+        "operationId": "list_searches_api_v1_scenarios__scenario_id__optimization_searches_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Searches Api V1 Scenarios  Scenario Id  Optimization Searches Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Searches",
+        "tags": [
+          "optimization"
+        ]
       }
     },
     "/api/v1/scenarios/{scenario_id}/phases/{phase_id}/graph": {

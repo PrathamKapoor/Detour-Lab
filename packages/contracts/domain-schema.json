@@ -1143,6 +1143,1553 @@
     "title": "BaseGraphVersion",
     "type": "object"
   },
+  "BaselineOD": {
+    "additionalProperties": false,
+    "properties": {
+      "confirmed_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Confirmed Distance M"
+      },
+      "confirmed_reachable": {
+        "title": "Confirmed Reachable",
+        "type": "boolean"
+      },
+      "destination_id": {
+        "title": "Destination Id",
+        "type": "string"
+      },
+      "origin_id": {
+        "title": "Origin Id",
+        "type": "string"
+      },
+      "possible_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Possible Distance M"
+      },
+      "possibly_reachable": {
+        "title": "Possibly Reachable",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "origin_id",
+      "destination_id",
+      "confirmed_reachable",
+      "possibly_reachable"
+    ],
+    "title": "BaselineOD",
+    "type": "object"
+  },
+  "BaselineProfile": {
+    "$defs": {
+      "BaselineOD": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmed Distance M"
+          },
+          "confirmed_reachable": {
+            "title": "Confirmed Reachable",
+            "type": "boolean"
+          },
+          "destination_id": {
+            "title": "Destination Id",
+            "type": "string"
+          },
+          "origin_id": {
+            "title": "Origin Id",
+            "type": "string"
+          },
+          "possible_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Possible Distance M"
+          },
+          "possibly_reachable": {
+            "title": "Possibly Reachable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "origin_id",
+          "destination_id",
+          "confirmed_reachable",
+          "possibly_reachable"
+        ],
+        "title": "BaselineOD",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "The source scenario's own analysis, per selected profile (the \"before\").",
+    "properties": {
+      "od_results": {
+        "items": {
+          "$ref": "#/$defs/BaselineOD"
+        },
+        "title": "Od Results",
+        "type": "array"
+      },
+      "phase_graph_hash": {
+        "title": "Phase Graph Hash",
+        "type": "string"
+      },
+      "phase_graph_id": {
+        "title": "Phase Graph Id",
+        "type": "string"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "semantic_hash": {
+        "title": "Semantic Hash",
+        "type": "string"
+      }
+    },
+    "required": [
+      "profile_id",
+      "semantic_hash",
+      "phase_graph_id",
+      "phase_graph_hash",
+      "od_results"
+    ],
+    "title": "BaselineProfile",
+    "type": "object"
+  },
+  "BudgetCheck": {
+    "additionalProperties": false,
+    "properties": {
+      "basis": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Basis"
+      },
+      "budget_amount": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Budget Amount"
+      },
+      "budget_currency": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Budget Currency"
+      },
+      "detail": {
+        "default": "",
+        "title": "Detail",
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "not_requested",
+          "within",
+          "exceeds",
+          "cannot_certify_unknown_cost"
+        ],
+        "title": "Status",
+        "type": "string"
+      }
+    },
+    "required": [
+      "status"
+    ],
+    "title": "BudgetCheck",
+    "type": "object"
+  },
+  "CandidateAssumption": {
+    "additionalProperties": false,
+    "description": "A modelled state a candidate introduces (never silently absorbed).",
+    "properties": {
+      "element_id": {
+        "title": "Element Id",
+        "type": "string"
+      },
+      "field": {
+        "title": "Field",
+        "type": "string"
+      },
+      "intervention_id": {
+        "title": "Intervention Id",
+        "type": "string"
+      },
+      "note": {
+        "title": "Note",
+        "type": "string"
+      },
+      "provenance_class": {
+        "title": "Provenance Class",
+        "type": "string"
+      },
+      "requires_field_verification": {
+        "default": true,
+        "title": "Requires Field Verification",
+        "type": "boolean"
+      },
+      "unit": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Unit"
+      },
+      "value_display": {
+        "title": "Value Display",
+        "type": "string"
+      },
+      "verification_status": {
+        "title": "Verification Status",
+        "type": "string"
+      }
+    },
+    "required": [
+      "intervention_id",
+      "element_id",
+      "field",
+      "value_display",
+      "provenance_class",
+      "verification_status",
+      "note"
+    ],
+    "title": "CandidateAssumption",
+    "type": "object"
+  },
+  "CandidateCostLine": {
+    "$defs": {
+      "CostProvenance": {
+        "description": "Every displayed cost must say where it came from (PRD FR-104).",
+        "enum": [
+          "demo_only",
+          "user_entered",
+          "sourced",
+          "unknown"
+        ],
+        "title": "CostProvenance",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "cost_id": {
+        "title": "Cost Id",
+        "type": "string"
+      },
+      "currency": {
+        "title": "Currency",
+        "type": "string"
+      },
+      "intervention_id": {
+        "title": "Intervention Id",
+        "type": "string"
+      },
+      "label": {
+        "title": "Label",
+        "type": "string"
+      },
+      "note": {
+        "default": "",
+        "title": "Note",
+        "type": "string"
+      },
+      "provenance": {
+        "$ref": "#/$defs/CostProvenance"
+      },
+      "quantity": {
+        "title": "Quantity",
+        "type": "number"
+      },
+      "total_max": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Total Max"
+      },
+      "total_nominal": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Total Nominal"
+      },
+      "unit": {
+        "title": "Unit",
+        "type": "string"
+      }
+    },
+    "required": [
+      "intervention_id",
+      "cost_id",
+      "label",
+      "provenance",
+      "currency",
+      "quantity",
+      "unit"
+    ],
+    "title": "CandidateCostLine",
+    "type": "object"
+  },
+  "CandidateCostSummary": {
+    "$defs": {
+      "CandidateCostLine": {
+        "additionalProperties": false,
+        "properties": {
+          "cost_id": {
+            "title": "Cost Id",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "intervention_id": {
+            "title": "Intervention Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/$defs/CostProvenance"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
+          "total_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Max"
+          },
+          "total_nominal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Nominal"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "intervention_id",
+          "cost_id",
+          "label",
+          "provenance",
+          "currency",
+          "quantity",
+          "unit"
+        ],
+        "title": "CandidateCostLine",
+        "type": "object"
+      },
+      "CostProvenance": {
+        "description": "Every displayed cost must say where it came from (PRD FR-104).",
+        "enum": [
+          "demo_only",
+          "user_entered",
+          "sourced",
+          "unknown"
+        ],
+        "title": "CostProvenance",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "currency": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Currency"
+      },
+      "lines": {
+        "items": {
+          "$ref": "#/$defs/CandidateCostLine"
+        },
+        "title": "Lines",
+        "type": "array"
+      },
+      "maximum": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Maximum"
+      },
+      "mixed_currency": {
+        "default": false,
+        "title": "Mixed Currency",
+        "type": "boolean"
+      },
+      "nominal": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Nominal"
+      },
+      "provenance_notes": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Provenance Notes",
+        "type": "array"
+      },
+      "unknown": {
+        "default": true,
+        "title": "Unknown",
+        "type": "boolean"
+      }
+    },
+    "title": "CandidateCostSummary",
+    "type": "object"
+  },
+  "CandidateEvaluation": {
+    "$defs": {
+      "BudgetCheck": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Basis"
+          },
+          "budget_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Budget Amount"
+          },
+          "budget_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Budget Currency"
+          },
+          "detail": {
+            "default": "",
+            "title": "Detail",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "not_requested",
+              "within",
+              "exceeds",
+              "cannot_certify_unknown_cost"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "BudgetCheck",
+        "type": "object"
+      },
+      "CandidateAssumption": {
+        "additionalProperties": false,
+        "description": "A modelled state a candidate introduces (never silently absorbed).",
+        "properties": {
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "intervention_id": {
+            "title": "Intervention Id",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "provenance_class": {
+            "title": "Provenance Class",
+            "type": "string"
+          },
+          "requires_field_verification": {
+            "default": true,
+            "title": "Requires Field Verification",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value_display": {
+            "title": "Value Display",
+            "type": "string"
+          },
+          "verification_status": {
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "intervention_id",
+          "element_id",
+          "field",
+          "value_display",
+          "provenance_class",
+          "verification_status",
+          "note"
+        ],
+        "title": "CandidateAssumption",
+        "type": "object"
+      },
+      "CandidateCostLine": {
+        "additionalProperties": false,
+        "properties": {
+          "cost_id": {
+            "title": "Cost Id",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "intervention_id": {
+            "title": "Intervention Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/$defs/CostProvenance"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
+          "total_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Max"
+          },
+          "total_nominal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Nominal"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "intervention_id",
+          "cost_id",
+          "label",
+          "provenance",
+          "currency",
+          "quantity",
+          "unit"
+        ],
+        "title": "CandidateCostLine",
+        "type": "object"
+      },
+      "CandidateCostSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Currency"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/$defs/CandidateCostLine"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "maximum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Maximum"
+          },
+          "mixed_currency": {
+            "default": false,
+            "title": "Mixed Currency",
+            "type": "boolean"
+          },
+          "nominal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Nominal"
+          },
+          "provenance_notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Provenance Notes",
+            "type": "array"
+          },
+          "unknown": {
+            "default": true,
+            "title": "Unknown",
+            "type": "boolean"
+          }
+        },
+        "title": "CandidateCostSummary",
+        "type": "object"
+      },
+      "CandidateProposal": {
+        "additionalProperties": false,
+        "description": "One enumerated intervention subset plus its re-verification outcome (FR-103).",
+        "properties": {
+          "added_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Added Distance M"
+          },
+          "cost_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Max"
+          },
+          "cost_nominal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Nominal"
+          },
+          "cost_unknown": {
+            "default": false,
+            "title": "Cost Unknown",
+            "type": "boolean"
+          },
+          "eligible": {
+            "title": "Eligible",
+            "type": "boolean"
+          },
+          "failed_profiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Failed Profiles",
+            "type": "array"
+          },
+          "intervention_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Intervention Ids",
+            "type": "array"
+          },
+          "passed_profiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Passed Profiles",
+            "type": "array"
+          },
+          "proposal_id": {
+            "title": "Proposal Id",
+            "type": "string"
+          },
+          "rejection_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rejection Reasons",
+            "type": "array"
+          },
+          "requires_verification": {
+            "default": false,
+            "title": "Requires Verification",
+            "type": "boolean"
+          },
+          "restored_required_od": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Restored Required Od"
+          },
+          "solver_status": {
+            "$ref": "#/$defs/SolverStatus",
+            "default": "INCOMPLETE_OR_UNKNOWN"
+          }
+        },
+        "required": [
+          "proposal_id",
+          "intervention_ids",
+          "eligible"
+        ],
+        "title": "CandidateProposal",
+        "type": "object"
+      },
+      "CandidateVerification": {
+        "additionalProperties": false,
+        "description": "Per-profile verification of one candidate against the source revision.",
+        "properties": {
+          "added_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Added Distance M"
+          },
+          "candidate_phase_graph_hash": {
+            "title": "Candidate Phase Graph Hash",
+            "type": "string"
+          },
+          "candidate_phase_graph_id": {
+            "title": "Candidate Phase Graph Id",
+            "type": "string"
+          },
+          "candidate_semantic_hash": {
+            "title": "Candidate Semantic Hash",
+            "type": "string"
+          },
+          "comparable_route_count": {
+            "default": 0,
+            "title": "Comparable Route Count",
+            "type": "integer"
+          },
+          "gained_possible_pairs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Gained Possible Pairs",
+            "type": "array"
+          },
+          "new_fail_verdicts": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "New Fail Verdicts",
+            "type": "array"
+          },
+          "new_unknown_verdicts": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "New Unknown Verdicts",
+            "type": "array"
+          },
+          "od_transitions": {
+            "items": {
+              "$ref": "#/$defs/ODTransition"
+            },
+            "title": "Od Transitions",
+            "type": "array"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "regressed_pairs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Regressed Pairs",
+            "type": "array"
+          },
+          "restored_pairs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Restored Pairs",
+            "type": "array"
+          },
+          "source_semantic_hash": {
+            "title": "Source Semantic Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "profile_id",
+          "source_semantic_hash",
+          "candidate_semantic_hash",
+          "candidate_phase_graph_id",
+          "candidate_phase_graph_hash",
+          "od_transitions",
+          "restored_pairs",
+          "gained_possible_pairs",
+          "regressed_pairs",
+          "new_fail_verdicts",
+          "new_unknown_verdicts"
+        ],
+        "title": "CandidateVerification",
+        "type": "object"
+      },
+      "CostProvenance": {
+        "description": "Every displayed cost must say where it came from (PRD FR-104).",
+        "enum": [
+          "demo_only",
+          "user_entered",
+          "sourced",
+          "unknown"
+        ],
+        "title": "CostProvenance",
+        "type": "string"
+      },
+      "ODTransition": {
+        "additionalProperties": false,
+        "description": "One OD pair, one profile: before vs after, both from real runs.",
+        "properties": {
+          "added_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Added Distance M"
+          },
+          "after_confirmed": {
+            "title": "After Confirmed",
+            "type": "boolean"
+          },
+          "after_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "After Distance M"
+          },
+          "after_possible": {
+            "title": "After Possible",
+            "type": "boolean"
+          },
+          "before_confirmed": {
+            "title": "Before Confirmed",
+            "type": "boolean"
+          },
+          "before_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Before Distance M"
+          },
+          "before_possible": {
+            "title": "Before Possible",
+            "type": "boolean"
+          },
+          "destination_id": {
+            "title": "Destination Id",
+            "type": "string"
+          },
+          "origin_id": {
+            "title": "Origin Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin_id",
+          "destination_id",
+          "before_confirmed",
+          "before_possible",
+          "after_confirmed",
+          "after_possible"
+        ],
+        "title": "ODTransition",
+        "type": "object"
+      },
+      "SolverStatus": {
+        "description": "Honest optimisation status vocabulary (PRD FR-106, MASTER_PROMPT \u00a77.8).",
+        "enum": [
+          "OPTIMAL_IN_ENUMERATED_DOMAIN",
+          "FEASIBLE_NOT_PROVEN_OPTIMAL",
+          "NO_FEASIBLE_IN_ENUMERATED_DOMAIN",
+          "INVALID_INPUT",
+          "INCOMPLETE_OR_UNKNOWN"
+        ],
+        "title": "SolverStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "One enumerated subset plus everything needed to judge and rank it.",
+    "properties": {
+      "applied_phase_changes": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Applied Phase Changes",
+        "type": "array"
+      },
+      "assumptions": {
+        "items": {
+          "$ref": "#/$defs/CandidateAssumption"
+        },
+        "title": "Assumptions",
+        "type": "array"
+      },
+      "budget": {
+        "$ref": "#/$defs/BudgetCheck"
+      },
+      "classification": {
+        "enum": [
+          "certified",
+          "requires_verification",
+          "no_improvement",
+          "rejected"
+        ],
+        "title": "Classification",
+        "type": "string"
+      },
+      "cost": {
+        "$ref": "#/$defs/CandidateCostSummary"
+      },
+      "evaluation_failure": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Evaluation Failure"
+      },
+      "intervention_count": {
+        "title": "Intervention Count",
+        "type": "integer"
+      },
+      "intervention_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Intervention Ids",
+        "type": "array"
+      },
+      "introduced_fail_verdict_count": {
+        "default": 0,
+        "title": "Introduced Fail Verdict Count",
+        "type": "integer"
+      },
+      "introduced_unknown_verdict_count": {
+        "default": 0,
+        "title": "Introduced Unknown Verdict Count",
+        "type": "integer"
+      },
+      "pareto_optimal": {
+        "default": false,
+        "title": "Pareto Optimal",
+        "type": "boolean"
+      },
+      "preview_phase_graph_hash": {
+        "title": "Preview Phase Graph Hash",
+        "type": "string"
+      },
+      "preview_scenario_hash": {
+        "title": "Preview Scenario Hash",
+        "type": "string"
+      },
+      "proposal": {
+        "$ref": "#/$defs/CandidateProposal"
+      },
+      "rank": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Rank"
+      },
+      "regressed_pairs": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Regressed Pairs",
+        "type": "array"
+      },
+      "restored_all_profiles": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Restored All Profiles",
+        "type": "array"
+      },
+      "restored_any_profile": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Restored Any Profile",
+        "type": "array"
+      },
+      "tie_group": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Tie Group"
+      },
+      "verifications": {
+        "items": {
+          "$ref": "#/$defs/CandidateVerification"
+        },
+        "title": "Verifications",
+        "type": "array"
+      }
+    },
+    "required": [
+      "proposal",
+      "classification",
+      "intervention_ids",
+      "intervention_count",
+      "verifications",
+      "cost",
+      "budget",
+      "preview_scenario_hash",
+      "preview_phase_graph_hash"
+    ],
+    "title": "CandidateEvaluation",
+    "type": "object"
+  },
+  "CandidateProposal": {
+    "$defs": {
+      "SolverStatus": {
+        "description": "Honest optimisation status vocabulary (PRD FR-106, MASTER_PROMPT \u00a77.8).",
+        "enum": [
+          "OPTIMAL_IN_ENUMERATED_DOMAIN",
+          "FEASIBLE_NOT_PROVEN_OPTIMAL",
+          "NO_FEASIBLE_IN_ENUMERATED_DOMAIN",
+          "INVALID_INPUT",
+          "INCOMPLETE_OR_UNKNOWN"
+        ],
+        "title": "SolverStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "One enumerated intervention subset plus its re-verification outcome (FR-103).",
+    "properties": {
+      "added_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Added Distance M"
+      },
+      "cost_max": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Cost Max"
+      },
+      "cost_nominal": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Cost Nominal"
+      },
+      "cost_unknown": {
+        "default": false,
+        "title": "Cost Unknown",
+        "type": "boolean"
+      },
+      "eligible": {
+        "title": "Eligible",
+        "type": "boolean"
+      },
+      "failed_profiles": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Failed Profiles",
+        "type": "array"
+      },
+      "intervention_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Intervention Ids",
+        "type": "array"
+      },
+      "passed_profiles": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Passed Profiles",
+        "type": "array"
+      },
+      "proposal_id": {
+        "title": "Proposal Id",
+        "type": "string"
+      },
+      "rejection_reasons": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Rejection Reasons",
+        "type": "array"
+      },
+      "requires_verification": {
+        "default": false,
+        "title": "Requires Verification",
+        "type": "boolean"
+      },
+      "restored_required_od": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Restored Required Od"
+      },
+      "solver_status": {
+        "$ref": "#/$defs/SolverStatus",
+        "default": "INCOMPLETE_OR_UNKNOWN"
+      }
+    },
+    "required": [
+      "proposal_id",
+      "intervention_ids",
+      "eligible"
+    ],
+    "title": "CandidateProposal",
+    "type": "object"
+  },
+  "CandidateVerification": {
+    "$defs": {
+      "ODTransition": {
+        "additionalProperties": false,
+        "description": "One OD pair, one profile: before vs after, both from real runs.",
+        "properties": {
+          "added_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Added Distance M"
+          },
+          "after_confirmed": {
+            "title": "After Confirmed",
+            "type": "boolean"
+          },
+          "after_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "After Distance M"
+          },
+          "after_possible": {
+            "title": "After Possible",
+            "type": "boolean"
+          },
+          "before_confirmed": {
+            "title": "Before Confirmed",
+            "type": "boolean"
+          },
+          "before_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Before Distance M"
+          },
+          "before_possible": {
+            "title": "Before Possible",
+            "type": "boolean"
+          },
+          "destination_id": {
+            "title": "Destination Id",
+            "type": "string"
+          },
+          "origin_id": {
+            "title": "Origin Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin_id",
+          "destination_id",
+          "before_confirmed",
+          "before_possible",
+          "after_confirmed",
+          "after_possible"
+        ],
+        "title": "ODTransition",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Per-profile verification of one candidate against the source revision.",
+    "properties": {
+      "added_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Added Distance M"
+      },
+      "candidate_phase_graph_hash": {
+        "title": "Candidate Phase Graph Hash",
+        "type": "string"
+      },
+      "candidate_phase_graph_id": {
+        "title": "Candidate Phase Graph Id",
+        "type": "string"
+      },
+      "candidate_semantic_hash": {
+        "title": "Candidate Semantic Hash",
+        "type": "string"
+      },
+      "comparable_route_count": {
+        "default": 0,
+        "title": "Comparable Route Count",
+        "type": "integer"
+      },
+      "gained_possible_pairs": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Gained Possible Pairs",
+        "type": "array"
+      },
+      "new_fail_verdicts": {
+        "items": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "title": "New Fail Verdicts",
+        "type": "array"
+      },
+      "new_unknown_verdicts": {
+        "items": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "title": "New Unknown Verdicts",
+        "type": "array"
+      },
+      "od_transitions": {
+        "items": {
+          "$ref": "#/$defs/ODTransition"
+        },
+        "title": "Od Transitions",
+        "type": "array"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "regressed_pairs": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Regressed Pairs",
+        "type": "array"
+      },
+      "restored_pairs": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Restored Pairs",
+        "type": "array"
+      },
+      "source_semantic_hash": {
+        "title": "Source Semantic Hash",
+        "type": "string"
+      }
+    },
+    "required": [
+      "profile_id",
+      "source_semantic_hash",
+      "candidate_semantic_hash",
+      "candidate_phase_graph_id",
+      "candidate_phase_graph_hash",
+      "od_transitions",
+      "restored_pairs",
+      "gained_possible_pairs",
+      "regressed_pairs",
+      "new_fail_verdicts",
+      "new_unknown_verdicts"
+    ],
+    "title": "CandidateVerification",
+    "type": "object"
+  },
   "CoordinateBasis": {
     "additionalProperties": false,
     "description": "Explicit, recorded coordinate basis. Never assumed silently.",
@@ -1285,6 +2832,107 @@
       "provenance_class"
     ],
     "title": "DataSource",
+    "type": "object"
+  },
+  "DomainSummary": {
+    "$defs": {
+      "ExcludedIntervention": {
+        "additionalProperties": false,
+        "description": "Why an intervention is not in the eligible set, stated explicitly.",
+        "properties": {
+          "intervention_id": {
+            "title": "Intervention Id",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "intervention_id",
+          "reasons"
+        ],
+        "title": "ExcludedIntervention",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Size and completeness of the enumerated domain, stated honestly.",
+    "properties": {
+      "dependency_blocked": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Dependency Blocked",
+        "type": "array"
+      },
+      "domain_combination_count": {
+        "title": "Domain Combination Count",
+        "type": "integer"
+      },
+      "eligible_intervention_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Eligible Intervention Ids",
+        "type": "array"
+      },
+      "evaluated_count": {
+        "default": 0,
+        "title": "Evaluated Count",
+        "type": "integer"
+      },
+      "excluded_interventions": {
+        "items": {
+          "$ref": "#/$defs/ExcludedIntervention"
+        },
+        "title": "Excluded Interventions",
+        "type": "array"
+      },
+      "exhausted": {
+        "default": false,
+        "title": "Exhausted",
+        "type": "boolean"
+      },
+      "mutually_exclusive_blocked": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Mutually Exclusive Blocked",
+        "type": "array"
+      },
+      "precondition_rejected": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Precondition Rejected",
+        "type": "array"
+      },
+      "truncated_by": {
+        "items": {
+          "enum": [
+            "candidate_limit",
+            "duration_limit"
+          ],
+          "type": "string"
+        },
+        "title": "Truncated By",
+        "type": "array"
+      }
+    },
+    "required": [
+      "eligible_intervention_ids",
+      "excluded_interventions",
+      "domain_combination_count"
+    ],
+    "title": "DomainSummary",
     "type": "object"
   },
   "Edge": {
@@ -1849,6 +3497,29 @@
     "title": "EvidenceRecord",
     "type": "object"
   },
+  "ExcludedIntervention": {
+    "additionalProperties": false,
+    "description": "Why an intervention is not in the eligible set, stated explicitly.",
+    "properties": {
+      "intervention_id": {
+        "title": "Intervention Id",
+        "type": "string"
+      },
+      "reasons": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Reasons",
+        "type": "array"
+      }
+    },
+    "required": [
+      "intervention_id",
+      "reasons"
+    ],
+    "title": "ExcludedIntervention",
+    "type": "object"
+  },
   "Finding": {
     "$defs": {
       "ReasonCode": {
@@ -2086,6 +3757,1296 @@
       "explanation"
     ],
     "title": "Finding",
+    "type": "object"
+  },
+  "GraphEdit": {
+    "additionalProperties": false,
+    "description": "Typed, auditable graph modification applied to a scenario revision.",
+    "properties": {
+      "op": {
+        "enum": [
+          "add_node",
+          "split_edge",
+          "add_edge",
+          "remove_edge",
+          "set_direction",
+          "link_crossing",
+          "update_attribute",
+          "close_edge",
+          "activate_temporary_edge"
+        ],
+        "title": "Op",
+        "type": "string"
+      },
+      "params": {
+        "additionalProperties": true,
+        "title": "Params",
+        "type": "object"
+      },
+      "reason": {
+        "default": "",
+        "title": "Reason",
+        "type": "string"
+      },
+      "target_id": {
+        "minLength": 1,
+        "title": "Target Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "op",
+      "target_id"
+    ],
+    "title": "GraphEdit",
+    "type": "object"
+  },
+  "Intervention": {
+    "$defs": {
+      "CostProvenance": {
+        "description": "Every displayed cost must say where it came from (PRD FR-104).",
+        "enum": [
+          "demo_only",
+          "user_entered",
+          "sourced",
+          "unknown"
+        ],
+        "title": "CostProvenance",
+        "type": "string"
+      },
+      "EdgeType": {
+        "enum": [
+          "sidewalk",
+          "crossing",
+          "temporary_path",
+          "shared_use_path",
+          "ramp"
+        ],
+        "title": "EdgeType",
+        "type": "string"
+      },
+      "EvidenceRecord": {
+        "additionalProperties": false,
+        "description": "One observation about one field of one element.\n\n``value``/``unit`` are exactly what the source reported. Canonicalisation\nhappens in the resolver so the conversion stays auditable.",
+        "properties": {
+          "element_id": {
+            "minLength": 1,
+            "title": "Element Id",
+            "type": "string"
+          },
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "invalidated": {
+            "default": false,
+            "title": "Invalidated",
+            "type": "boolean"
+          },
+          "method": {
+            "minLength": 1,
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
+          "provenance_class": {
+            "$ref": "#/$defs/ProvenanceClass"
+          },
+          "quality": {
+            "default": "medium",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Quality",
+            "type": "string"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewer"
+          },
+          "source": {
+            "minLength": 1,
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "synthetic": {
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "$ref": "#/$defs/VerificationStatus",
+            "default": "unverified"
+          }
+        },
+        "required": [
+          "id",
+          "element_id",
+          "field",
+          "method",
+          "source",
+          "provenance_class"
+        ],
+        "title": "EvidenceRecord",
+        "type": "object"
+      },
+      "GraphEdit": {
+        "additionalProperties": false,
+        "description": "Typed, auditable graph modification applied to a scenario revision.",
+        "properties": {
+          "op": {
+            "enum": [
+              "add_node",
+              "split_edge",
+              "add_edge",
+              "remove_edge",
+              "set_direction",
+              "link_crossing",
+              "update_attribute",
+              "close_edge",
+              "activate_temporary_edge"
+            ],
+            "title": "Op",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          },
+          "target_id": {
+            "minLength": 1,
+            "title": "Target Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "target_id"
+        ],
+        "title": "GraphEdit",
+        "type": "object"
+      },
+      "InterventionCost": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "default": "INR",
+            "title": "Currency",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "default": "Illustrative demonstration value; no market source consulted.",
+            "title": "Note",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/$defs/CostProvenance",
+            "default": "demo_only"
+          },
+          "quantity": {
+            "minimum": 0,
+            "title": "Quantity",
+            "type": "number"
+          },
+          "removal_cost_nominal": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Removal Cost Nominal"
+          },
+          "setup_cost_nominal": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Setup Cost Nominal"
+          },
+          "unit": {
+            "default": "item",
+            "title": "Unit",
+            "type": "string"
+          },
+          "unit_price_max": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit Price Max"
+          },
+          "unit_price_min": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit Price Min"
+          },
+          "unit_price_nominal": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit Price Nominal"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "quantity"
+        ],
+        "title": "InterventionCost",
+        "type": "object"
+      },
+      "InterventionEffect": {
+        "additionalProperties": false,
+        "description": "Concrete, typed effect of selecting an intervention.\n\nThree channels, all of which map onto existing, audited machinery:\n\n* ``edits`` - :class:`GraphEdit` operations appended to the scenario plan;\n* ``temporary_edges`` - :class:`TemporaryEdge` declarations the plan adds;\n* ``phase_changes`` - modifications to declared phase sets (closures and\n  temporary-edge activation), materialised as a changed phase list.\n\nDeclared geometry, values and evidence inside an effect are **demo fixture\ndata authored in this repository**; the engine never synthesises any of it.",
+        "properties": {
+          "edits": {
+            "items": {
+              "$ref": "#/$defs/GraphEdit"
+            },
+            "title": "Edits",
+            "type": "array"
+          },
+          "phase_changes": {
+            "items": {
+              "$ref": "#/$defs/InterventionPhaseChange"
+            },
+            "title": "Phase Changes",
+            "type": "array"
+          },
+          "temporary_edges": {
+            "items": {
+              "$ref": "#/$defs/TemporaryEdge"
+            },
+            "title": "Temporary Edges",
+            "type": "array"
+          }
+        },
+        "title": "InterventionEffect",
+        "type": "object"
+      },
+      "InterventionPhaseChange": {
+        "additionalProperties": false,
+        "description": "Declared change to one construction phase's closure/temporary-edge sets.\n\nThis is how \"change the activation phase of a designated closure\" is\nexpressed without inventing a new graph operation: the candidate's derived\nscenario carries a phase whose declared sets differ from the source.",
+        "properties": {
+          "activate_temporary_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Activate Temporary Edge Ids",
+            "type": "array"
+          },
+          "close_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Close Edge Ids",
+            "type": "array"
+          },
+          "deactivate_temporary_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Deactivate Temporary Edge Ids",
+            "type": "array"
+          },
+          "phase_id": {
+            "minLength": 1,
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "unclose_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unclose Edge Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "phase_id"
+        ],
+        "title": "InterventionPhaseChange",
+        "type": "object"
+      },
+      "InterventionPrecondition": {
+        "additionalProperties": false,
+        "description": "Declarative precondition evaluated against the source plan.\n\nWhitelisted checks only (MASTER_PROMPT \u00a77.2); an unevaluable precondition is\na rejection, never a silent pass.",
+        "properties": {
+          "check": {
+            "enum": [
+              "edge_exists",
+              "node_exists",
+              "phase_exists",
+              "edge_closed_in_phase",
+              "edge_open_in_phase",
+              "temporary_edge_active_in_phase",
+              "field_known",
+              "field_unknown"
+            ],
+            "title": "Check",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Field"
+          },
+          "phase_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Phase Id"
+          },
+          "target_id": {
+            "minLength": 1,
+            "title": "Target Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "check",
+          "target_id"
+        ],
+        "title": "InterventionPrecondition",
+        "type": "object"
+      },
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      },
+      "TemporaryEdge": {
+        "additionalProperties": false,
+        "description": "Ephemeral path that exists only in declared phases.",
+        "properties": {
+          "constructible_in_field": {
+            "default": false,
+            "title": "Constructible In Field",
+            "type": "boolean"
+          },
+          "edge_type": {
+            "$ref": "#/$defs/EdgeType",
+            "default": "temporary_path"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/$defs/EvidenceRecord"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "field_verification_note": {
+            "default": "Modelled edge only. Field constructibility has not been confirmed by any engineer.",
+            "title": "Field Verification Note",
+            "type": "string"
+          },
+          "geometry": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "minItems": 2,
+            "title": "Geometry",
+            "type": "array"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "length_m": {
+            "minimum": 0,
+            "title": "Length M",
+            "type": "number"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "u": {
+            "title": "U",
+            "type": "string"
+          },
+          "v": {
+            "title": "V",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "u",
+          "v",
+          "geometry",
+          "length_m"
+        ],
+        "title": "TemporaryEdge",
+        "type": "object"
+      },
+      "VerificationStatus": {
+        "enum": [
+          "verified",
+          "unverified",
+          "disputed"
+        ],
+        "title": "VerificationStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Candidate modification from the bounded, editable library (FR-102).",
+    "properties": {
+      "allowed_ops": {
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "title": "Allowed Ops",
+        "type": "array"
+      },
+      "constructible_in_field": {
+        "default": false,
+        "title": "Constructible In Field",
+        "type": "boolean"
+      },
+      "costs": {
+        "items": {
+          "$ref": "#/$defs/InterventionCost"
+        },
+        "title": "Costs",
+        "type": "array"
+      },
+      "description": {
+        "default": "",
+        "title": "Description",
+        "type": "string"
+      },
+      "effect": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/InterventionEffect"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "enabled": {
+        "default": true,
+        "title": "Enabled",
+        "type": "boolean"
+      },
+      "excludes_intervention_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Excludes Intervention Ids",
+        "type": "array"
+      },
+      "geometry_provided": {
+        "default": false,
+        "title": "Geometry Provided",
+        "type": "boolean"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "name": {
+        "default": "",
+        "title": "Name",
+        "type": "string"
+      },
+      "note": {
+        "default": "",
+        "title": "Note",
+        "type": "string"
+      },
+      "phases": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Phases",
+        "type": "array"
+      },
+      "preconditions": {
+        "items": {
+          "$ref": "#/$defs/InterventionPrecondition"
+        },
+        "title": "Preconditions",
+        "type": "array"
+      },
+      "requires_intervention_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Requires Intervention Ids",
+        "type": "array"
+      },
+      "target_element_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Target Element Ids",
+        "type": "array"
+      }
+    },
+    "required": [
+      "id",
+      "allowed_ops"
+    ],
+    "title": "Intervention",
+    "type": "object"
+  },
+  "InterventionCost": {
+    "$defs": {
+      "CostProvenance": {
+        "description": "Every displayed cost must say where it came from (PRD FR-104).",
+        "enum": [
+          "demo_only",
+          "user_entered",
+          "sourced",
+          "unknown"
+        ],
+        "title": "CostProvenance",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "currency": {
+        "default": "INR",
+        "title": "Currency",
+        "type": "string"
+      },
+      "id": {
+        "title": "Id",
+        "type": "string"
+      },
+      "label": {
+        "title": "Label",
+        "type": "string"
+      },
+      "note": {
+        "default": "Illustrative demonstration value; no market source consulted.",
+        "title": "Note",
+        "type": "string"
+      },
+      "provenance": {
+        "$ref": "#/$defs/CostProvenance",
+        "default": "demo_only"
+      },
+      "quantity": {
+        "minimum": 0,
+        "title": "Quantity",
+        "type": "number"
+      },
+      "removal_cost_nominal": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Removal Cost Nominal"
+      },
+      "setup_cost_nominal": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Setup Cost Nominal"
+      },
+      "unit": {
+        "default": "item",
+        "title": "Unit",
+        "type": "string"
+      },
+      "unit_price_max": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Unit Price Max"
+      },
+      "unit_price_min": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Unit Price Min"
+      },
+      "unit_price_nominal": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Unit Price Nominal"
+      }
+    },
+    "required": [
+      "id",
+      "label",
+      "quantity"
+    ],
+    "title": "InterventionCost",
+    "type": "object"
+  },
+  "InterventionEffect": {
+    "$defs": {
+      "EdgeType": {
+        "enum": [
+          "sidewalk",
+          "crossing",
+          "temporary_path",
+          "shared_use_path",
+          "ramp"
+        ],
+        "title": "EdgeType",
+        "type": "string"
+      },
+      "EvidenceRecord": {
+        "additionalProperties": false,
+        "description": "One observation about one field of one element.\n\n``value``/``unit`` are exactly what the source reported. Canonicalisation\nhappens in the resolver so the conversion stays auditable.",
+        "properties": {
+          "element_id": {
+            "minLength": 1,
+            "title": "Element Id",
+            "type": "string"
+          },
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "invalidated": {
+            "default": false,
+            "title": "Invalidated",
+            "type": "boolean"
+          },
+          "method": {
+            "minLength": 1,
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
+          "provenance_class": {
+            "$ref": "#/$defs/ProvenanceClass"
+          },
+          "quality": {
+            "default": "medium",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Quality",
+            "type": "string"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewer"
+          },
+          "source": {
+            "minLength": 1,
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "synthetic": {
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "$ref": "#/$defs/VerificationStatus",
+            "default": "unverified"
+          }
+        },
+        "required": [
+          "id",
+          "element_id",
+          "field",
+          "method",
+          "source",
+          "provenance_class"
+        ],
+        "title": "EvidenceRecord",
+        "type": "object"
+      },
+      "GraphEdit": {
+        "additionalProperties": false,
+        "description": "Typed, auditable graph modification applied to a scenario revision.",
+        "properties": {
+          "op": {
+            "enum": [
+              "add_node",
+              "split_edge",
+              "add_edge",
+              "remove_edge",
+              "set_direction",
+              "link_crossing",
+              "update_attribute",
+              "close_edge",
+              "activate_temporary_edge"
+            ],
+            "title": "Op",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          },
+          "target_id": {
+            "minLength": 1,
+            "title": "Target Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "target_id"
+        ],
+        "title": "GraphEdit",
+        "type": "object"
+      },
+      "InterventionPhaseChange": {
+        "additionalProperties": false,
+        "description": "Declared change to one construction phase's closure/temporary-edge sets.\n\nThis is how \"change the activation phase of a designated closure\" is\nexpressed without inventing a new graph operation: the candidate's derived\nscenario carries a phase whose declared sets differ from the source.",
+        "properties": {
+          "activate_temporary_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Activate Temporary Edge Ids",
+            "type": "array"
+          },
+          "close_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Close Edge Ids",
+            "type": "array"
+          },
+          "deactivate_temporary_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Deactivate Temporary Edge Ids",
+            "type": "array"
+          },
+          "phase_id": {
+            "minLength": 1,
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "unclose_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unclose Edge Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "phase_id"
+        ],
+        "title": "InterventionPhaseChange",
+        "type": "object"
+      },
+      "ProvenanceClass": {
+        "description": "PRD \u00a711.1 \u2014 data categories must never be blended without provenance.",
+        "enum": [
+          "measured",
+          "external_source",
+          "derived",
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "ProvenanceClass",
+        "type": "string"
+      },
+      "TemporaryEdge": {
+        "additionalProperties": false,
+        "description": "Ephemeral path that exists only in declared phases.",
+        "properties": {
+          "constructible_in_field": {
+            "default": false,
+            "title": "Constructible In Field",
+            "type": "boolean"
+          },
+          "edge_type": {
+            "$ref": "#/$defs/EdgeType",
+            "default": "temporary_path"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/$defs/EvidenceRecord"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "field_verification_note": {
+            "default": "Modelled edge only. Field constructibility has not been confirmed by any engineer.",
+            "title": "Field Verification Note",
+            "type": "string"
+          },
+          "geometry": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "minItems": 2,
+            "title": "Geometry",
+            "type": "array"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "length_m": {
+            "minimum": 0,
+            "title": "Length M",
+            "type": "number"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "u": {
+            "title": "U",
+            "type": "string"
+          },
+          "v": {
+            "title": "V",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "u",
+          "v",
+          "geometry",
+          "length_m"
+        ],
+        "title": "TemporaryEdge",
+        "type": "object"
+      },
+      "VerificationStatus": {
+        "enum": [
+          "verified",
+          "unverified",
+          "disputed"
+        ],
+        "title": "VerificationStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Concrete, typed effect of selecting an intervention.\n\nThree channels, all of which map onto existing, audited machinery:\n\n* ``edits`` - :class:`GraphEdit` operations appended to the scenario plan;\n* ``temporary_edges`` - :class:`TemporaryEdge` declarations the plan adds;\n* ``phase_changes`` - modifications to declared phase sets (closures and\n  temporary-edge activation), materialised as a changed phase list.\n\nDeclared geometry, values and evidence inside an effect are **demo fixture\ndata authored in this repository**; the engine never synthesises any of it.",
+    "properties": {
+      "edits": {
+        "items": {
+          "$ref": "#/$defs/GraphEdit"
+        },
+        "title": "Edits",
+        "type": "array"
+      },
+      "phase_changes": {
+        "items": {
+          "$ref": "#/$defs/InterventionPhaseChange"
+        },
+        "title": "Phase Changes",
+        "type": "array"
+      },
+      "temporary_edges": {
+        "items": {
+          "$ref": "#/$defs/TemporaryEdge"
+        },
+        "title": "Temporary Edges",
+        "type": "array"
+      }
+    },
+    "title": "InterventionEffect",
+    "type": "object"
+  },
+  "InterventionPhaseChange": {
+    "additionalProperties": false,
+    "description": "Declared change to one construction phase's closure/temporary-edge sets.\n\nThis is how \"change the activation phase of a designated closure\" is\nexpressed without inventing a new graph operation: the candidate's derived\nscenario carries a phase whose declared sets differ from the source.",
+    "properties": {
+      "activate_temporary_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Activate Temporary Edge Ids",
+        "type": "array"
+      },
+      "close_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Close Edge Ids",
+        "type": "array"
+      },
+      "deactivate_temporary_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Deactivate Temporary Edge Ids",
+        "type": "array"
+      },
+      "phase_id": {
+        "minLength": 1,
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "unclose_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Unclose Edge Ids",
+        "type": "array"
+      }
+    },
+    "required": [
+      "phase_id"
+    ],
+    "title": "InterventionPhaseChange",
+    "type": "object"
+  },
+  "InterventionPrecondition": {
+    "additionalProperties": false,
+    "description": "Declarative precondition evaluated against the source plan.\n\nWhitelisted checks only (MASTER_PROMPT \u00a77.2); an unevaluable precondition is\na rejection, never a silent pass.",
+    "properties": {
+      "check": {
+        "enum": [
+          "edge_exists",
+          "node_exists",
+          "phase_exists",
+          "edge_closed_in_phase",
+          "edge_open_in_phase",
+          "temporary_edge_active_in_phase",
+          "field_known",
+          "field_unknown"
+        ],
+        "title": "Check",
+        "type": "string"
+      },
+      "description": {
+        "default": "",
+        "title": "Description",
+        "type": "string"
+      },
+      "field": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Field"
+      },
+      "phase_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Phase Id"
+      },
+      "target_id": {
+        "minLength": 1,
+        "title": "Target Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "check",
+      "target_id"
+    ],
+    "title": "InterventionPrecondition",
     "type": "object"
   },
   "MobilityProfile": {
@@ -2373,6 +5334,82 @@
     "title": "ODPairResult",
     "type": "object"
   },
+  "ODTransition": {
+    "additionalProperties": false,
+    "description": "One OD pair, one profile: before vs after, both from real runs.",
+    "properties": {
+      "added_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Added Distance M"
+      },
+      "after_confirmed": {
+        "title": "After Confirmed",
+        "type": "boolean"
+      },
+      "after_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "After Distance M"
+      },
+      "after_possible": {
+        "title": "After Possible",
+        "type": "boolean"
+      },
+      "before_confirmed": {
+        "title": "Before Confirmed",
+        "type": "boolean"
+      },
+      "before_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Before Distance M"
+      },
+      "before_possible": {
+        "title": "Before Possible",
+        "type": "boolean"
+      },
+      "destination_id": {
+        "title": "Destination Id",
+        "type": "string"
+      },
+      "origin_id": {
+        "title": "Origin Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "origin_id",
+      "destination_id",
+      "before_confirmed",
+      "before_possible",
+      "after_confirmed",
+      "after_possible"
+    ],
+    "title": "ODTransition",
+    "type": "object"
+  },
   "OriginDestination": {
     "additionalProperties": false,
     "description": "OD endpoint bound to a **graph node ID**, never to a nearby coordinate.",
@@ -2517,6 +5554,42 @@
       "order"
     ],
     "title": "Phase",
+    "type": "object"
+  },
+  "RankingPolicy": {
+    "additionalProperties": false,
+    "description": "The documented, deterministic ordering. Weights: none.",
+    "properties": {
+      "description": {
+        "default": "Lexicographic comparison over measured, model-confirmed quantities only. No weighted sum is computed and no objective can override a hard constraint: candidates that regress a confirmed/possible OD pair or add a model-FAIL verdict are rejected before ranking.",
+        "title": "Description",
+        "type": "string"
+      },
+      "id": {
+        "default": "DETOUR_LAB_LEXICOGRAPHIC_V1",
+        "title": "Id",
+        "type": "string"
+      },
+      "monetary_default": {
+        "const": "off",
+        "default": "off",
+        "title": "Monetary Default",
+        "type": "string"
+      },
+      "order": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Order",
+        "type": "array"
+      },
+      "version": {
+        "default": "1.0.0",
+        "title": "Version",
+        "type": "string"
+      }
+    },
+    "title": "RankingPolicy",
     "type": "object"
   },
   "ResolvedAttribute": {
@@ -4080,6 +7153,1423 @@
       "phases"
     ],
     "title": "Scenario",
+    "type": "object"
+  },
+  "SearchBudget": {
+    "additionalProperties": false,
+    "description": "User-entered budget. No exchange rates are ever invented.",
+    "properties": {
+      "amount": {
+        "minimum": 0,
+        "title": "Amount",
+        "type": "number"
+      },
+      "basis": {
+        "default": "nominal",
+        "enum": [
+          "nominal",
+          "conservative_max"
+        ],
+        "title": "Basis",
+        "type": "string"
+      },
+      "currency": {
+        "default": "INR",
+        "maxLength": 12,
+        "minLength": 1,
+        "title": "Currency",
+        "type": "string"
+      }
+    },
+    "required": [
+      "amount"
+    ],
+    "title": "SearchBudget",
+    "type": "object"
+  },
+  "SearchConfig": {
+    "$defs": {
+      "SearchBudget": {
+        "additionalProperties": false,
+        "description": "User-entered budget. No exchange rates are ever invented.",
+        "properties": {
+          "amount": {
+            "minimum": 0,
+            "title": "Amount",
+            "type": "number"
+          },
+          "basis": {
+            "default": "nominal",
+            "enum": [
+              "nominal",
+              "conservative_max"
+            ],
+            "title": "Basis",
+            "type": "string"
+          },
+          "currency": {
+            "default": "INR",
+            "maxLength": 12,
+            "minLength": 1,
+            "title": "Currency",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "title": "SearchBudget",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Explicit, auditable search limits (MASTER_PROMPT \u00a77.3).",
+    "properties": {
+      "budget": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/SearchBudget"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "excluded_intervention_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Excluded Intervention Ids",
+        "type": "array"
+      },
+      "max_candidates": {
+        "default": 60,
+        "maximum": 500,
+        "minimum": 1,
+        "title": "Max Candidates",
+        "type": "integer"
+      },
+      "max_duration_ms": {
+        "default": 30000,
+        "maximum": 600000,
+        "minimum": 1,
+        "title": "Max Duration Ms",
+        "type": "integer"
+      },
+      "max_interventions": {
+        "default": 2,
+        "maximum": 4,
+        "minimum": 1,
+        "title": "Max Interventions",
+        "type": "integer"
+      },
+      "monetary_objective": {
+        "default": "off",
+        "enum": [
+          "off",
+          "nominal"
+        ],
+        "title": "Monetary Objective",
+        "type": "string"
+      }
+    },
+    "title": "SearchConfig",
+    "type": "object"
+  },
+  "SearchOutcome": {
+    "$defs": {
+      "BaselineOD": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmed Distance M"
+          },
+          "confirmed_reachable": {
+            "title": "Confirmed Reachable",
+            "type": "boolean"
+          },
+          "destination_id": {
+            "title": "Destination Id",
+            "type": "string"
+          },
+          "origin_id": {
+            "title": "Origin Id",
+            "type": "string"
+          },
+          "possible_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Possible Distance M"
+          },
+          "possibly_reachable": {
+            "title": "Possibly Reachable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "origin_id",
+          "destination_id",
+          "confirmed_reachable",
+          "possibly_reachable"
+        ],
+        "title": "BaselineOD",
+        "type": "object"
+      },
+      "BaselineProfile": {
+        "additionalProperties": false,
+        "description": "The source scenario's own analysis, per selected profile (the \"before\").",
+        "properties": {
+          "od_results": {
+            "items": {
+              "$ref": "#/$defs/BaselineOD"
+            },
+            "title": "Od Results",
+            "type": "array"
+          },
+          "phase_graph_hash": {
+            "title": "Phase Graph Hash",
+            "type": "string"
+          },
+          "phase_graph_id": {
+            "title": "Phase Graph Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "semantic_hash": {
+            "title": "Semantic Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "profile_id",
+          "semantic_hash",
+          "phase_graph_id",
+          "phase_graph_hash",
+          "od_results"
+        ],
+        "title": "BaselineProfile",
+        "type": "object"
+      },
+      "BudgetCheck": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Basis"
+          },
+          "budget_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Budget Amount"
+          },
+          "budget_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Budget Currency"
+          },
+          "detail": {
+            "default": "",
+            "title": "Detail",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "not_requested",
+              "within",
+              "exceeds",
+              "cannot_certify_unknown_cost"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "BudgetCheck",
+        "type": "object"
+      },
+      "CandidateAssumption": {
+        "additionalProperties": false,
+        "description": "A modelled state a candidate introduces (never silently absorbed).",
+        "properties": {
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "intervention_id": {
+            "title": "Intervention Id",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "provenance_class": {
+            "title": "Provenance Class",
+            "type": "string"
+          },
+          "requires_field_verification": {
+            "default": true,
+            "title": "Requires Field Verification",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value_display": {
+            "title": "Value Display",
+            "type": "string"
+          },
+          "verification_status": {
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "intervention_id",
+          "element_id",
+          "field",
+          "value_display",
+          "provenance_class",
+          "verification_status",
+          "note"
+        ],
+        "title": "CandidateAssumption",
+        "type": "object"
+      },
+      "CandidateCostLine": {
+        "additionalProperties": false,
+        "properties": {
+          "cost_id": {
+            "title": "Cost Id",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "intervention_id": {
+            "title": "Intervention Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/$defs/CostProvenance"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
+          "total_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Max"
+          },
+          "total_nominal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Nominal"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "intervention_id",
+          "cost_id",
+          "label",
+          "provenance",
+          "currency",
+          "quantity",
+          "unit"
+        ],
+        "title": "CandidateCostLine",
+        "type": "object"
+      },
+      "CandidateCostSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Currency"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/$defs/CandidateCostLine"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "maximum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Maximum"
+          },
+          "mixed_currency": {
+            "default": false,
+            "title": "Mixed Currency",
+            "type": "boolean"
+          },
+          "nominal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Nominal"
+          },
+          "provenance_notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Provenance Notes",
+            "type": "array"
+          },
+          "unknown": {
+            "default": true,
+            "title": "Unknown",
+            "type": "boolean"
+          }
+        },
+        "title": "CandidateCostSummary",
+        "type": "object"
+      },
+      "CandidateEvaluation": {
+        "additionalProperties": false,
+        "description": "One enumerated subset plus everything needed to judge and rank it.",
+        "properties": {
+          "applied_phase_changes": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Applied Phase Changes",
+            "type": "array"
+          },
+          "assumptions": {
+            "items": {
+              "$ref": "#/$defs/CandidateAssumption"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "budget": {
+            "$ref": "#/$defs/BudgetCheck"
+          },
+          "classification": {
+            "enum": [
+              "certified",
+              "requires_verification",
+              "no_improvement",
+              "rejected"
+            ],
+            "title": "Classification",
+            "type": "string"
+          },
+          "cost": {
+            "$ref": "#/$defs/CandidateCostSummary"
+          },
+          "evaluation_failure": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evaluation Failure"
+          },
+          "intervention_count": {
+            "title": "Intervention Count",
+            "type": "integer"
+          },
+          "intervention_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Intervention Ids",
+            "type": "array"
+          },
+          "introduced_fail_verdict_count": {
+            "default": 0,
+            "title": "Introduced Fail Verdict Count",
+            "type": "integer"
+          },
+          "introduced_unknown_verdict_count": {
+            "default": 0,
+            "title": "Introduced Unknown Verdict Count",
+            "type": "integer"
+          },
+          "pareto_optimal": {
+            "default": false,
+            "title": "Pareto Optimal",
+            "type": "boolean"
+          },
+          "preview_phase_graph_hash": {
+            "title": "Preview Phase Graph Hash",
+            "type": "string"
+          },
+          "preview_scenario_hash": {
+            "title": "Preview Scenario Hash",
+            "type": "string"
+          },
+          "proposal": {
+            "$ref": "#/$defs/CandidateProposal"
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rank"
+          },
+          "regressed_pairs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Regressed Pairs",
+            "type": "array"
+          },
+          "restored_all_profiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Restored All Profiles",
+            "type": "array"
+          },
+          "restored_any_profile": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Restored Any Profile",
+            "type": "array"
+          },
+          "tie_group": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Tie Group"
+          },
+          "verifications": {
+            "items": {
+              "$ref": "#/$defs/CandidateVerification"
+            },
+            "title": "Verifications",
+            "type": "array"
+          }
+        },
+        "required": [
+          "proposal",
+          "classification",
+          "intervention_ids",
+          "intervention_count",
+          "verifications",
+          "cost",
+          "budget",
+          "preview_scenario_hash",
+          "preview_phase_graph_hash"
+        ],
+        "title": "CandidateEvaluation",
+        "type": "object"
+      },
+      "CandidateProposal": {
+        "additionalProperties": false,
+        "description": "One enumerated intervention subset plus its re-verification outcome (FR-103).",
+        "properties": {
+          "added_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Added Distance M"
+          },
+          "cost_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Max"
+          },
+          "cost_nominal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Nominal"
+          },
+          "cost_unknown": {
+            "default": false,
+            "title": "Cost Unknown",
+            "type": "boolean"
+          },
+          "eligible": {
+            "title": "Eligible",
+            "type": "boolean"
+          },
+          "failed_profiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Failed Profiles",
+            "type": "array"
+          },
+          "intervention_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Intervention Ids",
+            "type": "array"
+          },
+          "passed_profiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Passed Profiles",
+            "type": "array"
+          },
+          "proposal_id": {
+            "title": "Proposal Id",
+            "type": "string"
+          },
+          "rejection_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rejection Reasons",
+            "type": "array"
+          },
+          "requires_verification": {
+            "default": false,
+            "title": "Requires Verification",
+            "type": "boolean"
+          },
+          "restored_required_od": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Restored Required Od"
+          },
+          "solver_status": {
+            "$ref": "#/$defs/SolverStatus",
+            "default": "INCOMPLETE_OR_UNKNOWN"
+          }
+        },
+        "required": [
+          "proposal_id",
+          "intervention_ids",
+          "eligible"
+        ],
+        "title": "CandidateProposal",
+        "type": "object"
+      },
+      "CandidateVerification": {
+        "additionalProperties": false,
+        "description": "Per-profile verification of one candidate against the source revision.",
+        "properties": {
+          "added_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Added Distance M"
+          },
+          "candidate_phase_graph_hash": {
+            "title": "Candidate Phase Graph Hash",
+            "type": "string"
+          },
+          "candidate_phase_graph_id": {
+            "title": "Candidate Phase Graph Id",
+            "type": "string"
+          },
+          "candidate_semantic_hash": {
+            "title": "Candidate Semantic Hash",
+            "type": "string"
+          },
+          "comparable_route_count": {
+            "default": 0,
+            "title": "Comparable Route Count",
+            "type": "integer"
+          },
+          "gained_possible_pairs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Gained Possible Pairs",
+            "type": "array"
+          },
+          "new_fail_verdicts": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "New Fail Verdicts",
+            "type": "array"
+          },
+          "new_unknown_verdicts": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "New Unknown Verdicts",
+            "type": "array"
+          },
+          "od_transitions": {
+            "items": {
+              "$ref": "#/$defs/ODTransition"
+            },
+            "title": "Od Transitions",
+            "type": "array"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "regressed_pairs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Regressed Pairs",
+            "type": "array"
+          },
+          "restored_pairs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Restored Pairs",
+            "type": "array"
+          },
+          "source_semantic_hash": {
+            "title": "Source Semantic Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "profile_id",
+          "source_semantic_hash",
+          "candidate_semantic_hash",
+          "candidate_phase_graph_id",
+          "candidate_phase_graph_hash",
+          "od_transitions",
+          "restored_pairs",
+          "gained_possible_pairs",
+          "regressed_pairs",
+          "new_fail_verdicts",
+          "new_unknown_verdicts"
+        ],
+        "title": "CandidateVerification",
+        "type": "object"
+      },
+      "CostProvenance": {
+        "description": "Every displayed cost must say where it came from (PRD FR-104).",
+        "enum": [
+          "demo_only",
+          "user_entered",
+          "sourced",
+          "unknown"
+        ],
+        "title": "CostProvenance",
+        "type": "string"
+      },
+      "DomainSummary": {
+        "additionalProperties": false,
+        "description": "Size and completeness of the enumerated domain, stated honestly.",
+        "properties": {
+          "dependency_blocked": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Dependency Blocked",
+            "type": "array"
+          },
+          "domain_combination_count": {
+            "title": "Domain Combination Count",
+            "type": "integer"
+          },
+          "eligible_intervention_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Eligible Intervention Ids",
+            "type": "array"
+          },
+          "evaluated_count": {
+            "default": 0,
+            "title": "Evaluated Count",
+            "type": "integer"
+          },
+          "excluded_interventions": {
+            "items": {
+              "$ref": "#/$defs/ExcludedIntervention"
+            },
+            "title": "Excluded Interventions",
+            "type": "array"
+          },
+          "exhausted": {
+            "default": false,
+            "title": "Exhausted",
+            "type": "boolean"
+          },
+          "mutually_exclusive_blocked": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Mutually Exclusive Blocked",
+            "type": "array"
+          },
+          "precondition_rejected": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Precondition Rejected",
+            "type": "array"
+          },
+          "truncated_by": {
+            "items": {
+              "enum": [
+                "candidate_limit",
+                "duration_limit"
+              ],
+              "type": "string"
+            },
+            "title": "Truncated By",
+            "type": "array"
+          }
+        },
+        "required": [
+          "eligible_intervention_ids",
+          "excluded_interventions",
+          "domain_combination_count"
+        ],
+        "title": "DomainSummary",
+        "type": "object"
+      },
+      "ExcludedIntervention": {
+        "additionalProperties": false,
+        "description": "Why an intervention is not in the eligible set, stated explicitly.",
+        "properties": {
+          "intervention_id": {
+            "title": "Intervention Id",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "intervention_id",
+          "reasons"
+        ],
+        "title": "ExcludedIntervention",
+        "type": "object"
+      },
+      "ODTransition": {
+        "additionalProperties": false,
+        "description": "One OD pair, one profile: before vs after, both from real runs.",
+        "properties": {
+          "added_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Added Distance M"
+          },
+          "after_confirmed": {
+            "title": "After Confirmed",
+            "type": "boolean"
+          },
+          "after_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "After Distance M"
+          },
+          "after_possible": {
+            "title": "After Possible",
+            "type": "boolean"
+          },
+          "before_confirmed": {
+            "title": "Before Confirmed",
+            "type": "boolean"
+          },
+          "before_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Before Distance M"
+          },
+          "before_possible": {
+            "title": "Before Possible",
+            "type": "boolean"
+          },
+          "destination_id": {
+            "title": "Destination Id",
+            "type": "string"
+          },
+          "origin_id": {
+            "title": "Origin Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin_id",
+          "destination_id",
+          "before_confirmed",
+          "before_possible",
+          "after_confirmed",
+          "after_possible"
+        ],
+        "title": "ODTransition",
+        "type": "object"
+      },
+      "RankingPolicy": {
+        "additionalProperties": false,
+        "description": "The documented, deterministic ordering. Weights: none.",
+        "properties": {
+          "description": {
+            "default": "Lexicographic comparison over measured, model-confirmed quantities only. No weighted sum is computed and no objective can override a hard constraint: candidates that regress a confirmed/possible OD pair or add a model-FAIL verdict are rejected before ranking.",
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "default": "DETOUR_LAB_LEXICOGRAPHIC_V1",
+            "title": "Id",
+            "type": "string"
+          },
+          "monetary_default": {
+            "const": "off",
+            "default": "off",
+            "title": "Monetary Default",
+            "type": "string"
+          },
+          "order": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Order",
+            "type": "array"
+          },
+          "version": {
+            "default": "1.0.0",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "title": "RankingPolicy",
+        "type": "object"
+      },
+      "SearchBudget": {
+        "additionalProperties": false,
+        "description": "User-entered budget. No exchange rates are ever invented.",
+        "properties": {
+          "amount": {
+            "minimum": 0,
+            "title": "Amount",
+            "type": "number"
+          },
+          "basis": {
+            "default": "nominal",
+            "enum": [
+              "nominal",
+              "conservative_max"
+            ],
+            "title": "Basis",
+            "type": "string"
+          },
+          "currency": {
+            "default": "INR",
+            "maxLength": 12,
+            "minLength": 1,
+            "title": "Currency",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "title": "SearchBudget",
+        "type": "object"
+      },
+      "SearchConfig": {
+        "additionalProperties": false,
+        "description": "Explicit, auditable search limits (MASTER_PROMPT \u00a77.3).",
+        "properties": {
+          "budget": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/SearchBudget"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "excluded_intervention_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Excluded Intervention Ids",
+            "type": "array"
+          },
+          "max_candidates": {
+            "default": 60,
+            "maximum": 500,
+            "minimum": 1,
+            "title": "Max Candidates",
+            "type": "integer"
+          },
+          "max_duration_ms": {
+            "default": 30000,
+            "maximum": 600000,
+            "minimum": 1,
+            "title": "Max Duration Ms",
+            "type": "integer"
+          },
+          "max_interventions": {
+            "default": 2,
+            "maximum": 4,
+            "minimum": 1,
+            "title": "Max Interventions",
+            "type": "integer"
+          },
+          "monetary_objective": {
+            "default": "off",
+            "enum": [
+              "off",
+              "nominal"
+            ],
+            "title": "Monetary Objective",
+            "type": "string"
+          }
+        },
+        "title": "SearchConfig",
+        "type": "object"
+      },
+      "SearchStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "best_proposal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Best Proposal Id"
+          },
+          "exhaustive": {
+            "title": "Exhaustive",
+            "type": "boolean"
+          },
+          "limits_hit": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limits Hit",
+            "type": "array"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "scope_note": {
+            "default": "Results apply to the selected phase and profile set of this scenario revision only. A single-phase improvement is not whole-project continuity.",
+            "title": "Scope Note",
+            "type": "string"
+          },
+          "solver_status": {
+            "$ref": "#/$defs/SolverStatus"
+          }
+        },
+        "required": [
+          "solver_status",
+          "exhaustive"
+        ],
+        "title": "SearchStatus",
+        "type": "object"
+      },
+      "SolverStatus": {
+        "description": "Honest optimisation status vocabulary (PRD FR-106, MASTER_PROMPT \u00a77.8).",
+        "enum": [
+          "OPTIMAL_IN_ENUMERATED_DOMAIN",
+          "FEASIBLE_NOT_PROVEN_OPTIMAL",
+          "NO_FEASIBLE_IN_ENUMERATED_DOMAIN",
+          "INVALID_INPUT",
+          "INCOMPLETE_OR_UNKNOWN"
+        ],
+        "title": "SolverStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "The persisted result of one bounded search.",
+    "properties": {
+      "base_graph_hash": {
+        "title": "Base Graph Hash",
+        "type": "string"
+      },
+      "base_graph_version_id": {
+        "title": "Base Graph Version Id",
+        "type": "string"
+      },
+      "baseline": {
+        "items": {
+          "$ref": "#/$defs/BaselineProfile"
+        },
+        "title": "Baseline",
+        "type": "array"
+      },
+      "candidates": {
+        "items": {
+          "$ref": "#/$defs/CandidateEvaluation"
+        },
+        "title": "Candidates",
+        "type": "array"
+      },
+      "config": {
+        "$ref": "#/$defs/SearchConfig"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      },
+      "disclaimers": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Disclaimers",
+        "type": "array"
+      },
+      "domain": {
+        "$ref": "#/$defs/DomainSummary"
+      },
+      "duration_ms": {
+        "title": "Duration Ms",
+        "type": "number"
+      },
+      "engine_version": {
+        "title": "Engine Version",
+        "type": "string"
+      },
+      "evaluation_instant": {
+        "title": "Evaluation Instant",
+        "type": "string"
+      },
+      "input_hash": {
+        "default": "",
+        "title": "Input Hash",
+        "type": "string"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "profile_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Profile Ids",
+        "type": "array"
+      },
+      "ranking_policy": {
+        "$ref": "#/$defs/RankingPolicy"
+      },
+      "rulepack_hash": {
+        "title": "Rulepack Hash",
+        "type": "string"
+      },
+      "rulepack_id": {
+        "title": "Rulepack Id",
+        "type": "string"
+      },
+      "scenario_content_hash": {
+        "title": "Scenario Content Hash",
+        "type": "string"
+      },
+      "scenario_id": {
+        "title": "Scenario Id",
+        "type": "string"
+      },
+      "scenario_revision": {
+        "title": "Scenario Revision",
+        "type": "integer"
+      },
+      "schema_version": {
+        "default": "1.0.0",
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "search_id": {
+        "title": "Search Id",
+        "type": "string"
+      },
+      "semantic_hash": {
+        "default": "",
+        "title": "Semantic Hash",
+        "type": "string"
+      },
+      "status": {
+        "$ref": "#/$defs/SearchStatus"
+      }
+    },
+    "required": [
+      "engine_version",
+      "search_id",
+      "created_at",
+      "duration_ms",
+      "scenario_id",
+      "scenario_revision",
+      "scenario_content_hash",
+      "base_graph_version_id",
+      "base_graph_hash",
+      "rulepack_id",
+      "rulepack_hash",
+      "phase_id",
+      "profile_ids",
+      "evaluation_instant",
+      "config",
+      "domain",
+      "baseline",
+      "candidates",
+      "ranking_policy",
+      "status"
+    ],
+    "title": "SearchOutcome",
+    "type": "object"
+  },
+  "SearchStatus": {
+    "$defs": {
+      "SolverStatus": {
+        "description": "Honest optimisation status vocabulary (PRD FR-106, MASTER_PROMPT \u00a77.8).",
+        "enum": [
+          "OPTIMAL_IN_ENUMERATED_DOMAIN",
+          "FEASIBLE_NOT_PROVEN_OPTIMAL",
+          "NO_FEASIBLE_IN_ENUMERATED_DOMAIN",
+          "INVALID_INPUT",
+          "INCOMPLETE_OR_UNKNOWN"
+        ],
+        "title": "SolverStatus",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "best_proposal_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Best Proposal Id"
+      },
+      "exhaustive": {
+        "title": "Exhaustive",
+        "type": "boolean"
+      },
+      "limits_hit": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Limits Hit",
+        "type": "array"
+      },
+      "notes": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Notes",
+        "type": "array"
+      },
+      "scope_note": {
+        "default": "Results apply to the selected phase and profile set of this scenario revision only. A single-phase improvement is not whole-project continuity.",
+        "title": "Scope Note",
+        "type": "string"
+      },
+      "solver_status": {
+        "$ref": "#/$defs/SolverStatus"
+      }
+    },
+    "required": [
+      "solver_status",
+      "exhaustive"
+    ],
+    "title": "SearchStatus",
     "type": "object"
   },
   "TemporaryEdge": {
