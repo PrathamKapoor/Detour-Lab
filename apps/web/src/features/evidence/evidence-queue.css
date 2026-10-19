@@ -1,0 +1,145 @@
+/* Evidence verification queue (Gate 6).
+ *
+ * Uses only the established design tokens so the queue reads as part of the
+ * same workstation as every other DETOUR LAB view. No new colour is introduced:
+ * decision relevance reuses the existing status palette plus a glyph, so the
+ * ordering is legible without colour.
+ */
+
+.queue {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  align-items: start;
+}
+
+.queue__detail {
+  position: sticky;
+  top: var(--space-3);
+}
+
+.queue__scope {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.queue__filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+  margin-bottom: var(--space-3);
+}
+
+.queue__filter-actions {
+  display: flex;
+  align-items: end;
+}
+
+.queue__counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.queue__element-kind {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.queue__status-label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: var(--text-2xs);
+  margin-top: 2px;
+}
+
+.queue__affected {
+  display: grid;
+  gap: 1px;
+  color: var(--text-secondary);
+  font-size: var(--text-2xs);
+}
+
+.queue__method,
+.queue__limitations,
+.queue__requirement,
+.queue__caveat,
+.queue__conflict {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+}
+
+.queue__method {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface-inset);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
+}
+
+.queue__limitations {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+}
+
+.queue__subheading {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.queue__rationale {
+  margin: 0;
+  padding-left: var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+}
+
+.queue__explanation {
+  background: var(--surface-inset);
+  border-left: 2px solid var(--status-unknown);
+  padding: var(--space-3);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: var(--text-xs);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.queue__detail-badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.queue__issue-id {
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+}
+
+.queue__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.queue tr.is-selected td,
+.queue tr.is-selected th {
+  background: var(--surface-selected);
+}
+
+@media (max-width: 1100px) {
+  .queue {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .queue__detail {
+    position: static;
+  }
+}

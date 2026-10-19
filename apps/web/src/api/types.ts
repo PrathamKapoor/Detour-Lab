@@ -67,8 +67,24 @@ export type {
   DomainSummary,
   EdgeType,
   EdgeEvaluation,
+  ElementStateChange,
+  EngineeringObservation,
+  EvidenceConflictReport,
+  EvidenceCriticality,
+  EvidenceIssue,
+  EvidenceIssuePair,
+  EvidenceQueue,
+  EvidenceQueueScope,
   EvidenceRecord,
+  ExecutionError,
   ExcludedIntervention,
+  ExperimentLimits,
+  ExperimentOutcome,
+  ExperimentSource,
+  ExperimentSummary,
+  FaultDefinition,
+  FaultKind,
+  FaultObservation,
   Intervention,
   InterventionCost,
   InterventionEffect,
@@ -76,14 +92,33 @@ export type {
   InterventionPrecondition,
   MobilityProfile,
   Node,
+  ObservationComparison,
   ODPairResult,
   ODTransition,
   OriginDestination,
+  PairTransition,
   Phase,
+  PhaseProfileOutcome,
   ProvenanceClass,
+  QueueState,
   RankingPolicy,
   ReasonCode,
+  ReportAlternativePlan,
+  ReportCandidate,
+  ReportEvidenceIssue,
+  ReportEvidenceRow,
+  ReportExperiment,
+  ReportFinding,
+  ReportIdentity,
+  ReportLimitations,
+  ReportModification,
+  ReportNetwork,
+  ReportODRow,
+  ReportScope,
+  ReportSection12,
   ResolvedAttribute,
+  ReviewReport,
+  RobustnessSummary,
   Rule,
   RulePack,
   RuleVerdict,
@@ -92,14 +127,243 @@ export type {
   SearchConfig,
   SearchOutcome,
   SearchStatus,
+  SectionAvailability,
   SolverStatus,
   TemporaryEdge,
   VerificationStatus,
   VerdictState,
 } from '@contracts/types'
 
+/**
+ * Route envelopes the contract generator does not cover.
+ *
+ * These are thin wrappers around the generated domain models plus query/filter
+ * echoes. They are asserted against the live `openapi.json` in
+ * `tests/api-client.test.ts`, so a drift between these shapes and the routes is
+ * a failing test rather than a runtime surprise.
+ */
+
+/**
+ * Names used *inside* this module. The re-export block above only publishes
+ * types to consumers; referencing one here still needs an import.
+ */
+import type {
+  ElementStateChange,
+  EngineeringObservation,
+  EvidenceConflictReport,
+  EvidenceIssue,
+  EvidenceIssuePair,
+  EvidenceQueue,
+  EvidenceQueueScope,
+  ExecutionError,
+  ExperimentLimits,
+  ExperimentOutcome,
+  FaultDefinition,
+  FaultKind,
+  ObservationComparison,
+  PairTransition,
+  ReportIdentity,
+  ReviewReport,
+  RobustnessSummary,
+  SectionAvailability,
+} from '@contracts/types'
+
+/** One entry of `GET /scenarios/{id}/failure-lab/catalog`. */
+export interface FailureLabCatalog {
+  scenario_id: string
+  scenario_revision: number
+  scenario_content_hash: string
+  declared_phase_ids: string[]
+  selected_phase_ids: string[]
+  rulepack: { id: string; version: string; content_hash: string; legal_applicability: string }
+  fault_kinds: { kind: Gate6Fault['kind']; description: string; mutation_note: string }[]
+  suites: {
+    suite_id: string
+    title: string
+    description: string
+    target_element_ids: string[]
+    applicable_phase_ids: string[]
+    applicable: boolean
+    unavailable_reason: string
+  }[]
+  limits: Gate6Limits
+  unsupported_scenarios: { name: string; reason: string }[]
+  honesty_note: string
+}
+
+/** `POST /scenarios/{id}/failure-lab/experiments` response envelope. */
+export interface FailureLabRunEnvelope {
+  experiments: Gate6Experiment[]
+  experiment_count: number
+  robustness: Gate6Robustness | null
+  limits: Gate6Limits
+  unsupported_scenarios: { name: string; reason: string }[]
+}
+
+/** One fault definition sent to the backend. */
+export interface FaultRequestPayload {
+  kind: FaultKind
+  label?: string
+  target_ids?: string[]
+  phase_ids?: string[]
+  observation?: {
+    field: string
+    value?: number | string | boolean | null
+    unit?: string | null
+    method?: string
+    source?: string
+    verification_status?: 'unverified' | 'verified' | 'disputed'
+    quality?: 'high' | 'medium' | 'low'
+    provenance_class?: 'assumed' | 'synthetic' | 'synthetic_fixture'
+    note?: string
+  }
+  evaluation_instant?: string | null
+  note?: string
+}
+
+/** Stored experiment metadata shown in history lists. */
+export interface StoredExperimentSummary {
+  experiment_id: string
+  scenario_id: string
+  scenario_revision: number
+  phase_ids: string[]
+  profile_ids: string[]
+  fault_kinds: FaultKind[]
+  fault_labels: string[]
+  status: string
+  observations: EngineeringObservation[]
+  input_hash: string
+  semantic_hash: string
+  created_at: string
+  suite_id: string | null
+  error_code: string | null
+}
+
+/** `POST /failure-lab/experiments/{id}/replay`. */
+export interface ExperimentReplay {
+  experiment_id: string
+  reproduced: boolean
+  detail: string
+  stored_semantic_hash: string
+  stored_input_hash: string
+  replayed_semantic_hash: string
+  replayed_experiment_id: string
+  status: string
+}
+
+/** Element-level before/after for one experiment. */
+export interface ExperimentGraphDiff {
+  experiment_id: string
+  status: string
+  source: Gate6Experiment['source']
+  isolated: {
+    scenario_hash: string
+    graph_hash: string
+    graph_version_id: string
+    evaluation_instant: string
+  }
+  phase_graph_identities: {
+    phase_id: string
+    profile_id: string
+    baseline_phase_graph_hash: string | null
+    faulted_phase_graph_hash: string | null
+    changed: boolean
+  }[]
+  element_changes: Gate6ElementChange[]
+  evidence_change_log: Record<string, unknown>[]
+  applicability: { faults: Record<string, unknown>[] }
+}
+
+/** Stored review packet metadata. */
+export interface StoredReportSummary {
+  report_id: string
+  scenario_revision: number
+  describes_current_revision: boolean
+  schema_version: string
+  generator_version: string
+  semantic_hash: string
+  pdf_sha256: string
+  pdf_bytes: number
+  pdf_page_count: number
+  selected_run_ids: string[]
+  selected_search_ids: string[]
+  selected_experiment_ids: string[]
+  created_at: string
+}
+
+/** `POST /scenarios/{id}/reports` response. */
+export interface GeneratedReportEnvelope {
+  report: {
+    report_id: string
+    semantic_hash: string
+    schema_version: string
+    generator_version: string
+    page_count: number
+    pdf_bytes: number
+    pdf_sha256: string
+    identity: ReportIdentity
+    reproducibility: ReviewReport['reproducibility']
+    section_availability: Record<string, SectionAvailability>
+    disclaimer: string
+    runtime: Record<string, unknown>
+  }
+  payload: Complete<ReviewReport>
+}
+
+/** `GET /reports/{id}`. */
+export interface ReportEnvelope {
+  report_id: string
+  scenario_id: string
+  scenario_revision: number
+  current_scenario_revision: number
+  describes_current_revision: boolean
+  schema_version: string
+  generator_version: string
+  semantic_hash: string
+  pdf_sha256: string
+  pdf_bytes: number
+  pdf_page_count: number
+  selected_run_ids: string[]
+  selected_search_ids: string[]
+  selected_experiment_ids: string[]
+  created_at: string
+  payload: Complete<ReviewReport>
+}
+
 /** `[[x, y], [x, y], ...]` in the graph's own coordinate basis. */
 export type EdgeGeometry = [number, number][]
+
+/**
+ * Treats every property of a generated contract as present, recursively.
+ *
+ * The generator marks a field optional whenever its Pydantic counterpart has a
+ * default. That is faithful to the schema but misleading here: the backend
+ * serialises with `model_dump()`, which always emits every field, at every level.
+ * Applying this to the Gate 6 models removes hundreds of `?? []` guards at the
+ * call sites without weakening type safety, because a genuinely absent field is
+ * still typed as its declared type rather than as `any`.
+ */
+export type Complete<T> = T extends readonly (infer U)[]
+  ? Complete<U>[]
+  : T extends object
+    ? { [K in keyof T]-?: Complete<T[K]> }
+    : T
+
+/** Gate 6 domain models, with defaults guaranteed present. */
+export type Gate6Issue = Complete<EvidenceIssue>
+export type Gate6IssuePair = Complete<EvidenceIssuePair>
+export type Gate6ConflictReport = Complete<EvidenceConflictReport>
+export type Gate6Observation = Complete<ObservationComparison>
+export type Gate6Queue = Complete<EvidenceQueue>
+export type Gate6QueueScope = Complete<EvidenceQueueScope>
+export type Gate6Fault = Complete<FaultDefinition>
+export type Gate6Experiment = Complete<ExperimentOutcome>
+export type Gate6Transition = Complete<PairTransition>
+export type Gate6ElementChange = Complete<ElementStateChange>
+export type Gate6Error = Complete<ExecutionError>
+export type Gate6Limits = Complete<ExperimentLimits>
+export type Gate6Robustness = Complete<RobustnessSummary>
+export type Gate6Report = Complete<ReviewReport>
 
 /** The flat error envelope every backend failure uses. */
 export interface ApiErrorBody {

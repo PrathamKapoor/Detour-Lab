@@ -35,6 +35,20 @@ import type {
   PhaseGraphResponse,
   ScenarioRunList,
   ScenarioTimeline,
+  Gate6Queue,
+  Gate6Issue,
+  Gate6ConflictReport,
+  Gate6Experiment,
+  Gate6Limits,
+  FailureLabCatalog,
+  FailureLabRunEnvelope,
+  FaultRequestPayload,
+  StoredExperimentSummary,
+  ExperimentReplay,
+  ExperimentGraphDiff,
+  StoredReportSummary,
+  GeneratedReportEnvelope,
+  ReportEnvelope,
 } from './types'
 
 export const DEFAULT_TIMEOUT_MS = 20_000
@@ -353,6 +367,188 @@ async createBranchFrom(
       body: JSON.stringify(payload),
       signal,
     })
+  }
+
+  // ------------------------------------------------------------- evidence queue
+
+  /**
+   * Derive the evidence-verification queue for a selection.
+   *
+   * Every filter is a server-side filter: the client never narrows the queue by
+   * guessing what matters, it asks the same authoritative derivation for a
+   * narrower question and renders exactly what comes back.
+   */
+  getEvidenceQueue(
+    scenarioId: string,
+    options: {
+      phaseIds?: string[]
+      profileIds?: string[]
+      statuses?: string[]
+      criticalities?: string[]
+      elementId?: string | undefined
+      field?: string | undefined
+    } = {},
+    signal?: AbortSignal,
+  ): Promise<Gate6Queue & { returned_issues: number; filters_applied: Record<string, string> }> {
+    const query = new URLSearchParams()
+    if (options.phaseIds?.length) query.set('phase_ids', options.phaseIds.join(','))
+    if (options.profileIds?.length) query.set('profile_ids', options.profileIds.join(','))
+    if (options.statuses?.length) query.set('statuses', options.statuses.join(','))
+    if (options.criticalities?.length) query.set('criticalities', options.criticalities.join(','))
+    if (options.elementId) query.set('element_id', options.elementId)
+    if (options.field) query.set('field', options.field)
+    const suffix = query.toString()
+    return this.request(
+      `/api/v1/scenarios/${encodeURIComponent(scenarioId)}/evidence/queue${suffix ? `?${suffix}` : ''}`,
+      { signal },
+    )
+  }
+
+  /** One queue entry plus the resolver's own explanation of why it is unresolved. */
+  getEvidenceIssue(
+    scenarioId: string,
+    issueId: string,
+    options: { phaseIds?: string[]; profileIds?: string[] } = {},
+    signal?: AbortSignal,
+  ): Promise<{ issue: Gate6Issue; resolver_explanation: Gate6ConflictReport }> {
+    const query = new URLSearchParams()
+    if (options.phaseIds?.length) query.set('phase_ids', options.phaseIds.join(','))
+    if (options.profileIds?.length) query.set('profile_ids', options.profileIds.join(','))
+    const suffix = query.toString()
+    return this.request(
+      `/api/v1/scenarios/${encodeURIComponent(scenarioId)}/evidence/issues/${encodeURIComponent(issueId)}${
+        suffix ? `?${suffix}` : ''}`,
+      { signal },
+    )
+  }
+
+  /** Explain why one attribute is unresolved. Never selects a value for it. */
+  explainAttribute(
+    projectId: string,
+    payload: { element_id: string; field: string; evaluation_instant?: string },
+    signal?: AbortSignal,
+  ): Promise<Gate6ConflictReport> {
+    return this.request(`/api/v1/projects/${encodeURIComponent(projectId)}/evidence/attributes/explain`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      signal,
+    })
+  }
+
+  // --------------------------------------------------------------- failure lab
+
+  failureLabCatalog(scenarioId: string, phaseId?: string, signal?: AbortSignal): Promise<FailureLabCatalog> {
+    const query = phaseId ? `?phase_id=${encodeURIComponent(phaseId)}` : ''
+    return this.request(`/api/v1/scenarios/${encodeURIComponent(scenarioId)}/failure-lab/catalog${query}`, {
+      signal,
+    })
+  }
+
+  failureLabLimits(scenarioId: string, signal?: AbortSignal): Promise<{ limits: Gate6Limits }> {
+    return this.request(`/api/v1/scenarios/${encodeURIComponent(scenarioId)}/failure-lab/limits`, { signal })
+  }
+
+  /** Execute bounded fault experiments through the authoritative backend. */
+  runFailureLabExperiments(
+    scenarioId: string,
+    payload: {
+      phase_ids?: string[]
+      profile_ids?: string[]
+      evaluation_instant?: string
+      suite_ids?: string[]
+      faults?: FaultRequestPayload[]
+      baseline_run_ids?: string[]
+    },
+    signal?: AbortSignal,
+  ): Promise<FailureLabRunEnvelope> {
+    return this.request(`/api/v1/scenarios/${encodeURIComponent(scenarioId)}/failure-lab/experiments`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      signal,
+    })
+  }
+
+  listFailureLabExperiments(
+    scenarioId: string,
+    signal?: AbortSignal,
+  ): Promise<{ scenario_id: string; experiments: StoredExperimentSummary[]; experiment_count: number }> {
+    return this.request(`/api/v1/scenarios/${encodeURIComponent(scenarioId)}/failure-lab/experiments`, {
+      signal,
+    })
+  }
+
+  getFailureLabExperiment(
+    experimentId: string,
+    signal?: AbortSignal,
+  ): Promise<{ experiment: Gate6Experiment; stored: Record<string, unknown> }> {
+    return this.request(`/api/v1/failure-lab/experiments/${encodeURIComponent(experimentId)}`, { signal })
+  }
+
+  replayFailureLabExperiment(experimentId: string, signal?: AbortSignal): Promise<ExperimentReplay> {
+    return this.request(`/api/v1/failure-lab/experiments/${encodeURIComponent(experimentId)}/replay`, {
+      method: 'POST',
+      signal,
+    })
+  }
+
+  getFailureLabGraphDiff(experimentId: string, signal?: AbortSignal): Promise<ExperimentGraphDiff> {
+    return this.request(
+      `/api/v1/failure-lab/experiments/${encodeURIComponent(experimentId)}/graph-differences`,
+      { signal },
+    )
+  }
+
+  // ------------------------------------------------------------------ reporting
+
+  createReport(
+    scenarioId: string,
+    payload: {
+      run_ids: string[]
+      search_ids?: string[]
+      experiment_ids?: string[]
+      include_evidence_queue?: boolean
+      queue_phase_ids?: string[]
+    },
+    signal?: AbortSignal,
+  ): Promise<GeneratedReportEnvelope> {
+    return this.request(`/api/v1/scenarios/${encodeURIComponent(scenarioId)}/reports`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      signal,
+    })
+  }
+
+  listReports(
+    scenarioId: string,
+    signal?: AbortSignal,
+  ): Promise<{
+    scenario_id: string
+    current_scenario_revision: number
+    reports: StoredReportSummary[]
+    report_count: number
+    historical_note: string
+  }> {
+    return this.request(`/api/v1/scenarios/${encodeURIComponent(scenarioId)}/reports`, { signal })
+  }
+
+  getReport(reportId: string, signal?: AbortSignal): Promise<ReportEnvelope> {
+    return this.request(`/api/v1/reports/${encodeURIComponent(reportId)}`, { signal })
+  }
+
+  /**
+   * Download URLs for a stored packet.
+   *
+   * Returned as URLs rather than fetched blobs so the browser performs a real
+   * download with the server's `Content-Disposition` filename. The
+   * `X-Detour-Lab-*` headers the server sets are the identity a caller can
+   * assert against after the download.
+   */
+  reportDownloadUrls(reportId: string): { pdf: string; manifest: string } {
+    const encoded = encodeURIComponent(reportId)
+    return {
+      pdf: `/api/v1/reports/${encoded}/document.pdf`,
+      manifest: `/api/v1/reports/${encoded}/manifest`,
+    }
   }
 }
 

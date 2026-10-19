@@ -2,7 +2,8 @@ import { WorkspaceProvider, useWorkspace, type ViewId } from '@/app/workspace'
 import type { ApiClient } from '@/api/client'
 import { AnalysisWorkspace } from '@/features/analysis/AnalysisWorkspace'
 import { ComparisonView } from '@/features/analysis/ComparisonView'
-import { EvidenceCentre } from '@/features/evidence/EvidenceCentre'
+import { EvidenceQueue } from '@/features/evidence/EvidenceQueue'
+import { FailureLab } from '@/features/failure-lab/FailureLab'
 import { NetworkStudio } from '@/features/network/NetworkStudio'
 import { ProjectDashboard } from '@/features/projects/ProjectDashboard'
 import { ReportsPanel } from '@/features/reports/ReportsPanel'
@@ -21,10 +22,11 @@ const NAV: { id: ViewId; label: string; hint: string }[] = [
   { id: 'analysis', label: 'Analysis', hint: 'Profile, phase, findings' },
   { id: 'phases', label: 'Phases', hint: 'Timeline and continuity' },
   { id: 'optimization', label: 'Fix This Plan', hint: 'Interventions and verification' },
-  { id: 'evidence', label: 'Evidence', hint: 'Unresolved attributes' },
+  { id: 'failure-lab', label: 'Failure Lab', hint: 'Break the plan on purpose' },
+  { id: 'evidence', label: 'Evidence', hint: 'Verification queue' },
   { id: 'branches', label: 'Branches', hint: 'Alternative plans' },
   { id: 'compare', label: 'Compare', hint: 'Baseline against modified' },
-  { id: 'reports', label: 'Reports', hint: 'Canonical manifest' },
+  { id: 'reports', label: 'Reports', hint: 'Manifest and PDF packet' },
 ]
 
 function Shell() {
@@ -108,9 +110,10 @@ function Shell() {
           {view === 'analysis' ? <AnalysisWorkspace /> : null}
           {view === 'phases' ? <PhaseExplorer /> : null}
           {view === 'optimization' ? <OptimizationStudio /> : null}
+          {view === 'failure-lab' ? <FailureLab /> : null}
           {view === 'compare' ? <ComparisonView /> : null}
           {view === 'reports' ? <ReportsPanel /> : null}
-          {view === 'evidence' ? <EvidenceCentre /> : null}
+          {view === 'evidence' ? <EvidenceQueue /> : null}
           {view === 'branches' ? <BranchExplorer /> : null}
         </div>
       </main>

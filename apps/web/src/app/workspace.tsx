@@ -33,6 +33,7 @@ export type ViewId =
   | 'evidence'
   | 'phases'
   | 'optimization'
+  | 'failure-lab'
   | 'branches'
   | 'compare'
   | 'reports'

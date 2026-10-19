@@ -1,0 +1,186 @@
+/* Adversarial Failure Laboratory (Gate 6).
+ *
+ * Uses the established tokens only. Status is always carried by a glyph and a
+ * word as well as a colour, so a reader who cannot distinguish the palette reads
+ * the same conclusion.
+ */
+
+.failure-lab {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.failure-lab__intro,
+.failure-lab__note,
+.failure-lab__muted,
+.failure-lab__break-note {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+}
+
+.failure-lab__break {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+
+.failure-lab__break-note {
+  margin: 0;
+  flex: 1 1 260px;
+}
+
+.failure-lab__grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  align-items: start;
+}
+
+.failure-lab__subheading {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.failure-lab__suites {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.failure-lab__suite {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: start;
+  padding: var(--space-2);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-inset);
+  cursor: pointer;
+}
+
+.failure-lab__suite:hover {
+  border-color: var(--line-default);
+}
+
+.failure-lab__suite-title {
+  display: block;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+}
+
+.failure-lab__suite-desc {
+  display: block;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+.failure-lab__suite-targets,
+.failure-lab__fault-targets {
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+}
+
+.failure-lab__unavailable {
+  border-left: 2px solid var(--status-unknown);
+  padding-left: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.failure-lab__unavailable ul,
+.failure-lab__kinds,
+.failure-lab__rationale,
+.failure-lab__fault-detail,
+.failure-lab__limits ul {
+  margin: 0;
+  padding-left: var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.failure-lab__kinds li {
+  display: grid;
+  gap: 2px;
+}
+
+.failure-lab__limits {
+  margin-top: var(--space-4);
+}
+
+.failure-lab__suite-name {
+  display: block;
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+}
+
+.failure-lab__fault-line {
+  display: block;
+}
+
+.failure-lab__graphs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.failure-lab__graph {
+  margin: 0;
+}
+
+.failure-lab__graph figcaption {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  margin-bottom: var(--space-2);
+}
+
+.failure-lab__explanation-text {
+  display: block;
+  color: var(--text-secondary);
+  font-size: var(--text-2xs);
+  margin-top: 2px;
+  max-width: 46ch;
+}
+
+.failure-lab__error {
+  border-left: 2px solid var(--status-fail);
+  padding-left: var(--space-3);
+}
+
+.failure-lab__replay {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+}
+
+.failure-lab__replay.is-ok {
+  border-left: 2px solid var(--status-pass);
+  background: var(--surface-inset);
+}
+
+.failure-lab__replay.is-problem {
+  border-left: 2px solid var(--status-fail);
+  background: var(--surface-inset);
+}
+
+.failure-lab__actions {
+  margin-top: var(--space-3);
+}
+
+.failure-lab tr.is-selected td,
+.failure-lab tr.is-selected th {
+  background: var(--surface-selected);
+}
