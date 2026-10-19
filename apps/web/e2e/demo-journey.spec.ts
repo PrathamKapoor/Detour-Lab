@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { expect, test, type ConsoleMessage, type Page } from '@playwright/test'
-import { gotoProjects, openNetwork, openScenarioEditor, runAnalysis } from './helpers'
+import { gotoProjects, openNetwork, openScenarioEditor, resetDemoBaseline, runAnalysis } from './helpers'
 
 /**
  * The documented offline demo journey (Gate 3, section 8), executed end to end
@@ -97,4 +97,8 @@ test('demo journey: seed, inspect, close, analyse, compare, save, reload, export
   await page.screenshot({ path: `${SHOTS}09-manifest.png`, fullPage: true })
 
   console_.assertClean()
+})
+
+test.afterAll(() => {
+  resetDemoBaseline()
 })

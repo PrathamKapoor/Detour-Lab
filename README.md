@@ -24,10 +24,18 @@ unreachable — with the exact rule, evidence and units behind every verdict.
 | 3 | Real accessible web UI, offline end-to-end journey | **PASSED** — 114 frontend tests, Playwright suite |
 | 4 | Construction phase intelligence: timeline, phase graphs, temporal analysis, branching | **PASSED** |
 | 5 | Fix This Plan: bounded candidate search, re-verification, honest ranking, transactional apply-to-branch | **PASSED** — 373 backend tests, 127 frontend tests, 68 Playwright tests |
-| 6–7 | Failure Lab, PDF packet, audit | NOT STARTED |
+| 6 | Evidence Intelligence queue, adversarial Failure Lab, audit-ready PDF review packet | **PASSED** — 511 backend tests, 127 frontend tests, 99 Playwright tests (all passing); scripts\verify.ps1 exit code 0 (ar/verify-gate6-final.log); see FLOW.md |
+| 7 | Polish, CI, measured benchmarks/baselines, audit | NOT STARTED |
 | R2 | Photo measurement, multi-jurisdiction packs, RBAC, scale | OUT OF SCOPE |
 
 Nothing above is a claim about field accuracy. Current results come from a **synthetic** fixture.
+
+Gate 6 adds: a **derived** evidence-verification queue (the resolver's five conditions reproduced
+exactly, an explainable category instead of a numeric score), nine **authored** fault suites executed
+against an **isolated** copy of the scenario through the unmodified analysis pipeline, a robustness
+comparison whose denominators are stated and which is explicitly **not** a probability, and a genuine
+12-section PDF packet with a canonical JSON manifest. Design: `docs/FAILURE_LAB_DESIGN.md`,
+`docs/REPORTING_DESIGN.md`. Decisions: `DECISIONS.md` D-034..D-044.
 
 ## Prerequisites
 

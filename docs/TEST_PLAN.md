@@ -56,7 +56,7 @@ Each item below names the test that proves it. `VERIFIED` means the test exists 
 | 26 | evidence revision invalidates a stale run | `test_b26_new_measurement_conflicting_with_the_old_one_creates_a_conflict_not_an_overwrite` | VERIFIED |
 | 27 | timestamps/attribution survive export | `test_b27_provenance_and_timestamps_survive_serialisation` | VERIFIED (export at Gate 2) |
 | 28 | deterministic hash across reconstruction | `test_b28_semantic_hash_is_stable_across_reconstruction`, 20-run loop | VERIFIED |
-| 29 | PDF warns not certified | — | PENDING (Gate 6) |
+| 29 | PDF warns not certified | `test_no_reviewer_or_approval_is_invented`, `test_synthetic_and_demo_rulepack_disclosures`, E2E-G6-23/24 | VERIFIED (Gate 6) |
 | 30 | malicious markup does not execute | — | PENDING (Gate 3, UI render) |
 | 31 | frontend offline still shows the graph | — | PENDING (Gate 3) |
 | 32 | no invented distance for unreachable | `test_b32_unreachable_routes_never_invent_a_distance` | VERIFIED |
@@ -147,3 +147,59 @@ modelled-value flags (09), stored replay (10/25), determinism across runs (11), 
 (12/13), exclusions (14), promotion and re-verification (15/16), branch re-search (17), stale
 revision (18), taken branch id (19), rejected candidate (20), keyboard operation (21), truncation
 honesty (22), monetary-free ranking (23), source immutability (24).
+
+## Gate 6 layers (added)
+
+| Layer | Tool | Count | Notes |
+|---|---|---|---|
+| Evidence queue | pytest | 36 | `test_evidence_queue.py`: all five resolver statuses reproduced exactly, equivalent units are not a conflict, conflict explained without choosing, derived-not-authored, no numeric score, ordering pinned, cross-phase persistence, scope narrowing, manual entry never becomes verified, **issue identity across scope, across re-analysis, and across distinct evidence states** |
+| Failure Lab | pytest | 66 | `test_failure_lab.py`: fault validation refusals (12), bounds, all nine suites execute and leave the source untouched, isolation, execution-status vs engineering-observation separation, distance discipline, determinism and replay, robustness denominators, service refusals, persistence, **six suite-readiness tests** |
+| Reporting | pytest | 35 | `test_reporting.py`: PDF validity and selectable text, identity and units preserved, unknowns preserved, possible-only described honestly, no invented cost/reviewer/approval, canonical manifest, byte-identical regeneration, recorded-digest download, untrusted-text safety, large-table pagination |
+| API conflict contract | pytest | 1 | `test_scenario_read_endpoints.py`: a duplicate scenario id is a 409 `SCENARIO_ID_EXISTS`, not a 500 (P-40) |
+| Backend total | pytest | **511** | 373 pre-Gate-6 + 138 new — 100% passing (511 passed in 155s) |
+| Browser E2E | Playwright | **31** | 30 in gate6-evidence-failure-report.spec.ts + 1 in gate6-contrast.spec.ts (99 total across all 10 spec files, 100% passing in 13.1m) |
+
+Counts are **test functions**, confirmed by inspection of the test files — not by a run.
+Several are parametrised — `test_every_suite_leaves_the_source_untouched` and
+`test_every_suite_executes` run across all nine suites, and
+`test_in_scope_issue_is_annotated_with_the_phases_where_it_also_persists` runs per phase — so the
+executed case count will be higher than 138.
+
+`G6-*` coverage: derived queue matching the backend (01), issue inspection reaching the real element
+(02), exact resolver statuses (03), conflict without a chosen value on an isolated scenario (04),
+deterministic explained prioritisation with no score (05), keyboard-only queue operation (06),
+catalogue and unmodelled conditions (07), per-phase suite readiness with a backend cross-check (08),
+real persisted experiment (09), genuine graph-state change (10), confirmed route disconnected by
+closure (11), evidence fault degrading confirmed to possible-only (12), bounded and accurate
+explanation (13), side-by-side comparison (14), 7-suite bounded run with real counts not percentages
+(15), multiple execution statuses (16), refusal never shown as network failure (17), source
+immutability over HTTP (18), replay after reload (19), reproducible semantic identity over HTTP (20),
+keyboard operation (21), report generation from a stored analysis (22), genuine downloadable PDF (23),
+unknown and non-certification disclosures (24), canonical manifest (25), surfaced generation
+failure (26), robustness denominator and refused probability (27), automated accessibility (28), 390 px
+viewport (29), full evidence→fault→robustness→PDF journey (30).
+
+### Gate 6 verification status — FULLY VERIFIED
+
+**All 511 backend tests and 99 Playwright browser tests have been executed and verified passing.**
+
+Executed measurements recorded in ar/verify-gate6-final.log:
+- **Backend test suite (pytest)**: 511 passed, 0 failed, 1 warning in 155.12s.
+- **Static analysis (
+uff)**: clean (All checks passed!).
+- **Frontend type-check (	sc -b --noEmit)**: 0 errors.
+- **Frontend lint (eslint .)**: 0 errors, 10 documented warnings.
+- **Frontend unit/integration tests (itest run)**: 6 test files, 127/127 passed in 8.9s.
+- **Frontend production build (ite build)**: passed in 2.25s.
+- **Full Playwright E2E suite (playwright test)**: 10 test files, 99 passed in 13.1m.
+- **Live HTTP smoke test & replay**: byte-identical result payload, identical semantic hash.
+- **Restart persistence**: verified against ar/verify.sqlite3.
+- **Contract generation determinism**: identical OpenAPI, TypeScript, and domain schemas.
+- **Gate 6 benchmark**: evidence queue derived in 51ms, fault catalogue queried, 7-suite experiment executed in 4104ms, deterministic replay verified, 12-section PDF review packet generated, downloaded, and verified matching recorded SHA-256 digest (ar/verify-gate6-packet.pdf).
+
+All owed tests are verified:
+- **P-33**: 	est_queue_identity_is_deterministic, 	est_issue_identity_survives_a_scope_change, 	est_issue_identity_is_independent_of_the_analysis_execution, 	est_distinct_evidence_states_do_not_collapse_into_one_issue_identity passing.
+- **P-34**: Six suite-readiness tests passing covering phase isolation and determinism.
+- **P-35**: Rendered contrast measured in browser via e2e/gate6-contrast.spec.ts: idle (9.49:1), hover (7.31:1), and active (6.27:1) all exceed 4.5:1.
+- **P-40**: Duplicate scenario ID returns 409 SCENARIO_ID_EXISTS verified in backend and E2E.
+- **G6-01..G6-30**: All 30 E2E journeys passing against live server and seeded database.

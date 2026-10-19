@@ -118,12 +118,13 @@ def failure_lab_catalog(
     except NotFoundError as exc:
         raise _error(404, "NOT_FOUND", str(exc)) from exc
     rulepack = load_rulepack(rulepack_path())
-    phases = [phase_id] if phase_id else [p.id for p in scenario.ordered_phases()]
+    declared = [p.id for p in scenario.ordered_phases()]
+    phases = [phase_id] if phase_id else declared
     return {
         "scenario_id": scenario_id,
         "scenario_revision": scenario.revision,
         "scenario_content_hash": scenario.content_hash,
-        "declared_phase_ids": [p.id for p in scenario.ordered_phases()],
+        "declared_phase_ids": declared,
         "selected_phase_ids": phases,
         "rulepack": {
             "id": rulepack.id,
@@ -139,7 +140,7 @@ def failure_lab_catalog(
             }
             for kind in FaultKind
         ],
-        "suites": available_suites(scenario, graph),
+        "suites": available_suites(scenario, graph, phases),
         "limits": ExperimentLimits().model_dump(mode="json"),
         "unsupported_scenarios": [dict(entry) for entry in UNSUPPORTED_SCENARIOS],
         "honesty_note": (

@@ -308,7 +308,8 @@ export function FailureLab() {
                 description="Results are reported per experiment so a failure and a resilience case read the same way."
               />
             ) : (
-              <table className="data-table" data-testid="experiment-table">
+              <div className="table-scroll">
+      <table className="data-table" data-testid="experiment-table">
                 <thead>
                   <tr>
                     <th scope="col">Experiment</th>
@@ -381,6 +382,7 @@ export function FailureLab() {
                   ))}
                 </tbody>
               </table>
+      </div>
             )}
           </Panel>
         </div>
@@ -453,7 +455,8 @@ export function FailureLab() {
               description="Executed experiments are persisted and replayable."
             />
           ) : (
-            <table className="data-table" data-testid="history-table">
+            <div className="table-scroll">
+      <table className="data-table" data-testid="history-table">
               <thead>
                 <tr>
                   <th scope="col">Experiment</th>
@@ -490,6 +493,7 @@ export function FailureLab() {
                 ))}
               </tbody>
             </table>
+      </div>
           )}
           {replay ? (
             <p
@@ -591,7 +595,8 @@ function ExperimentVisualComparison({ experiment }: { experiment: Gate6Experimen
           description="The modelled network state is identical before and after."
         />
       ) : (
-        <table className="data-table" data-testid="element-change-table">
+        <div className="table-scroll">
+      <table className="data-table" data-testid="element-change-table">
           <thead>
             <tr>
               <th scope="col">Element</th>
@@ -618,6 +623,7 @@ function ExperimentVisualComparison({ experiment }: { experiment: Gate6Experimen
             ))}
           </tbody>
         </table>
+      </div>
       )}
     </div>
   )
@@ -655,7 +661,8 @@ function ExperimentExplanation({ experiment }: { experiment: Gate6Experiment }) 
           description="The injected condition left every selected origin-destination outcome and verdict as it was. That is reported as 'no relevant modelled change' — it is not presented as proof of safety."
         />
       ) : (
-        <table className="data-table" data-testid="transition-table">
+        <div className="table-scroll">
+      <table className="data-table" data-testid="transition-table">
           <thead>
             <tr>
               <th scope="col">Profile</th>
@@ -703,6 +710,7 @@ function ExperimentExplanation({ experiment }: { experiment: Gate6Experiment }) 
             ))}
           </tbody>
         </table>
+      </div>
       )}
 
       <h3 className="failure-lab__subheading">Fault definitions applied</h3>

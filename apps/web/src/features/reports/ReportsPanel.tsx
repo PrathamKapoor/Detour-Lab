@@ -303,7 +303,8 @@ export function ReportsPanel() {
           />
         ) : (
           <>
-            <table className="data-table" data-testid="stored-report-table">
+            <div className="table-scroll">
+      <table className="data-table" data-testid="stored-report-table">
               <thead>
                 <tr>
                   <th scope="col">Report</th>
@@ -345,6 +346,7 @@ export function ReportsPanel() {
                 ))}
               </tbody>
             </table>
+      </div>
             <p className="reports__hint">{storedReports.data?.historical_note}</p>
           </>
         )}
@@ -401,7 +403,8 @@ export function ReportsPanel() {
               this packet.
             </p>
           ) : (
-            <table className="data-table" data-testid="report-alternatives">
+            <div className="table-scroll">
+      <table className="data-table" data-testid="report-alternatives">
               <thead>
                 <tr>
                   <th scope="col">Search</th>
@@ -440,6 +443,7 @@ export function ReportsPanel() {
                 ))}
               </tbody>
             </table>
+      </div>
           )}
 
           <h3 className="reports__subheading">Failure Lab experiments in this packet</h3>
@@ -492,8 +496,23 @@ export function ReportsPanel() {
               items={[
                 { term: 'Schema version', value: manifest.schema_version },
                 { term: 'Engine version', value: manifest.engine_version },
-                { term: 'Semantic hash', value: manifest.semantic_hash, wide: true },
-                { term: 'Run id', value: manifest.runtime?.run_id ?? '' },
+                {
+                  term: 'Semantic hash',
+                  value: (
+                    <span className="mono" data-testid="manifest-hash">
+                      {manifest.semantic_hash}
+                    </span>
+                  ),
+                  wide: true,
+                },
+                {
+                  term: 'Run id',
+                  value: (
+                    <span className="mono" data-testid="run-id">
+                      {manifest.runtime?.run_id ?? ''}
+                    </span>
+                  ),
+                },
                 { term: 'Created', value: formatTimestamp(manifest.runtime?.created_at ?? '') },
                 { term: 'Duration', value: formatDuration(manifest.runtime?.duration_ms ?? 0) },
                 { term: 'Evaluation instant', value: manifest.runtime?.evaluation_instant ?? '' },

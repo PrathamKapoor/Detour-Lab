@@ -27,7 +27,7 @@ from detour_lab.failure.model import (
     FaultObservation,
 )
 from detour_lab.failure.service import replay_experiment, run_experiments
-from detour_lab.failure.suite import SUITES, build_suite
+from detour_lab.failure.suite import SUITES, available_suites, build_suite
 from detour_lab.rules.profiles import DEMO_PROFILES
 
 PROFILE_A = DEMO_PROFILES[0].id
@@ -1015,6 +1015,84 @@ class TestSuitesAndRobustness:
         with pytest.raises(FaultValidationError) as excinfo:
             build_suite(suite_id="meteorite", scenario=scenario, phase_id="phase-1")
         assert excinfo.value.code == "UNKNOWN_SUITE"
+
+    # ------------------------------------------------------------------ readiness
+
+    def test_suite_readiness_is_derived_from_the_selected_phase(self, seed, scenario):
+        """P-34: applicability is relative to the reviewer's selection.
+
+        ``TMP-EAST-BYPASS`` is declared active in phase-2 only, so the
+        ``connection_loss`` suite must not be advertised as runnable while
+        phase-1 is the selected phase.
+        """
+        phase_one = {s["suite_id"]: s for s in available_suites(scenario, seed.graph, ["phase-1"])}
+        phase_two = {s["suite_id"]: s for s in available_suites(scenario, seed.graph, ["phase-2"])}
+
+        assert phase_one["connection_loss"]["applicable"] is False
+        assert phase_one["connection_loss"]["applicable_phase_ids"] == []
+        assert phase_two["connection_loss"]["applicable"] is True
+        assert phase_two["connection_loss"]["applicable_phase_ids"] == ["phase-2"]
+
+        # The isolation suite is meaningful only where another phase exists that
+        # the fault deliberately does not touch.
+        assert phase_one["multi_phase_isolation"]["applicable"] is True
+        assert phase_two["multi_phase_isolation"]["applicable"] is False
+
+    def test_suite_readiness_over_the_whole_plan_considers_every_phase(self, seed, scenario):
+        """With no phase restriction, a suite that applies somewhere applies."""
+        whole = {s["suite_id"]: s for s in available_suites(scenario, seed.graph, None)}
+        assert whole["connection_loss"]["applicable"] is True
+        assert "phase-2" in whole["connection_loss"]["applicable_phase_ids"]
+        assert whole["critical_closure"]["applicable"] is True
+
+    def test_unavailable_suite_states_a_reason(self, seed, scenario):
+        """An inapplicable suite must say why, never be silently dropped."""
+        catalogue = available_suites(scenario, seed.graph, ["phase-1"])
+        assert len(catalogue) == len(SUITES), "every declared suite must appear in the catalogue"
+
+        for entry in catalogue:
+            assert entry["description"], f"{entry['suite_id']} must carry a description"
+            assert entry["target_element_ids"], f"{entry['suite_id']} must name its targets"
+            if entry["applicable"]:
+                assert entry["unavailable_reason"] == ""
+            else:
+                assert entry["unavailable_reason"], (
+                    f"{entry['suite_id']} is unavailable and must say why"
+                )
+                assert len(entry["unavailable_reason"]) > 20, "the reason must be understandable"
+
+    def test_an_applicable_suite_targets_elements_that_exist(self, seed, scenario):
+        """A suite must never be advertised as executable against a missing element."""
+        from detour_lab.failure.suite import TARGETS_BY_SUITE
+
+        known = {e.id for e in seed.graph.edges} | {n.id for n in seed.graph.nodes}
+        declared_temporary = {t.id for t in scenario.temporary_edges}
+        for entry in available_suites(scenario, seed.graph, None):
+            if not entry["applicable"]:
+                continue
+            for target in TARGETS_BY_SUITE.get(entry["suite_id"], ()):
+                assert target in known or target in declared_temporary, (
+                    f"{entry['suite_id']} is offered as applicable but {target} does not exist"
+                )
+
+    def test_suite_readiness_is_deterministic_and_leaves_the_source_untouched(self, seed, scenario):
+        """Readiness is a pure read of the source state."""
+        before_hash = seed.graph.version.content_hash
+        before_ids = {e.id for e in seed.graph.edges} | {n.id for n in seed.graph.nodes}
+
+        first = available_suites(scenario, seed.graph, ["phase-1"])
+        second = available_suites(scenario, seed.graph, ["phase-1"])
+
+        assert first == second, "applicability must be deterministic across repeat calls"
+        assert seed.graph.version.content_hash == before_hash
+        assert ({e.id for e in seed.graph.edges} | {n.id for n in seed.graph.nodes}) == before_ids
+
+    def test_suite_readiness_does_not_leak_state_between_phases(self, seed, scenario):
+        """Evaluating phase-1 must not change what phase-2 reports."""
+        phase_two_first = {s["suite_id"]: s for s in available_suites(scenario, seed.graph, ["phase-2"])}
+        available_suites(scenario, seed.graph, ["phase-1"])
+        phase_two_second = {s["suite_id"]: s for s in available_suites(scenario, seed.graph, ["phase-2"])}
+        assert phase_two_first == phase_two_second
 
     def test_service_rejects_an_unknown_phase(self, tmp_path, seed):
         from detour_lab.api.main import create_app

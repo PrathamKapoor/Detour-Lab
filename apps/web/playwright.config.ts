@@ -22,7 +22,12 @@ const PYTHON = process.env.DETOUR_LAB_PYTHON ?? fileURLToPath(new URL('../../.ve
  * a previous run - and on Windows, where a running server keeps a handle to an
  * open SQLite file, deleting the old database is not a reliable reset.
  */
-const DB_FILE = `var/e2e-${Date.now()}-${process.pid}.sqlite3`
+if (!process.env.DETOUR_LAB_DB_PATH) {
+  process.env.DETOUR_LAB_DB_PATH = fileURLToPath(
+    new URL(`../../var/e2e-${Date.now()}-${process.pid}.sqlite3`, import.meta.url),
+  )
+}
+const DB_PATH = process.env.DETOUR_LAB_DB_PATH
 
 export default defineConfig({
   testDir: './e2e',
@@ -55,7 +60,7 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 60_000,
       env: {
-        DETOUR_LAB_DB_PATH: fileURLToPath(new URL(`../../${DB_FILE}`, import.meta.url)),
+        DETOUR_LAB_DB_PATH: DB_PATH,
         PYTHONPATH: fileURLToPath(new URL('../api', import.meta.url)),
       },
     },

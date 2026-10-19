@@ -24,7 +24,7 @@ export interface StatusMeta {
 /** The five evidence-resolution conditions the resolver can return. */
 export const EVIDENCE_STATUS_META: Record<string, StatusMeta> = {
   NO_EVIDENCE: {
-    label: 'No observation recorded',
+    label: 'No evidence (no observation recorded)',
     glyph: '○',
     tone: 'unknown',
     description:

@@ -31,7 +31,13 @@ from detour_lab.domain.contracts import (
 )
 from detour_lab.graph.model import PedestrianGraph
 from detour_lab.ingestion.schema import IngestionError, load_local_planar_dataset
-from detour_lab.persistence.repository import NotFoundError, OptimisticConflictError, Repository, RunRecord
+from detour_lab.persistence.repository import (
+    NotFoundError,
+    OptimisticConflictError,
+    Repository,
+    RunRecord,
+    ScenarioIdExistsError,
+)
 from detour_lab.reporting.manifest import build_manifest
 from detour_lab.rules.engine import load_rulepack
 from detour_lab.rules.profiles import DEMO_PROFILES
@@ -402,6 +408,16 @@ def create_scenario(
     )
     try:
         repository.create_scenario(scenario, project_id=project_id)
+    except ScenarioIdExistsError as exc:
+        # The id is already taken. This is a conflict the caller can act on,
+        # not a server fault, and it is the same 409 SCENARIO_ID_EXISTS the
+        # apply-to-branch path returns.
+        raise _error(
+            409,
+            exc.code,
+            f"scenario id {exc.scenario_id!r} already exists; nothing was written",
+            {"scenario_id": exc.scenario_id},
+        ) from exc
     except KeyError as exc:
         raise HTTPException(
             status_code=422,

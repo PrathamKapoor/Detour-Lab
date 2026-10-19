@@ -36,8 +36,8 @@
   --status-fail-dim: rgba(255, 107, 107, 0.14);
   --status-unknown: #f0b429;
   --status-unknown-dim: rgba(240, 180, 41, 0.14);
-  --status-na: #8b98a8;
-  --status-na-dim: rgba(139, 152, 168, 0.14);
+  --status-na: #98a7b8;
+  --status-na-dim: rgba(152, 167, 184, 0.14);
   --status-info: #5aa9ff;
   --status-info-dim: rgba(90, 169, 255, 0.14);
   --status-temp: #b78bff;

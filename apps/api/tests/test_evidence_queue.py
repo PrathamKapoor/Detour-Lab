@@ -208,6 +208,127 @@ class TestQueueDerivation:
         assert first.model_dump(mode="json") == second.model_dump(mode="json")
         assert [i.issue_id for i in first.issues] == [i.issue_id for i in second.issues]
 
+    def test_issue_identity_survives_a_scope_change(self, seed, rulepack):
+        """P-33: identity describes the problem, not the selection that revealed it.
+
+        This is the regression guard for the fix that dropped ``phase_ids`` and
+        ``profile_ids`` from the issue identity hash. The determinism test above
+        cannot catch that regression on its own, because it derives the queue
+        twice with the *same* selection - it would have passed against the
+        pre-fix implementation too.
+
+        Narrowing the selection must therefore leave the identity of every issue
+        that is present in both selections untouched, while the payload (which
+        phases and profiles it affects) may legitimately change.
+        """
+        scenario = build_scenario(seed=seed, rulepack=rulepack, scenario_id="scn-q")
+        phases = [p.id for p in scenario.ordered_phases()]
+        profile_ids = [p.id for p in DEMO_PROFILES]
+        results = _analyse(seed.graph, scenario, rulepack, phases, profile_ids)
+
+        wide = _queue(seed.graph, scenario, rulepack, results, phases, profile_ids)
+        narrower_phases = _queue(seed.graph, scenario, rulepack, results, phases[:1], profile_ids)
+        narrower_profiles = _queue(seed.graph, scenario, rulepack, results, phases, profile_ids[:1])
+
+        def identities(queue):
+            return {
+                (i.element_id, i.attribute, i.resolution_status.value): i.issue_id
+                for i in queue.issues
+            }
+
+        wide_ids = identities(wide)
+        assert wide_ids, "the seeded fixture leaves attributes unresolved"
+
+        for label, narrower in (
+            ("phase", narrower_phases),
+            ("profile", narrower_profiles),
+        ):
+            narrow_ids = identities(narrower)
+            common = set(wide_ids) & set(narrow_ids)
+            assert common, f"narrowing the {label} selection emptied the queue"
+            for key in common:
+                assert wide_ids[key] == narrow_ids[key], (
+                    f"issue identity changed with the {label} selection for {key}"
+                )
+
+        # The payload is allowed - and expected - to describe the wider scope.
+        assert narrower_phases.issues, "the narrower selection must still list issues"
+
+    def test_issue_identity_is_independent_of_the_analysis_execution(self, seed, rulepack):
+        """P-33: re-running the analysis must not mint new issue identities.
+
+        The analysis execution identity and the issue identity are different
+        things. Re-analysing the same scenario produces a new execution but the
+        same findings, so the queue must keep referring to the same issues.
+        """
+        scenario = build_scenario(seed=seed, rulepack=rulepack, scenario_id="scn-q")
+        phases = [p.id for p in scenario.ordered_phases()]
+        profile_ids = [p.id for p in DEMO_PROFILES]
+
+        first_results = _analyse(seed.graph, scenario, rulepack, phases, profile_ids)
+        second_results = _analyse(seed.graph, scenario, rulepack, phases, profile_ids)
+        first = _queue(seed.graph, scenario, rulepack, first_results, phases, profile_ids)
+        second = _queue(seed.graph, scenario, rulepack, second_results, phases, profile_ids)
+
+        assert [i.issue_id for i in first.issues] == [i.issue_id for i in second.issues]
+        # The payload that describes *where* the issue was observed is allowed to
+        # be re-derived, but the issue set itself must not drift.
+        assert {i.issue_id for i in first.issues} == {i.issue_id for i in second.issues}
+
+    def test_distinct_evidence_states_do_not_collapse_into_one_issue_identity(self, seed, rulepack):
+        """P-33: two different problems must not share one identity.
+
+        The identity covers the resolver status and the contributing evidence
+        ids, so an attribute that changes from "no observation at all" to "two
+        observations that disagree" is a different problem and must get a
+        different id. If the identity were only the element and the attribute,
+        a stored reference could not tell the two states apart.
+        """
+        from detour_lab.domain.contracts import BaseGraphVersion
+        from detour_lab.graph.model import PedestrianGraph
+
+        scenario = build_scenario(seed=seed, rulepack=rulepack, scenario_id="scn-q")
+        phases = ["phase-1"]
+        profile_ids = [DEMO_PROFILES[0].id]
+        before_results = _analyse(seed.graph, scenario, rulepack, phases, profile_ids)
+        before = _queue(seed.graph, scenario, rulepack, before_results, phases, profile_ids)
+        before_issue = next(
+            (
+                i
+                for i in before.issues
+                if i.element_id == "E_ALT" and i.attribute == "width_mm"
+            ),
+            None,
+        )
+        assert before_issue is not None, "the seeded fixture leaves E_ALT.width_mm unresolved"
+        assert before_issue.resolution_status is ReasonCode.NO_EVIDENCE
+
+        # Two observations that disagree: the attribute stays unresolved, but it
+        # is unresolved for a different reason.
+        payload = seed.graph.version.model_dump(mode="json")
+        payload["evidence"] = [
+            *payload["evidence"],
+            evidence("EV-CONFLICT-A", "E_ALT", "width_mm", 1100, unit="mm").model_dump(mode="json"),
+            evidence("EV-CONFLICT-B", "E_ALT", "width_mm", 1500, unit="mm").model_dump(mode="json"),
+        ]
+        payload["content_hash"] = ""
+        amended = PedestrianGraph.from_version(BaseGraphVersion.model_validate(payload))
+        after_results = _analyse(amended, scenario, rulepack, phases, profile_ids)
+        after = _queue(amended, scenario, rulepack, after_results, phases, profile_ids)
+        after_issue = next(
+            (
+                i
+                for i in after.issues
+                if i.element_id == "E_ALT" and i.attribute == "width_mm"
+            ),
+            None,
+        )
+        assert after_issue is not None, "the conflicting attribute must still be reported"
+        assert after_issue.resolution_status is ReasonCode.CONFLICTING_EVIDENCE
+        assert after_issue.issue_id != before_issue.issue_id, (
+            "a different evidence state must not reuse the same issue identity"
+        )
+
     def test_ordering_is_stable_and_documented(self, seed, rulepack):
         scenario = build_scenario(seed=seed, rulepack=rulepack, scenario_id="scn-q")
         phases = [p.id for p in scenario.ordered_phases()]

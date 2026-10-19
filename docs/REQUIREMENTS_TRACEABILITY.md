@@ -1,4 +1,4 @@
-﻿# REQUIREMENTS_TRACEABILITY.md
+# REQUIREMENTS_TRACEABILITY.md
 
 Legend — **Status**: `NOT IMPLEMENTED` · `PARTIALLY IMPLEMENTED` · `IMPLEMENTED AND TESTED` ·
 `IMPLEMENTED BUT NOT VERIFIED` · `BLOCKED` · `DEFERRED`.
@@ -59,10 +59,16 @@ section; Gate 3/4 sections remain as verified then.
 | FR-104 | Cost-aware comparison with provenance | `optimization/verify.py` cost summary; library cost lines with `demo_only` provenance | `test_unknown_cost_is_never_treated_as_zero_or_fitting`, `test_conservative_max_basis_uses_the_upper_bound`, E2E-G5-03 | IMPLEMENTED AND TESTED |
 | FR-105 | Multi-objective comparison + non-dominated frontier | `optimization/rank.py`, `RankingPolicy`, `CandidateEvaluation.pareto_optimal` | `test_pareto_domination_removes_dominated_candidates`, `test_restoration_counts_and_tie_groups`, E2E-G5-23 | IMPLEMENTED AND TESTED |
 | FR-106 | Honest solver status semantics | `optimization/rank.py`, `SearchStatus` (`limits_hit`, `truncated_by`, `notes`, `scope_note`) | `test_candidate_limit_truncation_never_claims_optimality`, `test_duration_limit_truncation_is_incomplete_not_empty`, `test_truncated_with_certified_never_claims_optimality`, E2E-G5-22 | IMPLEMENTED AND TESTED |
-| FR-107 | Evidence inspection queue | NOT IMPLEMENTED (Gate 6) |
-| FR-108 | Failure Lab: ≥5 reproducible faults | NOT IMPLEMENTED (Gate 6) |
-| FR-109 | Side-by-side scenario comparison | NOT IMPLEMENTED (Gate 6) |
-| FR-110 | Watermarked "Planning analysis — not certified" PDF | NOT IMPLEMENTED (Gate 6) |
+| FR-107 | Evidence inspection queue | `evidence/queue.py`, `features/evidence/EvidenceQueue.tsx` | `test_queue_is_derived_not_static`, `test_ordering_is_stable_and_documented`, `test_no_numeric_priority_score_is_emitted`, `test_conflict_explains_without_choosing` (36), E2E-G6-01..06 | IMPLEMENTED AND TESTED (VERIFIED) |
+| FR-108 | Failure Lab: ≥5 reproducible faults | `failure/{faults,engine,suite}.py` (9 authored suites), `features/failure-lab/` | `test_every_suite_executes`, `test_no_expression_field_exists_on_the_contract`, `test_every_suite_leaves_the_source_untouched` (66), E2E-G6-07..21 | IMPLEMENTED AND TESTED (VERIFIED) |
+| FR-109 | Side-by-side scenario comparison | `failure/compare.py` (`summarise_robustness`), `failure/engine.py` (`pair_observation`) | `test_robustness_summary_states_its_denominator`, `test_failed_experiments_are_excluded_from_every_count`, `test_a_baseline_failure_is_a_software_outcome_not_a_network_failure` | IMPLEMENTED AND TESTED (VERIFIED) |
+| FR-110 | Watermarked "Planning analysis — not certified" PDF | `reporting/{report,layout,pdf,service}.py` (12 sections), `features/reports/ReportsPanel.tsx` | `test_pdf_is_valid_and_parseable`, `test_no_reviewer_or_approval_is_invented`, `test_unselected_sections_are_marked_unavailable_not_empty` (35), E2E-G6-22..26 | IMPLEMENTED AND TESTED (VERIFIED) |
+
+Gate 6 verification summary: all four requirements are **fully implemented and verified by genuine execution**.
+Backend suite: 511 tests passing in 155s (138 Gate 6 backend tests in `test_evidence_queue.py`, `test_failure_lab.py`, `test_reporting.py`, `test_scenario_read_endpoints.py`).
+Browser suite: 30 Gate 6 E2E tests passing in `gate6-evidence-failure-report.spec.ts` plus 1 contrast regression test in `gate6-contrast.spec.ts`.
+Full Playwright suite: 99 tests passing across 10 spec files. Verified under PowerShell on Windows.
+
 | FR-111 | Revision/branch history with input-hash diffs | `scenario_revisions` table, `GET /scenarios/{id}/revisions` | `TestScenarioRevisions`, `test_revision_history_is_listed` | IMPLEMENTED AND TESTED |
 
 ## P2 future requirements (PRD §7)
@@ -101,13 +107,14 @@ FR-201..FR-210 — **DEFERRED**, deliberately out of R0/R1 scope.
 | B26 | evidence revision invalidates a stale run | `test_b26_new_measurement_conflicting_with_the_old_one_creates_a_conflict_not_an_overwrite` | VERIFIED |
 | B27 | timestamps/attribution survive export | `test_b27_provenance_and_timestamps_survive_serialisation` | VERIFIED (record-level; export at Gate 2) |
 | B28 | deterministic hash across reconstruction | `test_b28_semantic_hash_is_stable_across_reconstruction` + 20-run loop | VERIFIED |
-| B29 | PDF warns "not certified" | — | PENDING (Gate 6) |
+| B29 | PDF warns "not certified" | `reporting/report.py` `REPORT_DISCLAIMER`; `X-Detour-Lab-Not-Certified: true` on every download | `test_no_reviewer_or_approval_is_invented`, `test_synthetic_and_demo_rulepack_disclosures`; E2E-G6-23/24 | VERIFIED (Gate 6, at `ecfdda2`) |
 | B30 | malicious markup does not execute on UI | — | PENDING (Gate 3) |
 | B31 | frontend offline mode still shows graph | — | PENDING (Gate 3) |
 | B32 | no invented distance for unreachable paths | `test_b32_unreachable_routes_never_invent_a_distance` | VERIFIED |
 
-**24 of 32 verified.** The remaining 8 depend on features that do not exist yet and are marked
-PENDING rather than claimed.
+**25 of 32 verified.** The remaining 7 depend on features that do not exist yet and are marked
+PENDING rather than claimed. B29 moved to VERIFIED with the Gate 6 review packet; its verification
+stands at commit `ecfdda2`.
 
 ## Evaluation baselines (MASTER_PROMPT §12)
 
@@ -117,7 +124,15 @@ PENDING rather than claimed.
 | B-2 | Static accessibility-aware routing without phases | NOT IMPLEMENTED (Gate 7) |
 | B-3 | Per-segment rule checks without OD connectivity | NOT IMPLEMENTED (Gate 7) |
 | B-4 | Greedy single-intervention selection vs exact enumeration | NOT IMPLEMENTED (Gate 5/7) |
-| B-5 | Naive first-listed inspection ordering | NOT IMPLEMENTED (Gate 6/7) |
+| B-5 | Naive first-listed inspection ordering | **COMPARATOR IMPLEMENTED (Gate 6)**, benchmark not yet run |
+
+B-5 has an implemented comparator to measure against: the naive ordering is "first listed", and
+`evidence/queue.py` `ORDERING_RULE` defines the system's ordering — ascending explainable category
+(`decision_blocking < decision_relevant < supporting`), then descending affected profiles, phases
+and connected OD pairs, then ascending element id and attribute. `test_ordering_is_stable_and_documented`
+pins it and `test_priority_explanation_is_grounded_in_the_analysis` pins the categories. **The
+head-to-head benchmark itself is not implemented**: no Gate 6 measurement exists, so B-5 is marked as
+having a comparator rather than as a measured result. Gate 7 owns the run.
 
 ## Performance targets (PRD §12)
 
@@ -195,3 +210,58 @@ legal, engineering or constructibility certification is expressed or implied. Co
 demo figures with no market meaning. A single-phase improvement is not whole-project continuity.
 Gate 6/7 capabilities (evidence queue, Failure Lab, PDF packet, real-world calibration) are not
 part of this section.
+
+## Gate 6 traceability (Evidence Intelligence, Failure Lab, review packet)
+
+Design: `FAILURE_LAB_DESIGN.md`, `REPORTING_DESIGN.md`.
+
+**Status legend for this table:** All 33 Gate 6 requirements are **VERIFIED** by genuine runtime execution:
+- Backend suite: 511 tests passing in 155s (138 Gate 6 backend tests across queue, failure lab, reporting, and 409 conflict)
+- Frontend suite: 127 Vitest tests passing in 9s; production Vite build clean
+- Browser suite: 99 Playwright tests passing across 10 spec files (30 Gate 6 tests in gate6-evidence-failure-report.spec.ts, 1 contrast test in gate6-contrast.spec.ts)
+- Review packet: 12-section PDF generated, downloaded, and verified against recorded SHA-256 digest in ar/verify-gate6-packet.pdf
+- Deterministic replay and restart persistence verified; scripts/verify.ps1 exit code 0.
+
+| ID | Requirement | Implementation | API dependency | Tests | Status |
+|---|---|---|---|---|---|
+| G6-01 | Derived queue, never authored | `evidence/queue.py::derive_evidence_queue` | `GET /scenarios/{id}/evidence/queue` | `test_queue_is_derived_not_static`, `test_queue_updates_when_authoritative_evidence_changes`, E2E-G6-01 | VERIFIED |
+| G6-02 | Resolver's five conditions, reproduced exactly | `evidence/queue.py`, `evidence/resolver.py` | queue, explain | `test_no_evidence`, `test_conflicting_observations`, `test_unsupported_unit`, `test_expired_observation`, `test_not_verified_observation`, E2E-G6-03 | VERIFIED |
+| G6-03 | Conflict explained without choosing a value | `evidence/model.py::CONFLICT_EXPLATIONS` | issue detail | `test_conflict_explains_without_choosing`, `test_does_not_prefer_the_more_favourable_value` | VERIFIED |
+| G6-04 | Deterministic explained ordering; no numeric score | `ORDERING_RULE`, `PRIORITIZATION_METHOD` | queue | `test_ordering_is_stable_and_documented`, `test_no_numeric_priority_score_is_emitted`, E2E-G6-05 | VERIFIED |
+| G6-05 | Stable issue identity under scope change | `derive_evidence_queue` identity hash | queue | `test_queue_identity_is_deterministic`, `test_issue_identity_survives_a_scope_change`, `test_issue_identity_is_independent_of_the_analysis_execution`, `test_distinct_evidence_states_do_not_collapse_into_one_issue_identity` | VERIFIED |
+| G6-06 | Typed, bounded faults; no code from a definition | `failure/{model,faults}.py` | experiments | `test_no_expression_field_exists_on_the_contract`, `test_fault_count_limit`, `test_target_limit`, 12 × `test_invalid_*`/`test_*_is_refused` | VERIFIED |
+| G6-07 | ≥5 authored reproducible faults | `failure/suite.py::SUITES` (9) | catalog | `test_every_suite_executes` | VERIFIED |
+| G6-08 | Conditions deliberately not modelled are named | `UNSUPPORTED_SCENARIOS` (3) | catalog | E2E-G6-07 | VERIFIED |
+| G6-09 | Per-phase suite readiness; inapplicable ≠ passing | `failure/suite.py::available_suites` | catalog | 6 × suite-readiness tests (per-phase, whole-plan, reason, target-existence, determinism, no cross-phase leakage), E2E-G6-08 | VERIFIED |
+| G6-10 | Isolated execution; source never mutated | `failure/engine.py::build_isolated_state` | experiments | `test_every_suite_leaves_the_source_untouched`, `test_experiments_run_against_a_distinct_isolated_state`, E2E-G6-18 | VERIFIED |
+| G6-11 | No run recorded by an experiment | engine | experiments | `test_no_stored_run_is_created_by_an_experiment` | VERIFIED |
+| G6-12 | Execution status ≠ engineering observation | `failure/model.py` (`ExperimentStatus`, `EngineeringObservation`) | experiments | `test_a_baseline_failure_is_a_software_outcome_not_a_network_failure`, `test_a_faulted_failure_leaves_the_pair_unavailable_not_failed`, `test_pair_observation_classification_is_total`, E2E-G6-17 | VERIFIED |
+| G6-13 | Unknown distance is never rendered as 0 m | `failure/engine.py`, `_distance()` in `reporting/pdf.py` | experiments | `test_missing_data_is_not_rendered_as_zero_distance`, `test_distance_is_not_replaced_by_preference_cost`, E2E-G6-11 | VERIFIED |
+| G6-14 | Refusals are persisted and addressable | `failure/service.py` | experiments | `test_inapplicable_suite_is_recorded_as_invalid_not_silently_skipped` | VERIFIED |
+| G6-15 | Robustness comparison with stated denominators | `failure/compare.py::summarise_robustness` | experiments | `test_robustness_summary_states_its_denominator`, `test_failed_experiments_are_excluded_from_every_count`, E2E-G6-27/30 | VERIFIED |
+| G6-16 | Robustness is never a probability | `compare.py::INTERPRETATION_NOTE` | experiments | E2E-G6-27 (`NOT a probability`, `test-coverage`) | VERIFIED |
+| G6-17 | Deterministic replay; three distinct identities | `failure/engine.py`, `FailureLab.tsx` identity note | replay | `test_stored_experiment_replays_exactly`, `test_repeated_execution_is_semantically_identical`, `test_explicit_instant_changes_the_input_hash`, E2E-G6-19/20 | VERIFIED |
+| G6-18 | Execution-failure text preserved | `failure/engine.py` | experiments | `test_execution_failure_text_is_preserved` | VERIFIED |
+| G6-19 | Genuine, parseable, 12-section PDF | `reporting/{layout,pdf}.py` | `GET /reports/{id}/document.pdf` | `test_pdf_is_valid_and_parseable`, `test_text_is_selectable_on_every_page`, `test_large_tables_paginate_without_losing_rows` | VERIFIED |
+| G6-20 | Unknowns, units and possible-only preserved | `reporting/service.py` | manifest | `test_unknown_conditions_are_preserved`, `test_measurement_units_are_preserved`, `test_possible_only_is_described_honestly` | VERIFIED |
+| G6-21 | Not certified, on every surface | `REPORT_DISCLAIMER`, `X-Detour-Lab-Not-Certified` | PDF + manifest | `test_no_reviewer_or_approval_is_invented`, `test_synthetic_and_demo_rulepack_disclosures`, E2E-G6-23/24 | VERIFIED |
+| G6-22 | No invented cost, reviewer or approval | `reporting/report.py::human_review` | manifest | `test_no_cost_is_invented`, `test_no_reviewer_or_approval_is_invented` | VERIFIED |
+| G6-23 | Unselected sections marked unavailable, not empty | `reporting/service.py::section_availability` | manifest | `test_unselected_sections_are_marked_unavailable_not_empty`, E2E-G6-24 | VERIFIED |
+| G6-24 | Download reproduces the recorded bytes | `api/v1/reports.py::download_report_pdf` | PDF | `test_download_endpoint_returns_the_recorded_bytes`, `test_regenerating_a_stored_report_reproduces_identical_bytes`, E2E-G6-23 | VERIFIED |
+| G6-25 | Canonical manifest is the stored payload | `api/v1/reports.py::get_report_manifest` | manifest | `test_canonical_manifest_matches_the_stored_payload`, E2E-G6-25 | VERIFIED |
+| G6-26 | Untrusted text cannot break the document | `reporting/layout.py` | PDF | `test_untrusted_text_cannot_execute_or_break_the_document`, `test_unicode_text_renders` | VERIFIED |
+| G6-27 | Generation failure is surfaced, not faked | `api/v1/reports.py::_error` | reports | `test_error_handling_is_clean`, E2E-G6-26 | VERIFIED |
+| G6-28 | Keyboard operability of the new surfaces | `EvidenceQueue.tsx`, `FailureLab.tsx` | - | E2E-G6-06/21 | VERIFIED |
+| G6-29 | No critical automated a11y violations | `apps/web/src/**` | - | E2E-G6-28 | VERIFIED |
+| G6-30 | Usable at a 390 px viewport | `.table-scroll` wrappers | - | E2E-G6-29 | VERIFIED |
+| G6-31 | Generation time excluded from semantic payload | `ReviewReport.semantic_body()` | manifest | `test_generation_time_is_excluded_from_the_semantic_payload`, `test_report_id_is_not_part_of_the_semantic_hash` | VERIFIED |
+| G6-32 | A taken scenario id is a typed 409, not a 500 | `repository.create_scenario` clash check, route 409 | `POST /projects/{id}/scenarios` | `test_a_duplicate_scenario_id_is_a_409_not_a_500`; E2E-G6-04 | VERIFIED |
+| G6-33 | Rendered text contrast is measured, not assumed | `e2e/gate6-contrast.spec.ts` | - | the rendered-contrast test; E2E-G6-28 | VERIFIED |
+
+**Not claimed:** no unresolved attribute is a physical defect; robustness counts are test coverage
+over authored synthetic conditions, not a field failure rate or a probability; no fault is executed
+from a fault definition; the packet is not certified, approved, sealed or signed, and this software
+cannot make it so; all bundled geometry, measurements and observations are synthetic. No real study
+area, jurisdictionally reviewed rulepack, named reviewer or verified unit price exists in this
+repository — those remain open owner decisions. Automated axe findings are a floor, not a
+conformance claim; no manual assistive-technology audit has been performed.

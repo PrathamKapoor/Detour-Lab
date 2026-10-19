@@ -372,17 +372,16 @@ def _build_issue(
     )
 
     status_value = resolved.reason_code.value if resolved.reason_code else ReasonCode.NO_EVIDENCE.value
-    # Identity describes the *problem*, not the context it was observed in. The
-    # affected-phase list is derived and can widen as more phases are inspected,
-    # so it is deliberately excluded: the same unresolved attribute keeps one
-    # stable issue id regardless of how broad the reviewer's selection was.
+    # Identity describes the *problem*, not the context it was observed in.
+    # Affected phases and profiles are derived: they widen as the reviewer
+    # broadens the selection. Including them would give one unresolved attribute
+    # several identities, which is exactly what a stable issue id must avoid.
     issue_id = "EQ-" + semantic_hash(
         {
             "scenario_content_hash": scenario.content_hash,
             "element_id": element_id,
             "attribute": attribute_name,
             "resolution_status": status_value,
-            "profile_ids": sorted(affected_profile_ids),
             "evidence_ids": sorted(r.id for r in records),
         }
     ).split(":")[-1][:12]

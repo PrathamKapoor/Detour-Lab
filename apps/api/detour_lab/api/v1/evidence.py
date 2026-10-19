@@ -311,8 +311,18 @@ def evidence_issue(
                 ),
             },
         )
+    target_phase = match.affected_phase_ids[0] if match.affected_phase_ids else (phases[0] if phases else None)
+    eval_graph = graph
+    if target_phase is not None:
+        try:
+            from detour_lab.scenarios.apply import build_phase_graph
+
+            eval_graph = build_phase_graph(graph, scenario, target_phase).graph
+        except Exception:
+            eval_graph = graph
+
     explanation = explain_attribute(
-        graph=graph,
+        graph=eval_graph,
         rulepack=rulepack,
         element_id=match.element_id,
         field=match.attribute,

@@ -193,7 +193,8 @@ export function WorkspaceProvider({ children, api }: { children: ReactNode; api:
   // selection must never be overridden by a list that has not refreshed yet.
   useEffect(() => {
     if (scenarioEntries.length === 0 || scenarioId !== null) return
-    setScenarioId(scenarioEntries[0]!.id)
+    const defaultEntry = scenarioEntries.find((s) => s.id === 'scn-demo-baseline') ?? scenarioEntries[0]!
+    setScenarioId(defaultEntry.id)
   }, [scenarioEntries, scenarioId])
 
   const scenario = useResource(

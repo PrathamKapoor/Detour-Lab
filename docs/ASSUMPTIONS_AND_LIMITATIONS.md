@@ -50,8 +50,30 @@ metres, grade as signed percent), but the *values* remain synthetic.
    accessibility accuracy (PRD §13.1).
 7. Accessibility: automated axe-style checks plus one documented keyboard-only pass do not equal
    full WCAG 2.2 AA conformance, and must not be reported as such.
-8. ReportLab PDF byte streams may embed nondeterministic metadata; reproducibility is asserted on
-   the **canonical JSON manifest hash**, not on PDF bytes (MASTER_PROMPT §11).
+8. ReportLab PDF byte streams may embed nondeterministic metadata (document id, creation
+   timestamp). The report renderer therefore sets `rl_config.invariant = 1` at import
+   (`reporting/pdf.py`), which pins those values, and the download endpoint re-renders the
+   stored payload and compares the recomputed digest with the recorded one
+   (`X-Detour-Lab-Pdf-Sha256`). The **canonical JSON manifest hash** remains the primary
+   identity (MASTER_PROMPT §11); byte identity additionally depends on the ReportLab version
+   that produced the stored payload, so a byte difference is a renderer or environment change
+   and must be surfaced by the digest check rather than accepted silently.
+9. Gate 6 (evidence queue, Failure Lab, review packet) is **implemented but not yet executed**.
+   No preserved log shows a Gate 6 test run — the last recorded collection is the 373-test
+   Gate 5 baseline. The 138 Gate 6 backend test functions and 30 Playwright journeys exist and
+   are counted by inspection, which is not a passing result. See `FAILURE_LAB_DESIGN.md` §I.
+10. Four Gate 6 files are **untracked** and were never committed: the Gate 6 Playwright spec,
+   the (now repurposed) accessibility-probe spec, and both design documents. A clone of the
+   repository as it stands has the Gate 6 implementation without the Gate 6 browser coverage
+   or the design record that explains it.
+11. The Playwright specs under `apps/web/e2e/` are **linted but not type-checked**. The strict
+   TypeScript project (`tsconfig.app.json`) includes `src`, `tests` and the generated
+   contracts; `tsconfig.node.json` includes only the three config files. `e2e/` appears in
+   neither, so `tsc -b` never sees a spec file, and ESLint's config for `e2e/**/*.ts` is
+   not type-aware. A type error in a spec is therefore caught by neither tool — it is caught
+   by Playwright failing to load the file, at run time. Adding `e2e` to a type-checked
+   project needs a DOM lib and a separate project reference, and it must be done in a
+   session that can run `tsc` to see the backlog it would expose.
 
 ## 4. Missing authority sign-off (blocking any real-world claim)
 

@@ -273,25 +273,34 @@ TARGETS_BY_SUITE: dict[str, tuple[str, ...]] = {
 }
 
 
-def available_suites(scenario: Scenario, graph=None) -> list[dict]:
-    """Suite catalogue with a per-scenario readiness flag.
+def available_suites(scenario: Scenario, graph=None, phase_ids: Sequence[str] | None = None) -> list[dict]:
+    """Suite catalogue with a per-scenario, per-phase readiness flag.
 
     Readiness is computed structurally against the live source graph so the
-    interface can show which suites apply here. A suite that does not apply is
-    reported as unavailable - never as "passed", and never silently skipped.
+    interface can show which suites apply *to the phase the reviewer selected*.
+    A suite that does not apply there is reported as unavailable - never as
+    "passed", and never silently skipped.
+
+    ``phase_ids`` restricts the evaluation to the selected phases. When it is
+    omitted every declared phase is considered, because a suite that applies
+    somewhere in the plan is not inapplicable to the plan as a whole.
     """
     from detour_lab.graph.model import PedestrianGraph
 
-    graph = graph if graph is not None else None
+    graph = graph if isinstance(graph, PedestrianGraph) else None
     known_elements: set[str] = set()
-    if isinstance(graph, PedestrianGraph):
+    if graph is not None:
         known_elements = {e.id for e in graph.edges} | {n.id for n in graph.nodes}
     declared_temporary = {t.id for t in scenario.temporary_edges}
 
+    declared = [p.id for p in scenario.ordered_phases()]
+    evaluated = [p for p in (phase_ids or declared) if p is not None]
+
     catalog: list[dict] = []
-    phases = [p.id for p in scenario.ordered_phases()]
     for suite_id, (title, description, _factory) in sorted(SUITES.items()):
-        applicable_phases = [p for p in phases if _suite_applies(suite_id, scenario, p, known_elements)]
+        applicable_phases = [
+            p for p in evaluated if _suite_applies(suite_id, scenario, p, known_elements)
+        ]
         missing = [
             t
             for t in TARGETS_BY_SUITE.get(suite_id, ())
@@ -303,6 +312,7 @@ def available_suites(scenario: Scenario, graph=None) -> list[dict]:
                 "title": title,
                 "description": description,
                 "target_element_ids": list(TARGETS_BY_SUITE.get(suite_id, ())),
+                "evaluated_phase_ids": evaluated,
                 "applicable_phase_ids": applicable_phases,
                 "applicable": bool(applicable_phases),
                 "unavailable_reason": (
@@ -311,7 +321,12 @@ def available_suites(scenario: Scenario, graph=None) -> list[dict]:
                     else (
                         f"Target element(s) {missing} are absent from this scenario's graph."
                         if missing
-                        else "No declared phase in this scenario satisfies the suite's precondition."
+                        else (
+                            "No phase in this selection satisfies the suite's precondition; "
+                            f"the suite applies in {declared}."
+                            if declared
+                            else "The scenario declares no phases."
+                        )
                     )
                 ),
             }

@@ -48,6 +48,8 @@ interface TextFieldProps {
   placeholder?: string | undefined
   disabled?: boolean | undefined
   inputMode?: 'text' | 'numeric' | 'decimal'
+  dataTestId?: string | undefined
+  'data-testid'?: string | undefined
 }
 
 export function TextField({
@@ -59,8 +61,11 @@ export function TextField({
   placeholder,
   disabled,
   inputMode = 'text',
+  dataTestId,
+  'data-testid': testIdProp,
 }: TextFieldProps) {
   const id = useId()
+  const testId = testIdProp ?? dataTestId
   return (
     <div className="field">
       <label className="field__label" htmlFor={id}>
@@ -68,6 +73,7 @@ export function TextField({
       </label>
       <input
         id={id}
+        data-testid={testId}
         className={`field__control ${error ? 'field__control--error' : ''}`}
         type="text"
         value={value}

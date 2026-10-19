@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useWorkspace } from '@/app/workspace'
 import { Button, EmptyState, ErrorPanel, Panel } from '@/components/Button'
 import { Dialog } from '@/components/Dialog'
@@ -44,7 +44,12 @@ export function ScenarioEditor() {
     setView,
     scenarios,
     selectScenario,
+    reloadScenarios,
   } = useWorkspace()
+
+  useEffect(() => {
+    reloadScenarios()
+  }, [reloadScenarios])
 
   const [measurementOpen, setMeasurementOpen] = useState(false)
   const [field, setField] = useState('width_mm')
@@ -137,6 +142,7 @@ export function ScenarioEditor() {
                 label="Scenario"
                 value={scenario.id}
                 onChange={(event) => selectScenario(event.target.value)}
+                onFocus={reloadScenarios}
                 hint="Switching scenarios never copies their edits."
                 data-testid="scenario-select"
               >

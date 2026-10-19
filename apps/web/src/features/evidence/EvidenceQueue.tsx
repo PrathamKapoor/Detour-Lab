@@ -82,6 +82,7 @@ export function EvidenceQueue() {
           title="Evidence verification queue"
           subtitle={`Phase ${phaseId} · profile ${profileId}`}
         >
+          <h2 className="visually-hidden">Unresolved attributes</h2>
           {queue.loading && issues.length === 0 ? (
             <Spinner label="Deriving the verification queue from the authoritative resolver" />
           ) : null}
@@ -136,14 +137,13 @@ export function EvidenceQueue() {
                   ))}
                 </SelectField>
 
-                <div data-testid="queue-element-filter">
-                  <TextField
-                    label="Element id"
-                    value={elementFilter}
-                    onChange={setElementFilter}
-                    placeholder="e.g. E_K1"
-                  />
-                </div>
+                <TextField
+                  label="Element id"
+                  value={elementFilter}
+                  onChange={setElementFilter}
+                  placeholder="e.g. E_K1"
+                  data-testid="queue-element-filter"
+                />
 
                 <div className="queue__filter-actions">
                   <Button
@@ -179,7 +179,8 @@ export function EvidenceQueue() {
                   }
                 />
               ) : (
-                <table className="data-table" data-testid="queue-table">
+                <div className="table-scroll">
+      <table className="data-table" data-testid="queue-table">
                   <caption className="visually-hidden">
                     Unresolved attributes ordered by decision relevance. Priority is an explainable
                     category, not a score.
@@ -242,6 +243,7 @@ export function EvidenceQueue() {
                     ))}
                   </tbody>
                 </table>
+      </div>
               )}
 
               <p className="queue__method" data-testid="queue-method">
@@ -382,7 +384,8 @@ function IssueInspector({
           description="There is nothing to reconcile. The attribute has no value at all, which is why it is unresolved."
         />
       ) : (
-        <table className="data-table" data-testid="detail-observations">
+        <div className="table-scroll">
+      <table className="data-table" data-testid="detail-observations">
           <thead>
             <tr>
               <th scope="col">Record</th>
@@ -412,6 +415,7 @@ function IssueInspector({
             ))}
           </tbody>
         </table>
+      </div>
       )}
       {explanation.distinct_values.length > 0 ? (
         <p className="queue__conflict" data-testid="detail-conflict-values">
@@ -423,7 +427,8 @@ function IssueInspector({
       {issue.od_pairs.length > 0 ? (
         <>
           <h3 className="queue__subheading">Connected origin-destination outcomes</h3>
-          <table className="data-table" data-testid="detail-od-pairs">
+          <div className="table-scroll">
+      <table className="data-table" data-testid="detail-od-pairs">
             <thead>
               <tr>
                 <th scope="col">Profile</th>
@@ -452,6 +457,7 @@ function IssueInspector({
               ))}
             </tbody>
           </table>
+      </div>
         </>
       ) : null}
 

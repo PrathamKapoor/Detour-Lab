@@ -121,6 +121,43 @@ class TestProjectScenarioList:
         body = client.get(f"/api/v1/projects/{DEMO_PROJECT_ID}/scenarios").json()
         assert {s["id"] for s in body["scenarios"]} == {DEMO_SCENARIO_ID, "scn-branch-1"}
 
+    def test_a_duplicate_scenario_id_is_a_409_not_a_500(self, client):
+        """A taken id is a conflict the caller can act on.
+
+        Regression: the create path inserted without checking, so a duplicate
+        id reached the INSERT and escaped as an uncaught ``sqlite3.IntegrityError``
+        - a 500 with no error code. The apply-to-branch path already returned
+        409 ``SCENARIO_ID_EXISTS``; creation now behaves the same way.
+        """
+        parent = client.get(f"/api/v1/scenarios/{DEMO_SCENARIO_ID}").json()
+        payload = {
+            "id": "scn-branch-dup",
+            "name": "branch",
+            "parent_scenario_id": DEMO_SCENARIO_ID,
+            "base_graph_version_id": parent["base_graph_version_id"],
+            "phases": parent["phases"],
+            "origins_destinations": parent["origins_destinations"],
+            "temporary_edges": parent["temporary_edges"],
+        }
+        first = client.post(f"/api/v1/projects/{DEMO_PROJECT_ID}/scenarios", json=payload)
+        assert first.status_code == 201
+        before = client.get("/api/v1/scenarios/scn-branch-dup").json()
+
+        second = client.post(f"/api/v1/projects/{DEMO_PROJECT_ID}/scenarios", json=payload)
+        assert second.status_code == 409
+        body = second.json()
+        assert body["code"] == "SCENARIO_ID_EXISTS"
+        assert set(body) == {"code", "message", "details", "request_id"}
+        assert body["details"]["scenario_id"] == "scn-branch-dup"
+
+        # The refusal wrote nothing: the stored scenario is untouched and no
+        # extra revision appeared.
+        after = client.get("/api/v1/scenarios/scn-branch-dup").json()
+        assert after["revision"] == before["revision"]
+        assert after["content_hash"] == before["content_hash"]
+        listed = client.get(f"/api/v1/projects/{DEMO_PROJECT_ID}/scenarios").json()
+        assert {s["id"] for s in listed["scenarios"]} == {DEMO_SCENARIO_ID, "scn-branch-dup"}
+
 
 class TestRunList:
     def test_no_runs_initially(self, client):

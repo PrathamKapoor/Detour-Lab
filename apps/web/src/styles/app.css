@@ -124,7 +124,17 @@
 
 .app-nav__hint {
   font-size: var(--text-2xs);
-  color: var(--text-muted);
+  /* --text-2xs is normal-size text, so AA requires 4.5:1.
+     FAILING: --text-muted (#7b8b9d) measured 4.33:1 on --surface-hover
+     (#1b2735) and 4.03:1 on --surface-selected (#1d3348).
+     PASSING: --text-secondary (#a7b6c7) measures 7.31:1 / 6.27:1 on those
+     surfaces, and 9.23:1 on --surface-canvas. The hint stays subordinate
+     because it is small and unbolded, not because it is illegible. */
+  color: var(--text-secondary);
+}
+
+.app-nav__item--active .app-nav__hint {
+  color: var(--text-secondary);
 }
 
 .app-sidebar__footer {
@@ -456,6 +466,7 @@
   }
 
   .app-shell {
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto 1fr;
   }
 
@@ -483,6 +494,7 @@
 
   .app-main__inner {
     padding: var(--space-2);
+    min-width: 0;
   }
 
   .data-table {
@@ -498,6 +510,7 @@
   .panel__body,
   .panel__body--flush {
     max-width: 100%;
+    min-width: 0;
   }
 
   .graph-canvas__svg {

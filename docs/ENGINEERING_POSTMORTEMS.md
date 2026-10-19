@@ -1,4 +1,4 @@
-﻿# ENGINEERING_POSTMORTEMS.md
+# ENGINEERING_POSTMORTEMS.md
 
 Genuine failures encountered while building DETOUR LAB, with the observed error, root cause,
 correction and the regression test that now prevents recurrence. Nothing here is invented.
@@ -319,3 +319,290 @@ correction and the regression test that now prevents recurrence. Nothing here is
   keeps the artefacts deterministic.
 - **Prevention:** the generator must be tested against every shape the contracts actually use; a
   generated artefact is only trustworthy when it is regenerated and diffed, not hand-inspected.
+
+## P-26 - An invalid experiment was reported but never persisted **(Gate 6)**
+
+- **Symptom:** a suite that could not be applied (for example `connection_loss` under phase-1) returned
+  `status: "invalid_experiment"` with `error.code: "NO_OP_FAULT"` and zero observations — and then
+  vanished, because the persistence path only wrote rows for experiments that had completed.
+- **Root cause:** the runner accumulated `outcomes` and returned them, while `service.py` filtered the
+  persisted set to successful runs. The refusal was real but ephemeral, so the reviewer could not
+  re-read it and the history table silently disagreed with the response it had just been given.
+- **Fix:** invalid and failed experiments are persisted exactly like completed ones, carrying their
+  status, error code and zero observations.
+- **Regression test:** `test_inapplicable_suite_is_recorded_as_invalid_not_silently_skipped`;
+  E2E-G6-17 asserts the refusal shape over HTTP.
+- **Prevention:** anything returned by an operation must be durably retrievable, including its
+  refusals. A response the database cannot reproduce is a response nobody can audit.
+
+## P-27 - Every invalid experiment shared the execution id `fxp-invalid` **(Gate 6)**
+
+- **Symptom:** running two inapplicable suites produced two records with the identical execution id
+  `fxp-invalid`, so the second overwrote the first in any id-keyed view.
+- **Root cause:** the id was generated only on the success branch; the refusal path passed a
+  hard-coded placeholder.
+- **Fix:** execution ids are allocated for every outcome. The placeholder is gone; an invalid
+  experiment is still an execution and has its own id.
+- **Regression test:** covered by `test_experiments_are_persisted_and_listed` and the
+  distinct-id assertions in `test_failure_lab.py`.
+- **Prevention:** an identifier must be minted at the point the record is created, not at the point
+  the record succeeds. Identity is not a success-path concern.
+
+## P-28 - Cross-phase persistence detection skipped attributes with no observation **(Gate 6)**
+
+- **Symptom:** an attribute whose absence persisted into a second phase was not annotated as such,
+  because the detection only ran for attributes that had at least one observation to re-resolve.
+- **Root cause:** the "does this issue also persist here?" check was expressed as "re-resolve the
+  observations", which is a no-op when there are none — precisely the case where a missing record is
+  the reason the attribute is unresolved.
+- **Fix:** cross-phase detection resolves the attribute independently of how many observations exist.
+- **Regression test:** `test_in_scope_issue_is_annotated_with_the_phases_where_it_also_persists`.
+- **Prevention:** when a check is phrased in terms of its inputs ("for each observation…"), verify it
+  still behaves correctly when there are none. The empty case is where such checks usually hide.
+
+## P-29 - Node findings silently disappeared from the review packet **(Gate 6)**
+
+- **Symptom:** the PDF's accessibility-findings section listed only edge-scoped rule verdicts. Findings
+  whose rule targets a node — including `N_EK` lacking `curb_transition` — were absent from an
+  audit-ready packet that claimed to enumerate findings.
+- **Root cause:** `reporting/service.py` rebuilt the findings list from `result.verdicts` filtered to
+  edges, because the first finding observed in development happened to be edge-scoped.
+- **Fix:** findings are rebuilt from the complete verdict list, node findings included.
+- **Regression test:** `test_experiment_details_correspond_to_real_records`, plus the findings
+  coverage in `tests/test_reporting.py`.
+- **Prevention:** a report built by *filtering* its source must be tested against a case where the
+  filtered-out shape is the interesting one. Deriving from a subset is a silent data loss, not a
+  presentation choice.
+
+## P-30 - `ReportAlternativePlan` had no semantic hash **(Gate 6)**
+
+- **Symptom:** alternative plans were serialised without their own hash, so a plan could not be
+  compared across packets or verified on its own.
+- **Root cause:** `ReportAlternativePlan` was added after `ReviewReport` and the hash field was never
+  added to it; the omission was invisible because nothing asserted its absence.
+- **Fix:** the model carries `semantic_hash`, and contract regeneration picked it up.
+- **Regression test:** the optimisation-inclusion test `test_optimization_search_is_included_when_selected`
+  exercises the model end to end.
+- **Prevention:** a new nested model is not finished until the properties every sibling has are
+  present. Diff the field set against a sibling, don't eyeball it.
+
+## P-31 - An exception's text was swallowed by the failure engine **(Gate 6)**
+
+- **Symptom:** an experiment that raised during execution was recorded as `execution_failed` with an
+  empty or generic message, so the cause was unrecoverable after the fact.
+- **Root cause:** the `except` block built the error record without interpolating the exception.
+- **Fix:** the exception type and message are preserved in the stored error.
+- **Regression test:** `test_execution_failure_text_is_preserved` (injects a failure via `monkeypatch`
+  and asserts the text survives).
+- **Prevention:** an error handler that discards the exception is not handling it. If a failure is
+  persisted, the reason must be persisted with it.
+
+## P-32 - The isolated scenario had no `base_graph_version_id`, so no phase graph could build **(Gate 6)**
+
+- **Symptom:** every experiment failed during graph construction rather than executing.
+- **Root cause:** `build_isolated_state` constructed the derived scenario without carrying
+  `base_graph_version_id`, and `build_phase_graph` correctly refuses to build a phase graph when the
+  scenario and graph are not paired.
+- **Fix:** the isolated state carries the source's `base_graph_version_id`.
+- **Regression test:** `test_experiments_run_against_a_distinct_isolated_state`,
+  `test_every_suite_executes`.
+- **Prevention:** the guard that caught this was correct and should not have been relaxed. When a
+  precondition fails immediately after new code, the new code is usually wrong, not the guard.
+
+## P-33 - `issue_id` changed when the phase or profile selection changed **(Gate 6)**
+
+- **Symptom:** selecting a different phase produced different `issue_id`s for the same unresolved
+  attribute, so the row a reviewer inspected could no longer be linked, and the detail deep-link
+  broke.
+- **Root cause:** the queue's identity hash included `phase_ids` and `profile_ids`, i.e. *how many
+  times and where* the issue was seen, rather than *which attribute on which element* it is.
+- **Fix:** identity covers the element, the attribute and the resolver status only; the observed scope
+  is payload, not identity.
+- **Regression test:** `test_queue_identity_is_deterministic` is the test to re-run against this
+  change (see `FAILURE_LAB_DESIGN.md` §I — this fix is **not yet re-verified**).
+- **Prevention:** identity hashes must cover only what makes the thing *the same thing*. Adding a
+  field to an identity because it is nearby in the struct is how ids stop being stable.
+
+## P-34 - Suite readiness ignored the selected phase, offering inapplicable suites as runnable **(Gate 6)**
+
+- **Symptom:** with phase-1 selected, `connection_loss` was offered as a runnable suite even though its
+  target `TMP-EAST-BYPASS` is active only in phase-2. Running it produced a refusal, which reads as a
+  failure of the plan rather than a suite that never applied.
+- **Root cause:** `available_suites` evaluated readiness over the scenario's whole declared plan and
+  reported a single boolean, so a suite applicable *somewhere* was presented as applicable *here*.
+- **Fix:** readiness is computed per selected phase, and a suite that applies nowhere in the selection
+  is reported as unavailable with the reason — never as a passing test, never silently skipped.
+- **Regression test:** E2E-G6-08 asserts the suite is listed as unavailable **and** that no runnable
+  toggle is rendered. **Not yet re-verified** (`FAILURE_LAB_DESIGN.md` §I).
+- **Prevention:** an applicability flag is only meaningful relative to the caller's selection. Where
+  the answer depends on the context, the context has to be an argument.
+
+## P-35 - The navigation hint failed WCAG AA contrast **(Gate 6)**
+
+- **Symptom:** the nav hint text (`--text-2xs`, well under 18 px) rendered in `--text-muted` on the nav
+  item surfaces, measuring **4.33:1** on `--surface-hover` and **4.03:1** on `--surface-selected` —
+  both below the 4.5:1 required for normal-size text.
+- **Root cause:** the token was chosen for visual subtlety rather than for legibility, and the ratio
+  was never measured.
+- **Fix:** `--text-secondary` (#a7b6c7), which measures **7.31:1** on `--surface-hover`, **6.27:1** on
+  `--surface-selected` and **9.23:1** on `--surface-canvas`. The hint stays visually subordinate
+  because it is smaller and lighter in weight, not because it is illegible.
+- **Regression test:** automated axe checking (`E2E-G6-28`, WCAG 2.1 AA tags), plus the measured ratios
+  recorded in `app.css`. **Not re-run** against this change — see `FAILURE_LAB_DESIGN.md` §I.
+- **Prevention:** measure contrast, do not eyeball it, and record the *resulting* ratio next to the
+  fix. The original CSS comment quoted 4.33:1 without saying it was a failure, which is how the
+  pre-fix number later got misread as the post-fix number — the same value was briefly mistaken for
+  evidence the fix had passed when it was evidence it had failed.
+
+## P-36 - The P-33 regression guard could not fail **(Gate 6)**
+
+- **Symptom:** the fix that dropped `phase_ids` and `profile_ids` from the queue's issue identity
+  hash shipped with a test that would still have passed against the pre-fix implementation. The
+  defect could have been reintroduced with a green suite.
+- **Root cause:** `test_queue_identity_is_deterministic` derives the queue twice with the *same*
+  phase and profile selection. Identical inputs trivially produce identical ids, whether or not
+  the scope is part of the hash. The test proved determinism, not scope-independence — two
+  different properties, and only the second one guards the fix.
+- **Fix:** added `test_issue_identity_survives_a_scope_change`, which derives the queue over the
+  whole plan and over a narrowed selection and asserts that every issue present in both keeps
+  its `issue_id`, and `test_issue_identity_is_independent_of_the_analysis_execution`, which
+  re-runs the analysis and asserts the issue identities are unchanged.
+- **Regression test:** both new tests. **Present, not yet executed** — see `FAILURE_LAB_DESIGN.md`
+  §I.
+- **Prevention:** a regression guard for a fix must be checked against the pre-fix behaviour. If
+  the new test cannot fail on the old code, it is not a guard; it is a restatement. When a fix
+  changes what goes *into* a hash, the test must vary the thing that was removed.
+
+## P-37 - `available_suites` shipped with no unit test at all **(Gate 6)**
+
+- **Symptom:** the per-phase readiness change (P-34) altered the fault-suite catalogue contract —
+  which suites are offered as runnable, for which phase, with what reason — and no test exercised
+  `available_suites` directly. Its behaviour was only reachable through the API and the browser.
+- **Root cause:** the catalogue was reached only through incidental paths, so the function looked
+  covered by the surrounding experiment and end-to-end tests while its own contract — per-phase
+  derivation, the reason string, the invariant that an applicable suite's targets exist — was
+  untested.
+- **Fix:** six direct tests were added: per-phase derivation, whole-plan behaviour, an
+  understandable reason for every unavailable suite, the target-existence invariant,
+  determinism with the source graph unchanged, and no state leaking between phases.
+- **Regression test:** the six suite-readiness tests in `tests/test_failure_lab.py`.
+  **Present, not yet executed.**
+- **Prevention:** a function that owns a contract needs a test that names that contract. "The
+  feature is covered end-to-end" is not coverage of the decision function in the middle, and an
+  untested decision function is where a "never advertised as passing" guarantee quietly dies.
+
+## P-38 - The Gate 6 browser suite, the probe spec and both design docs were never committed **(Gate 6)**
+
+- **Symptom:** the commit history ends at `ecfdda2` "Add the Gate 6 evidence queue, Failure Lab and
+  PDF export UI", but `apps/web/e2e/gate6-evidence-failure-report.spec.ts`,
+  `apps/web/e2e/gate6-a11y-probe.spec.ts`, `docs/FAILURE_LAB_DESIGN.md` and
+  `docs/REPORTING_DESIGN.md` are **untracked**. The repository therefore contains the Gate 6
+  implementation without the Gate 6 browser coverage or the design record that explains it. A
+  fresh clone would have no Gate 6 E2E suite at all.
+- **Root cause:** the implementation was committed in pieces and the new files were never staged.
+  Nothing in the workflow compares the working tree against the set of files the gate is supposed
+  to add, so a missing file is invisible until someone tries to run the suite.
+- **Fix:** the four files are identified explicitly in `FLOW.md` §5h and
+  `docs/FAILURE_LAB_DESIGN.md` §I5, and must be staged explicitly in the Gate 6 commit. **The
+  commit itself is still outstanding** — the authoring session had no command runner.
+  Because the probe file is untracked, the rename to `gate6-contrast.spec.ts` must use
+  `Move-Item`; `git mv` refuses a file that is not under version control.
+- **Regression test:** none yet. The check that would have caught it is
+  `git status --porcelain` being empty after the gate's commit, and a reviewer confirming that
+  every file named in the gate's design document is tracked.
+- **Prevention:** at the end of a gate, list the files the gate must add and check each one is
+  tracked. A commit message describing work is not evidence that the work is in the commit.
+
+## P-39 - The documentation claimed a passing Gate 6 run that no log supported **(Gate 6)**
+
+- **Symptom:** the Gate 6 design documents, the traceability matrix, the test plan, `FLOW.md` and
+  `README.md` all stated that the Gate 6 suite was "verified green at `ecfdda2`" with 128 passing
+  backend tests. **No preserved log supports that.** The last recorded collection in `var/`
+  (`collect.log`, `collect.txt`) is the 373-test Gate 5 baseline and lists no Gate 6 test file;
+  the last preserved verification log (`verify-gate5-final.log`) is the Gate 5
+  `VERIFICATION PASSED` run. The claim came from a session summary and was copied forward into
+  the documentation without ever being checked against an artifact.
+- **Root cause:** a handoff summary was treated as evidence. It is a *claim* about a run, and like
+  any claim it is only worth what its artifact is worth — which here was nothing, because the
+  summary's own session had no command runner and preserved no log.
+- **Fix:** every Gate 6 document now states the position accurately: the code and the test
+  functions exist, **no Gate 6 run is preserved**, and §I of `docs/FAILURE_LAB_DESIGN.md` lists
+  the preserved artifacts and what each one does and does not prove. No Gate 6 row in the
+  traceability matrix is marked VERIFIED.
+- **Prevention:** a verification claim is only as good as the log behind it. Before writing "N
+  tests passed", find the file that says so; if there is no file, the sentence does not belong in
+  the document. The cost of the false claim was that it would have been copied into the final
+  release report as fact.
+
+## P-40 - A duplicate scenario id returned 500 instead of 409 **(Gate 6)**
+
+- **Symptom:** `POST /api/v1/projects/{project_id}/scenarios` with an id that already existed
+  returned **500** with no error code, instead of the **409 `SCENARIO_ID_EXISTS`** the
+  apply-to-branch path has always returned. The Gate 6 browser suite hit this: its
+  `createIsolatedScenario` helper had to tolerate an unexpected status, and the previous
+  session removed that tolerance and left the underlying 500 in place.
+- **Root cause:** the repository has two scenario-insert paths. `promote_scenario` checks the id
+  inside its transaction and raises `ScenarioIdExistsError`; `create_scenario` went straight to
+  the `INSERT`. The duplicate therefore surfaced as an uncaught `sqlite3.IntegrityError`, which
+  no exception handler claimed, so it became an untyped 500. There was no test for creating a
+  duplicate id, so nothing caught it.
+- **Fix:** `repository.create_scenario` now performs the same clash check as `promote_scenario`
+  and raises `ScenarioIdExistsError`; the route converts it to a 409 with the flat envelope
+  (`code`, `message`, `details`, `request_id`) and `details.scenario_id`. The check runs inside
+  the transaction, so a refused creation writes nothing. The seeding path was verified to be
+  unaffected: it is guarded by an existence check and only creates when the scenario is absent.
+- **Regression test:** `test_a_duplicate_scenario_id_is_a_409_not_a_500` in
+  `tests/test_scenario_read_endpoints.py`, which asserts the 409, the flat envelope, the error
+  code, and that the stored scenario and the scenario list are unchanged. E2E-G6-04 now asserts
+  the same contract over HTTP in the browser.
+- **Prevention:** when a repository has two paths that write the same table, they must share the
+  same conflict handling. A unique-constraint violation that reaches the client as an untyped
+  500 is a missing contract, not an acceptable error mode — the caller cannot act on it.
+
+## P-41 - Graph inspector selection test ID was missing on edge/node detail cards **(Gate 6)**
+
+- **Symptom:** Playwright test `E2E-G6-02` failed with timeout waiting for locator `page.getByTestId('inspect-E_K1')` to be visible after selecting an issue in the evidence queue.
+- **Root cause:** `GraphInspector.tsx` only had `data-testid="graph-inspector"` on the outer container, without per-element testids on the individual edge or node inspector card sections.
+- **Fix:** Added `data-testid={`inspect-${edge.id}`}` to the selected edge section and `data-testid={`inspect-${node.id}`}` to the selected node section.
+- **Regression test:** `E2E-G6-02 selecting an issue inspects the affected graph element`.
+- **Prevention:** When an E2E journey specifies selecting an entity and asserting on its inspector view, provide deterministic testids on the inspect panels rather than asserting solely on broad container text.
+
+## P-42 - Scenario dropdown did not reload after programmatic scenario creation **(Gate 6)**
+
+- **Symptom:** In `E2E-G6-04`, after calling `createIsolatedScenario` via HTTP `POST /api/v1/projects/{project_id}/scenarios`, navigating to the Scenario tab failed when selecting the newly created scenario in `scenario-select`.
+- **Root cause:** `ScenarioEditor.tsx` read `scenarios` from `useWorkspace`, which was populated on initial project load and was not automatically re-fetched when the scenario view was focused or mounted.
+- **Fix:** Added `useEffect(() => { reloadScenarios() }, [reloadScenarios])` and `onFocus={reloadScenarios}` to `scenario-select` in `ScenarioEditor.tsx`.
+- **Regression test:** `E2E-G6-04 conflicting evidence is shown without choosing a value`.
+- **Prevention:** Any selector offering entities that can be created out-of-band or via REST endpoints must ensure its options are reloaded on view focus.
+
+## P-43 - TextField test-id applied to outer label instead of inner input element **(Gate 6)**
+
+- **Symptom:** `E2E-G6-06 the evidence queue is operable by keyboard alone` failed because tabbing to `page.getByTestId('queue-element-filter')` focused the wrapper `<label>` instead of the actual `<input>` element.
+- **Root cause:** `TextField` in `Field.tsx` applied `data-testid` to `<label className="field">` rather than forwarding `testId` to the underlying `<input>`.
+- **Fix:** Added `data-testid={testId}` directly to `<input>` in `TextField`, and passed `testId="queue-element-filter"` from `EvidenceQueue.tsx`.
+- **Regression test:** `E2E-G6-06 the evidence queue is operable by keyboard alone`.
+- **Prevention:** In form component libraries, testids targeting input controls must attach directly to the interactive form control, not its surrounding label container.
+
+## P-44 - Multi-phase fault suite selection contradicted per-phase readiness rules **(Gate 6)**
+
+- **Symptom:** Test `E2E-G6-16` failed attempting to select `connection_loss` while in Phase 1, throwing element not found because no checkbox was rendered for `connection_loss`.
+- **Root cause:** P-34 and P-37 established that `connection_loss` targets `TMP-EAST-BYPASS` which exists only in Phase 2, so the suite is strictly unavailable (and not offered as runnable) in Phase 1. The test specification `E2E-G6-16` had not been aligned with this readiness rule.
+- **Fix:** Replaced `connection_loss` with `incidental_closure` in `E2E-G6-16`.
+- **Regression test:** `E2E-G6-16 multiple fault results and execution statuses are reported`.
+- **Prevention:** When architectural invariants declare a condition inapplicable for a given phase, ensure test fixtures and test suite configurations adhere to the invariant rather than expecting inapplicable suites to run.
+
+## P-45 - Conflicting evidence issue explanation endpoint evaluated base graph instead of phase graph **(Gate 6)**
+
+- **Symptom:** `GET /api/v1/scenarios/{id}/evidence/issues/{issue_id}` returned conflicting evidence values derived from the unphased base graph rather than incorporating scenario phase closures.
+- **Root cause:** In `apps/api/detour_lab/api/v1/evidence.py`, `build_phase_graph` was called without passing the target phase context for scenario-declared edges.
+- **Fix:** Updated `evidence_issue` endpoint to resolve graph state via `build_phase_graph(graph, scenario, target_phase).graph`.
+- **Regression test:** `test_evidence_issue_endpoint` and `E2E-G6-04 conflicting evidence is shown without choosing a value`.
+- **Prevention:** All evidence and analysis resolution endpoints in a multi-phase system must evaluate against the phase-materialised graph, never raw unphased versions.
+
+## P-46 - Mutation of `scn-demo-baseline` in `demo-journey.spec.ts` poisoned subsequent Gate 6 tests **(Gate 6)**
+
+- **Symptom:** In sequential whole-suite execution (`npx playwright test`), `E2E-G6-11` and `E2E-G6-12` timed out after 60s waiting for `transition-table` because the injected faults reported "no relevant modelled change", whereas running `gate6-evidence-failure-report.spec.ts` in isolation passed 30/30.
+- **Root cause:** `demo-journey.spec.ts` mutates `scn-demo-baseline` (closing `E_WM`) to test saved closures and reload persistence, advancing the scenario from revision 1 to revision 2 in the shared test database. With `E_WM` closed, `OD-W -> OD-GATE` was already disconnected in the baseline prior to fault injection. Therefore, closing `E_K2` (critical closure) or masking `E_K1` (evidence gap) caused no route transition.
+- **Fix:** Added `resetDemoBaseline` helper in `helpers.ts` using transactional SQLite rollback to restore `scn-demo-baseline` to revision 1 (deleting revisions > 1); invoked `resetDemoBaseline()` in `demo-journey.spec.ts` `test.afterAll` and `gate6-evidence-failure-report.spec.ts` `test.beforeAll`. Additionally resolved worker-process PID mismatch in `playwright.config.ts` so `DETOUR_LAB_DB_PATH` is inherited identically across runner and worker processes.
+- **Regression test:** `demo-journey.spec.ts` followed immediately by `gate6-evidence-failure-report.spec.ts` E2E-G6-11 and E2E-G6-12 in the same database session.
+- **Prevention:** In integration suites sharing a persistent database, any test that mutates shared baseline fixtures must clean up via `afterAll`, and downstream suites expecting a clean baseline must defensively assert or restore baseline state in `beforeAll`.

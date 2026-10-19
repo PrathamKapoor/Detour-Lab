@@ -406,7 +406,20 @@ class Repository:
 
     # ------------------------------------------------------------------ scenarios
     def create_scenario(self, scenario: Scenario, *, project_id: str) -> Scenario:
+        """Insert a new scenario, refusing an id that is already taken.
+
+        The clash check mirrors :meth:`promote_scenario`. It runs inside the
+        transaction, so a collision writes nothing and rolls back cleanly.
+        Without it a duplicate id reached the INSERT and surfaced as an
+        uncaught ``sqlite3.IntegrityError`` - a 500 with no error code,
+        instead of the 409 ``SCENARIO_ID_EXISTS`` the promotion path returns.
+        """
         with self.database.transaction() as connection:
+            clash = connection.execute(
+                "SELECT 1 FROM scenarios WHERE id = ?", (scenario.id,)
+            ).fetchone()
+            if clash is not None:
+                raise ScenarioIdExistsError(scenario.id)
             connection.execute(
                 "INSERT INTO scenarios (id, project_id, parent_scenario_id, base_graph_version_id,"
                 " rulepack_id, rulepack_hash, revision, content_hash, payload_json, created_at)"

@@ -428,3 +428,173 @@ Owner decisions are marked **[OWNER DECISION]**. Synthetic fixture defaults are 
 - **Evidence:** `test_candidate_limit_truncation_never_claims_optimality`,
   `test_duration_limit_truncation_is_incomplete_not_empty`,
   `test_optimal_upgrade_requires_exhaustive_enumeration`, E2E-G5-22.
+
+## D-034 - The evidence queue is derived from the resolver and carries no score **(Gate 6)**
+
+- **Problem:** reviewers need to know which missing measurements actually block decisions. The tempting
+  answer — a numeric importance score — implies a value of information the system cannot compute.
+- **Decision:** `derive_evidence_queue` recomputes from the same authoritative inputs the analysis used.
+  Unresolved status comes from `resolve_attribute`; the queue never re-implements the resolver.
+  Ordering is `ORDERING_RULE`: ascending explainable category
+  (`decision_blocking < decision_relevant < supporting`), then descending affected profiles, phases
+  and connected OD pairs, then ascending element id and attribute.
+- **Key rules:** no probability, expected value or numeric score is emitted or implied. A conflict is
+  explained **without choosing a value**. An unresolved attribute is never rendered as a physical
+  defect. `additional_phases` widens scope but never invents entries.
+- **Trade-off:** a reviewer cannot rank by a single number. In exchange the ordering is reproducible,
+  explainable and does not pretend to know the value of a field visit.
+- **Evidence:** `test_queue_is_derived_not_static`, `test_no_numeric_priority_score_is_emitted`,
+  `test_ordering_is_stable_and_documented`, `test_conflict_explains_without_choosing`,
+  E2E-G6-03/04/05.
+
+## D-035 - A queue issue keeps one identity across scopes **(Gate 6)**
+
+- **Problem:** with `phase_ids` and `profile_ids` inside the identity hash, the same unresolved
+  attribute got a different `issue_id` for every scope, so an inspected row could not be linked back
+  to and a deep link broke.
+- **Decision:** identity covers element, attribute and resolver status only. Where and how often the
+  issue persists is payload, not identity.
+- **Why:** an identifier must mean "the same thing". Scope is how you are looking at it.
+- **Status:** implemented **after** the last commit and **never executed**; see
+  `FAILURE_LAB_DESIGN.md` §I and P-33. The regression guard
+  `test_issue_identity_survives_a_scope_change` was added during this audit because the
+  pre-existing `test_queue_identity_is_deterministic` derives the queue twice with the
+  *same* selection and would have passed against the pre-fix implementation too.
+
+## D-036 - Faults are typed bounded data; there is no code path from a definition to execution **(Gate 6)**
+
+- **Problem:** a "try to break my plan" feature invites an extensible fault language, which is the
+  shortest route to arbitrary code execution from a request body.
+- **Decision:** `FaultDefinition` is a validated record with a closed `FaultKind`. The contract has
+  **no expression field at all**, so no definition can carry code. Validation refuses unknown kinds,
+  non-existent targets, undeclared phases, duplicate and contradictory faults, masking a
+  non-existent observation, already-closed edges and expiration without an explicit instant, each
+  with a named test. Bounds: fault count per experiment, target count per fault.
+- **Trade-off:** the fault vocabulary is closed, so adding a fault kind is a code change. That is the
+  intended cost of "nothing here executes anything you wrote".
+- **Evidence:** `test_no_expression_field_exists_on_the_contract`, `test_fault_count_limit`,
+  `test_target_limit`, 12 × refusal tests.
+
+## D-037 - Suites are authored data, and inapplicable is not the same as passing **(Gate 6)**
+
+- **Decision:** `SUITES` is nine hand-written entries naming a fault kind, its target ids and a written
+  rationale. Nothing inspects the graph to invent a hazard. Three conditions are declared
+  **deliberately not modelled** in `UNSUPPORTED_SCENARIOS` with reasons.
+- **Key rule:** `available_suites` computes readiness **structurally against the live graph, per
+  selected phase**. A suite that applies nowhere in the selection is reported as unavailable with a
+  reason and is **not rendered as a runnable toggle**. When `phase_ids` is omitted every declared
+  phase is considered, because a suite that applies somewhere in the plan is not inapplicable to the
+  plan.
+- **Why:** the failure mode this gate exists to avoid is a panel that shows nine green ticks because
+  nine suites ran, when in fact one refused and eight never applied.
+- **Trade-off:** fewer suites are offerable at a time. That is the honest number.
+- **Status:** per-phase readiness implemented **after** the last commit and **never executed**
+  (P-34). `available_suites` had **no unit test at all** until this audit added six readiness
+  tests; E2E-G6-08 now also cross-checks the backend catalogue rather than only the rendering.
+
+## D-038 - Three extra fault behaviours are natural divergence, not special cases **(Gate 6)**
+
+- **Problem:** the PRD asks for more fault variety than a closure/mask pair provides, and the
+  tempting move is a per-kind branch in the engine.
+- **Decision:** no such branch exists. Multi-phase behaviour is the existing `phase_ids` scope;
+  profile-specific outcomes are whatever the **real rulepack** produces for that profile; candidate
+  stress is the same machinery applied to a branch rather than the source.
+- **Why:** divergence that comes from real machinery is evidence the pipeline works; divergence
+  special-cased per kind is evidence the special case was written. The limitation is documented rather
+  than papered over.
+- **Evidence:** `test_multi_phase_fault_touches_only_its_own_phase`,
+  `test_profile_specific_outcome_emerges_from_the_rulepack`,
+  `test_every_suite_leaves_the_source_untouched`.
+
+## D-039 - Execution status and engineering observation are separate fields **(Gate 6)**
+
+- **Problem:** collapsing "the software ran" and "the network is fine" produces reports that call a
+  resolver bug a network failure.
+- **Decision:** `ExperimentStatus` (`completed` / `invalid_experiment` / `execution_failed`) is the
+  software outcome. `EngineeringObservation` is the modelled outcome of one (profile, OD pair, phase)
+  transition. A refused experiment carries zero observations and a named error code. A baseline failure
+  is an engine result, never a network failure. Missing data renders as "not established", never 0 m.
+- **Key rule:** robustness counts include **only** completed experiments; invalid and failed ones are
+  excluded from every count because they are evidence about the software, not about the plan.
+- **Evidence:** `test_a_baseline_failure_is_a_software_outcome_not_a_network_failure`,
+  `test_a_faulted_failure_leaves_the_pair_unavailable_not_failed`,
+  `test_pair_observation_classification_is_total`,
+  `test_inapplicable_suite_is_recorded_as_invalid_not_silently_skipped`, E2E-G6-17.
+
+## D-040 - Robustness ratios state their denominator and are never probabilities **(Gate 6)**
+
+- **Decision:** `denominator_note` is built at runtime from the actual execution
+  (`pairs_evaluated = N = C completed experiments × OD pairs × profiles × phases`). `INTERPRETATION_NOTE`
+  states the counts are a **test-coverage** result over the chosen synthetic conditions and are NOT a
+  probability, NOT a failure rate, NOT a statistical result.
+- **Why:** "7 of 9 experiments preserved the route" reads as a 78% survival probability unless the
+  denominator and the sampling basis are on the same screen.
+- **Evidence:** `test_robustness_summary_states_its_denominator`,
+  `test_failed_experiments_are_excluded_from_every_count`, E2E-G6-27/30.
+
+## D-041 - ReportLab is used as an existing pinned dependency; no new PDF library **(Gate 6)**
+
+- **Decision:** ReportLab 5.0.1 was already pinned, so the gate adds no dependency. Rendering sets
+  `rl_config.invariant = 1` so a stored payload renders byte-identically. Modules split
+  `report.py` (model) → `layout.py` (primitives) → `pdf.py` (12-section assembly) → `service.py`
+  (collection from stored runs), dependencies one way, with no business logic in `layout.py`.
+- **Why:** a renderer that assembles content can invent content by assembling it. Keeping collection
+  in `service.py` means the PDF can only draw what the model holds.
+- **Trade-off:** the section set is fixed at twelve. A new section is a renderer change.
+- **Evidence:** `test_pdf_is_valid_and_parseable`, `test_large_tables_paginate_without_losing_rows`,
+  `test_untrusted_text_cannot_execute_or_break_the_document`.
+
+## D-042 - `report_id` is excluded from the semantic payload **(Gate 6)**
+
+- **Decision:** `report_id` (`rpt-<uuid12>`) is the execution identity and is **not** part of
+  `ReviewReport.semantic_body()`. Two packets built from the same data share one semantic hash; their
+  PDFs differ only in the cover identifier. `schema_version` and `generator_version` are separate
+  fields so a stored packet cannot be confused with one from a later renderer.
+- **Why:** hashing the id would make every regeneration "a different report", which defeats an audit
+  trail whose purpose is to show that the same data yields the same conclusion.
+- **Trade-off:** two packets are content-identical by hash and must be told apart by `report_id`. The
+  UI labels a packet whose scenario has moved on as a historical revision.
+- **Evidence:** `test_report_id_is_not_part_of_the_semantic_hash`,
+  `test_equivalent_regeneration_preserves_semantic_identity`,
+  `test_generation_time_is_excluded_from_the_semantic_payload`.
+
+## D-043 - The PDF download endpoint re-renders from the stored payload and verifies the digest **(Gate 6)**
+
+- **Decision:** `GET /reports/{id}/document.pdf` reloads the stored **payload**, re-renders it,
+  recomputes the digest and compares it with the recorded `pdf_sha256`. A mismatch is a 500
+  `PDF_RENDER_FAILED` naming both digests — never a silent re-issue. Responses carry
+  `X-Detour-Lab-Pdf-Sha256`, `X-Detour-Lab-Pdf-Pages`, `X-Detour-Lab-Semantic-Hash`,
+  `X-Detour-Lab-Scenario-Revision` and `X-Detour-Lab-Not-Certified: true`.
+- **Why:** serving a stored blob proves only that the blob still exists. Re-rendering proves the
+  renderer is still deterministic, and the digest check makes a drift visible instead of invisible.
+- **Evidence:** `test_download_endpoint_returns_the_recorded_bytes`,
+  `test_regenerating_a_stored_report_reproduces_identical_bytes`, E2E-G6-23.
+
+## D-044 - An unselected report section is marked unavailable, never rendered empty **(Gate 6)**
+
+- **Decision:** `section_availability` carries `available` / `unavailable` / `not_selected` with a
+  reason per section, and the PDF prints the reason in place of the section body.
+- **Why:** an empty section reads as "there is nothing to report". A reviewer must be able to tell
+  "not selected" from "selected and empty", because only the first is a coverage gap in the packet.
+- **Evidence:** `test_unselected_sections_are_marked_unavailable_not_empty`, E2E-G6-24.
+
+## D-045 - A taken scenario id is a 409 conflict, never a 500 **(Gate 6)**
+
+- **Problem:** `POST /projects/{id}/scenarios` inserted without checking the id, so a duplicate
+  reached the `INSERT` and escaped as an uncaught `sqlite3.IntegrityError` — a 500 with no error
+  code, in a repository whose sibling path (`promote_scenario`) had always returned a typed 409
+  `SCENARIO_ID_EXISTS` for the same condition.
+- **Decision:** `repository.create_scenario` performs the same in-transaction clash check as
+  `promote_scenario` and raises `ScenarioIdExistsError`; the route converts it to **409
+  `SCENARIO_ID_EXISTS`** with the standard flat envelope and `details.scenario_id`. The check
+  runs inside the transaction, so a refused creation writes nothing.
+- **Why:** a unique-constraint violation is a fact about the request, not a server fault. A
+  caller can act on "that id is taken" — pick another id, or open the existing scenario — but
+  cannot act on an untyped 500. A typed error is also the only kind a client can display
+  honestly.
+- **Key rule:** the *conflict* is reported; the *fact* is not invented. The refused request
+  changes nothing, and the existing scenario keeps its revision and content hash.
+- **Evidence:** `test_a_duplicate_scenario_id_is_a_409_not_a_500`; E2E-G6-04 asserts the same
+  contract over HTTP. **Not yet executed** — see `FAILURE_LAB_DESIGN.md` §I.
+- **Prevention:** two repository paths that write the same table must share their conflict
+  handling. The gap existed because only one of them had a test.

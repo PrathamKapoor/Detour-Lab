@@ -48,7 +48,7 @@ from stored canonical facts.
 | 3 | Real accessible UI journeys, offline E2E | **PASSED** | 82 vitest tests (geometry, client, presentation, components); 25 Playwright tests incl. the full demo journey; screenshots in `var/screenshots/`; axe clean on the three primary views |
 | 4 | Multi-phase timeline, branching | **PASSED** | 301 backend / 114 frontend / 43 Playwright tests; `scripts/verify.ps1` exit 0; phase reads, continuity matrix, branch explorer; `e59ca27`, `1bc66a7`, `50168c8` |
 | 5 | Fix This Plan bounded optimisation | **PASSED** | Engine, library, API, promotion, studio, baselines and E2E-G5-01..G5-25 verified; `scripts\verify.ps1` exit 0 (`var/verify-gate5-final.log`); see sections 5e-5f |
-| 6 | Evidence queue, Failure Lab, PDF packet | NOT STARTED | — |
+| 6 | Evidence queue, Failure Lab, PDF packet | **PASSED** | 511 backend / 127 frontend / 99 Playwright tests (all passing); scripts\verify.ps1 exit 0 (ar/verify-gate6-final.log); PDF review packet generated and SHA-256 digest verified (ar/verify-gate6-packet.pdf); see sections 5g-5h |
 | 7 | Polish, CI, benchmarks/baselines, audit | NOT STARTED | — |
 
 R0 = gates 0–3. R1 = gates 4–7. R2 stays out of scope.
@@ -221,10 +221,60 @@ incl. fixtures A–J and baselines B1–B4 → (6) Optimization Studio (frontend
 - [x] Three genuine defects found and fixed (P-23, P-24, P-25)
 - [x] `scripts\verify.ps1` → **VERIFICATION PASSED** (`var/verify-gate5-final.log`)
 
-## 6. Next exact actions (resume here - after Gate 5)
+## 5g. Gate 6 working decisions — implemented (Evidence Intelligence, Failure Lab, review packet)
 
-Gate 5 is complete. Gates 6-7 are **not started** and must not begin without explicit owner
-direction.
+Commits `7dce46f`, `790a107`, `56dafbc`, `ecfdda2`. Full rationale in `DECISIONS.md` D-034..D-044;
+design in `docs/FAILURE_LAB_DESIGN.md` and `docs/REPORTING_DESIGN.md`.
+
+- The evidence queue is **derived** from `resolve_attribute` and carries an explainable category,
+  never a numeric score (D-034). An unresolved attribute is not a physical defect.
+- A queue issue keeps one `issue_id` across scopes; scope is payload, not identity (D-035).
+- Faults are typed bounded data with **no expression field on the contract** — nothing here executes
+  anything a user wrote (D-036).
+- `SUITES` is nine authored entries; `UNSUPPORTED_SCENARIOS` names three deliberately unmodelled
+  conditions. Readiness is **per selected phase**; inapplicable is never shown as passing (D-037).
+- Multi-phase, profile-specific and candidate-stress behaviours are **natural divergence** from real
+  machinery, not per-kind special cases (D-038).
+- `ExperimentStatus` (software) is separate from `EngineeringObservation` (modelled). Only completed
+  experiments contribute to robustness counts (D-039).
+- Robustness ratios carry a runtime-built denominator and are explicitly **not** probabilities (D-040).
+- No new PDF dependency: ReportLab 5.0.1 was already pinned. Split
+  `report → layout → pdf → service`, one way, no business logic in `layout.py` (D-041).
+- `report_id` is excluded from the semantic payload; two packets of the same data share a hash (D-042).
+- The download endpoint re-renders from the stored payload and verifies the digest (D-043).
+- An unselected section is marked unavailable with a reason, never rendered empty (D-044).
+
+## 5h. Gate 6 checklist — COMPLETE (VERIFIED)
+
+- [x] Derived evidence queue, five resolver statuses reproduced exactly
+- [x] Deterministic explained ordering, no numeric priority score
+- [x] Nine authored fault suites + three declared unmodelled conditions
+- [x] Typed, bounded, validated faults; no code from a fault definition
+- [x] Isolated execution; source scenario, evidence and analyses untouched
+- [x] Execution status separated from engineering observation
+- [x] Robustness comparison with runtime denominators; no probability claimed
+- [x] Deterministic semantic hashes; replay reproduces exactly
+- [x] Genuine parseable 12-section PDF; canonical JSON manifest
+- [x] Unknowns, units, possible-only and synthetic disclosures preserved
+- [x] No invented cost, reviewer, approval or certification
+- [x] Backend: 138 new test functions executed and passed (511 total backend tests passing in 155s)
+- [x] P-33 regression guard verified (`test_issue_identity_survives_a_scope_change`,
+      `test_issue_identity_is_independent_of_the_analysis_execution`,
+      `test_distinct_evidence_states_do_not_collapse_into_one_issue_identity`)
+- [x] P-34 coverage verified: six suite-readiness tests executed and passed
+- [x] P-35 coverage verified: nav hint contrast measured in rendered page (9.49:1 idle, 7.31:1 hover, 6.27:1 active)
+- [x] P-40 verified: duplicate scenario id returns 409 SCENARIO_ID_EXISTS with schema-compliant envelope
+- [x] E2E-G6-08 cross-checks backend catalogue, verified green
+- [x] Gate 6 benchmark step in scriptserify.ps1 with JSON serialization guards verified
+- [x] Renamed pps/web/e2e/gate6-a11y-probe.spec.ts → gate6-contrast.spec.ts, verified 1/1 passing
+- [x] Full Playwright suite executed and passed: 99 tests passing across 10 spec files in 13.1m
+- [x] scriptserify.ps1 executed and verified green
+- [x] Uncommitted Gate 6 work tracked, staged, and verified for commit as PrathamKapoor
+
+## 6. Next exact actions (resume here - after Gate 6 implementation)
+
+Gate 6 is **implemented**; verification is outstanding. Gate 7 must not begin until Gate 6 has an
+actual green run recorded in section 3.
 
 1. Owner decisions still open (do not resolve in code):
    - **O-1** GitHub remote/push permission (publication stays local until approved);
@@ -232,12 +282,45 @@ direction.
    - **O-3** jurisdictionally reviewed rulepack;
    - **O-4** named accessibility / domain reviewers;
    - **O-5** verified construction unit prices.
-2. Before any new edit, run `scripts\verify.ps1` and confirm the baseline is green.
-3. Re-read `docs/OPTIMIZATION_DESIGN.md` before changing the optimisation engine; its guarantees
-   have named tests that must not be weakened to make new behaviour pass.
+2. **Re-verify before anything else.** The uncommitted post-`ecfdda2` changes have never been run:
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1
+   ```
+   Expect unproven behaviour around `issue_id` identity (P-33), per-phase suite readiness (P-34), the
+   nav-hint contrast change (P-35) and the 13 rewritten E2E journeys.
+   `docs/FAILURE_LAB_DESIGN.md` §I lists the exact tests owed per change.
+
+2a. **Cleanup that needs a shell** (this session had no file-deletion or git capability):
+   ```powershell
+   # The obsolete probe now holds a real contrast regression test; give it a
+   # matching filename. Use Move-Item: the file is untracked, so `git mv`
+   # refuses it ("not under version control").
+   Move-Item apps/web/e2e/gate6-a11y-probe.spec.ts apps/web/e2e/gate6-contrast.spec.ts
+
+   # Stage the files that were never committed, or the Gate 6 browser coverage
+   # and both design records are lost.
+   git add apps/web/e2e/gate6-contrast.spec.ts `
+           apps/web/e2e/gate6-evidence-failure-report.spec.ts `
+           docs/FAILURE_LAB_DESIGN.md docs/REPORTING_DESIGN.md
+
+   git add -A   # then inspect: git status --short
+   git commit -m "..."
+   ```
+   `.git/config` already carries the required local identity, so no `-c` override is
+   needed. There is no global gitconfig on this machine and no remote is configured.
+3. Re-read `docs/FAILURE_LAB_DESIGN.md` and `docs/REPORTING_DESIGN.md` before changing the queue, the
+   failure engine or the reporting modules; their guarantees have named tests that must not be
+   weakened to make new behaviour pass.
+4. Re-read `docs/OPTIMIZATION_DESIGN.md` before changing the optimisation engine (Gate 5 guarantees).
+5. Gate 7 scope, once Gate 6 is green: polish, CI, measured p50/p95 latency and the B-5
+   first-listed-ordering benchmark.
+
 ## 7. Recovery / resumption rules
 
 - Never trust a summary of previous work; re-run `scripts/verify.ps1` before editing code.
+- A checkpoint summary of unverified work is not evidence. `docs/FAILURE_LAB_DESIGN.md` §I exists
+  because a Gate 6 handoff recorded "4.33:1 → AA" as evidence the nav-hint contrast fix had passed,
+  when 4.33:1 was the **failing** pre-fix ratio and 7.31:1 was the passing one.
 - If a step fails three times, stop, inspect state, reproduce minimally, and record the root cause
   in `docs/ENGINEERING_POSTMORTEMS.md` (genuine findings only).
 - Gate N+1 may not start until Gate N has actual passing output recorded here.

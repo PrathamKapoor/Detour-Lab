@@ -83,7 +83,7 @@ export function GraphInspector({
   return (
     <div className="inspector" data-testid="graph-inspector">
       {edge ? (
-        <div className="inspector__section">
+        <div className="inspector__section" data-testid={`inspect-${edge.id}`}>
           <h3 className="inspector__heading">Edge {edge.id}</h3>
           <KeyValueList
             items={[
@@ -102,7 +102,7 @@ export function GraphInspector({
       ) : null}
 
       {node ? (
-        <div className="inspector__section">
+        <div className="inspector__section" data-testid={`inspect-${node.id}`}>
           <h3 className="inspector__heading">Node {node.id}</h3>
           <KeyValueList
             items={[

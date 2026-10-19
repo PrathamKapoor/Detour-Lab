@@ -155,7 +155,6 @@
 
 .badge__detail {
   font-weight: 400;
-  opacity: 0.85;
   margin-left: var(--space-1);
 }
 
@@ -282,6 +281,31 @@
   width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
+}
+
+/**
+ * Horizontal scroll container for genuinely wide engineering tables.
+ *
+ * A seven-column results table cannot be squeezed into a 390 px viewport
+ * without either dropping the columns a reviewer needs or clipping them.
+ * Scrolling keeps every column present and every value selectable, and leaves
+ * the page itself free of horizontal overflow.
+ */
+.table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  /* Keeps the scroll container reachable by keyboard for keyboard-only users. */
+  scrollbar-gutter: stable;
+}
+
+.table-scroll > .data-table {
+  min-width: 680px;
+}
+
+@media (max-width: 720px) {
+  .table-scroll > .data-table {
+    min-width: 560px;
+  }
 }
 
 .data-table caption {

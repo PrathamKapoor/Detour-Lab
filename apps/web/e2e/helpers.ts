@@ -1,3 +1,7 @@
+import { execFileSync } from 'node:child_process'
+import { readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { expect, type Page } from '@playwright/test'
 
 /**
@@ -107,4 +111,51 @@ export async function useIsolatedScenario(page: Page, id: string) {
   await expect(page.getByTestId('scenario-select')).toBeVisible({ timeout: 20_000 })
   await page.getByTestId('scenario-select').selectOption(id)
   await expect(page.getByTestId('scenario-revision')).toBeVisible({ timeout: 20_000 })
+}
+
+const PYTHON = process.env.DETOUR_LAB_PYTHON ?? fileURLToPath(new URL('../../../.venv/Scripts/python.exe', import.meta.url))
+
+function getDbPath(): string | null {
+  if (process.env.DETOUR_LAB_DB_PATH) return process.env.DETOUR_LAB_DB_PATH
+  const varDirectory = fileURLToPath(new URL('../../../var/', import.meta.url))
+  try {
+    const files = readdirSync(varDirectory)
+      .filter((f) => f.startsWith('e2e-') && f.endsWith('.sqlite3'))
+      .map((f) => {
+        const fullPath = join(varDirectory, f)
+        const stat = statSync(fullPath)
+        return { path: fullPath, mtime: stat.mtimeMs, size: stat.size }
+      })
+      .filter((f) => f.size > 0)
+      .sort((a, b) => b.mtime - a.mtime)
+    return files[0]?.path ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Resets the shared demonstration scenario (scn-demo-baseline) back to its
+ * initial revision 1 state if an earlier test (such as demo-journey.spec.ts)
+ * persisted edits to it.
+ */
+export function resetDemoBaseline() {
+  const dbPath = getDbPath()
+  if (!dbPath) return
+  const script = `
+import sqlite3, sys
+conn = sqlite3.connect(sys.argv[1])
+row = conn.execute("SELECT payload_json FROM scenario_revisions WHERE scenario_id = 'scn-demo-baseline' AND revision = 1").fetchone()
+if row:
+    conn.execute("UPDATE scenarios SET revision = 1, payload_json = ? WHERE id = 'scn-demo-baseline'", (row[0],))
+    conn.execute("DELETE FROM scenario_revisions WHERE scenario_id = 'scn-demo-baseline' AND revision > 1")
+    conn.execute("DELETE FROM analysis_runs WHERE scenario_id = 'scn-demo-baseline' AND scenario_revision > 1")
+    conn.commit()
+conn.close()
+`
+  try {
+    execFileSync(PYTHON, ['-c', script, dbPath])
+  } catch (error) {
+    console.error('resetDemoBaseline failed:', error)
+  }
 }
