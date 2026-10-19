@@ -267,3 +267,55 @@ correction and the regression test that now prevents recurrence. Nothing here is
   unevaluated phase is never converted into a failure, only into a visible gap.
 - **Regression test:** `an unevaluated phase is incomplete, never a pass and never a failure` and
   `says so plainly when the first problem is a missing analysis`.
+
+## P-23 - Promotion compared scenario identity, so every re-verification mismatched **(Gate 5)**
+
+- **Symptom:** the post-persist re-verification of a promoted branch reported a mismatch between the
+  preview analysis and the persisted branch even though the branch had been rebuilt from the same
+  source and the re-materialisation hash gate had passed.
+- **Root cause:** the comparison used the full `AnalysisResult` payloads. Three fields legitimately
+  differ between the preview scenario and the persisted branch because they embed identity, not
+  content: `scenario_id` and `phase_graph_id` contain the scenario id (a branch is a new,
+  independently addressable scenario by design), and `scenario_hash` covers the scenario `revision`
+  (a branch is revision 1 while the preview carries the source's revision label).
+- **Fix:** `analysis_comparison_body()` (`optimization/verify.py`) strips exactly those three fields
+  for preview-vs-persisted comparison. Preview reproducibility is still enforced strictly *before*
+  persistence by requiring the re-materialised content hash to equal the recorded preview hash, and
+  everything content-based (phase-graph hash, verdicts, OD results) must still match exactly. A real
+  mismatch is still surfaced, never accepted.
+- **Regression test:** `test_happy_path_reverifies_and_never_touches_the_source` (asserts the
+  verification rows record a match for every profile and the source is untouched) and E2E-G5-15
+  ("Reproduces preview" plus "Yes (revision and hash identical)").
+- **Prevention:** when comparing two executions across identities, exclude identity-bearing fields
+  explicitly and document the reason for each exclusion; never widen an exclusion just to make a
+  comparison pass.
+
+## P-24 - An explicit empty profile selection silently meant "all profiles" **(Gate 5)**
+
+- **Symptom:** a search request with `profile_ids: []` evaluated every profile declared by the
+  scenario instead of being refused, so the result covered profiles the caller had explicitly not
+  selected.
+- **Root cause:** optionality was tested with truthiness (`if profile_ids:`), which treats both
+  `None` (not supplied) and `[]` (supplied but empty) as "use the default".
+- **Fix:** default only when `profile_ids is None`; an explicitly empty selection raises
+  `SearchInputError("at least one mobility profile must be selected")`.
+- **Regression test:** `test_invalid_inputs_are_explicit` (asserts the error) with
+  `test_per_profile_selection_changes_the_restoration_view` covering the valid selection path.
+- **Prevention:** use `is None` for "not supplied" and validate the empty case as its own input
+  error; a silent reinterpretation of an explicit input is a correctness bug, not a convenience.
+
+## P-25 - The contract generator lost parentheses around union array items **(Gate 5)**
+
+- **Symptom:** a field typed as `list[Literal["candidate_limit", "duration_limit"]]` would have been
+  generated as `"candidate_limit" | "duration_limit"[]`. TypeScript parses that as
+  `"candidate_limit" | ("duration_limit"[])`, so the generated frontend contract was wrong while the
+  API itself was correct.
+- **Root cause:** `_ts_type()` formatted arrays as `f"{item_type}[]"` and no earlier contract had a
+  union as an array item, so the latent bug was never exercised.
+- **Fix:** item types containing `" | "` are parenthesised before the `[]` suffix; the contracts were
+  regenerated.
+- **Regression test:** a new `TestTypeScriptMapper` case asserts
+  `("candidate_limit" | "duration_limit")[]`, and `test_generation_is_byte_identical_on_a_second_run`
+  keeps the artefacts deterministic.
+- **Prevention:** the generator must be tested against every shape the contracts actually use; a
+  generated artefact is only trustworthy when it is regenerated and diffed, not hand-inspected.

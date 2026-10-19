@@ -43,7 +43,9 @@ metres, grade as signed percent), but the *values* remain synthetic.
    aerial/road backdrop, by design (no tile licence has been verified).
 4. Single-process SQLite persistence; no multi-user concurrency, no authentication, no RBAC
    (roles are an R2 item).
-5. Optimiser, when built, is optimal **only within the enumerated candidate domain**.
+5. Fix This Plan is optimal **only within the enumerated candidate domain** over the bundled
+   synthetic intervention library. Costs are demo figures, unknown costs stay unknown, and a
+   single-phase improvement is not whole-project continuity.
 6. Benchmark metrics, once produced, describe synthetic fixtures only and are not citywide
    accessibility accuracy (PRD §13.1).
 7. Accessibility: automated axe-style checks plus one documented keyboard-only pass do not equal

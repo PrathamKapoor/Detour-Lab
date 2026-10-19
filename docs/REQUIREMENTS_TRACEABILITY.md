@@ -8,9 +8,10 @@ the result recorded in `FLOW.md`.
 Source: `DETOUR_LAB_Final_PRD.md` §5 (FR-001..FR-016), §6 (FR-101..FR-111), §5.1 (INV-01..INV-08),
 `MASTER_PROMPT.md` §12 (behaviours B1..B32).
 
-Last updated: **18 October 2026, after Gate 2** — 270 backend tests pass, ruff clean, restart
-replay verified (`test_persistence.py`, `test_api_contracts.py`, `test_api_integration.py`,
-`test_contracts_generation.py`).
+Last updated: **19 October 2026, after Gate 5** — 373 backend tests, 127 frontend tests and 68
+Playwright tests pass; ruff/tsc/eslint/build clean; `scripts/verify.ps1` → VERIFICATION PASSED
+(`var/verify-gate5-final.log`). Gate 5 adds FR-102..FR-106, B18..B24 and the Gate 5 traceability
+section; Gate 3/4 sections remain as verified then.
 
 ---
 
@@ -52,12 +53,12 @@ replay verified (`test_persistence.py`, `test_api_contracts.py`, `test_api_integ
 
 | ID | Feature | Status |
 |---|---|---|
-| FR-101 | Construction phase timeline, phase-specific recomputation | PARTIALLY IMPLEMENTED — phase model + per-phase evaluation exist; timeline UI is Gate 4 |
-| FR-102 | Bounded candidate intervention library | NOT IMPLEMENTED (Gate 5) — `domain/contracts.py::Intervention` type exists, unused |
-| FR-103 | Fix This Plan: enumerate + re-verify every output | NOT IMPLEMENTED (Gate 5) |
-| FR-104 | Cost-aware comparison with provenance | NOT IMPLEMENTED (Gate 5) — `InterventionCost` contract exists, unused |
-| FR-105 | Multi-objective comparison + non-dominated frontier | NOT IMPLEMENTED (Gate 5) |
-| FR-106 | Honest solver status semantics | NOT IMPLEMENTED (Gate 5) — `SolverStatus` enum defined, not yet produced |
+| FR-101 | Construction phase timeline, phase-specific recomputation | `features/phases/PhaseExplorer.tsx`, `Scenario.ordered_phases()` | `test_phase_reads.py::TestTimelineOrdering`, E2E-G4-01/03 | IMPLEMENTED AND TESTED |
+| FR-102 | Bounded candidate intervention library | `optimization/library.py`, `data/demo/interventions.demo.json` | `test_bundled_library_loads_with_unique_validated_entries`, `test_library_rejects_*` (7), E2E-G5-01/02 | IMPLEMENTED AND TESTED |
+| FR-103 | Fix This Plan: enumerate + re-verify every output | `optimization/{generator,verify,service}.py`, `features/optimization/` | `test_demo_phase_one_semantics`, `test_joint_restoration_and_dependency_reporting`, E2E-G5-04/05/08/22 | IMPLEMENTED AND TESTED |
+| FR-104 | Cost-aware comparison with provenance | `optimization/verify.py` cost summary; library cost lines with `demo_only` provenance | `test_unknown_cost_is_never_treated_as_zero_or_fitting`, `test_conservative_max_basis_uses_the_upper_bound`, E2E-G5-03 | IMPLEMENTED AND TESTED |
+| FR-105 | Multi-objective comparison + non-dominated frontier | `optimization/rank.py`, `RankingPolicy`, `CandidateEvaluation.pareto_optimal` | `test_pareto_domination_removes_dominated_candidates`, `test_restoration_counts_and_tie_groups`, E2E-G5-23 | IMPLEMENTED AND TESTED |
+| FR-106 | Honest solver status semantics | `optimization/rank.py`, `SearchStatus` (`limits_hit`, `truncated_by`, `notes`, `scope_note`) | `test_candidate_limit_truncation_never_claims_optimality`, `test_duration_limit_truncation_is_incomplete_not_empty`, `test_truncated_with_certified_never_claims_optimality`, E2E-G5-22 | IMPLEMENTED AND TESTED |
 | FR-107 | Evidence inspection queue | NOT IMPLEMENTED (Gate 6) |
 | FR-108 | Failure Lab: ≥5 reproducible faults | NOT IMPLEMENTED (Gate 6) |
 | FR-109 | Side-by-side scenario comparison | NOT IMPLEMENTED (Gate 6) |
@@ -89,13 +90,13 @@ FR-201..FR-210 — **DEFERRED**, deliberately out of R0/R1 scope.
 | B15 | N/A cannot clear another critical UNKNOWN | `test_b15_not_applicable_cannot_clear_another_critical_unknown` | VERIFIED |
 | B16 | repeated import preserves semantics | `test_b16_repeated_import_preserves_stable_semantics` | VERIFIED |
 | B17 | graph edit leaves baseline unchanged | `test_b17_a_graph_edit_leaves_the_baseline_unchanged` | VERIFIED |
-| B18 | optimiser candidate needs two interventions | — | PENDING (Gate 5) |
-| B19 | invalid candidate precondition rejected | — | PENDING (Gate 5) |
-| B20 | no candidate restores mandatory OD | — | PENDING (Gate 5) |
-| B21 | budget less than every viable option | — | PENDING (Gate 5) |
-| B22 | absent cost does not become zero | — | PENDING (Gate 5) |
-| B23 | enumeration detects objective tie | — | PENDING (Gate 5) |
-| B24 | incomplete search does not report optimal | — | PENDING (Gate 5) |
+| B18 | optimiser candidate needs two interventions | `test_requires_closure_expands_singletons_and_reports_oversized`, `test_joint_restoration_and_dependency_reporting`; E2E-G5-17 (branch re-search) | IMPLEMENTED AND TESTED |
+| B19 | invalid candidate precondition rejected | `test_phase_filter_selects_the_right_interventions`, `test_precondition_fails_closed_when_field_is_already_known`, `test_ineligible_requirement_blocks_dependent` | IMPLEMENTED AND TESTED |
+| B20 | no candidate restores mandatory OD | `test_b20_partial_restoration_is_reported_never_as_full`, `test_zero_candidates_when_everything_is_excluded` | IMPLEMENTED AND TESTED |
+| B21 | budget less than every viable option | `test_zero_budget_rejects_every_candidate_with_stated_reasons`, `test_zero_budget_rejects_every_candidate_and_says_why`; E2E-G5-12 | IMPLEMENTED AND TESTED |
+| B22 | absent cost does not become zero | `test_unknown_cost_is_never_treated_as_zero_or_fitting`, `test_lists_library_with_eligibility_reasons_and_cost_discipline`; E2E-G5-03/07 | IMPLEMENTED AND TESTED |
+| B23 | enumeration detects objective tie | `test_restoration_counts_and_tie_groups` | IMPLEMENTED AND TESTED |
+| B24 | incomplete search does not report optimal | `test_candidate_limit_truncation_never_claims_optimality`, `test_duration_limit_truncation_is_incomplete_not_empty`, `test_truncated_with_certified_never_claims_optimality`; E2E-G5-22 | IMPLEMENTED AND TESTED |
 | B25 | wrong-phase route not reused | `test_b25_wrong_phase_route_is_not_reused` | VERIFIED |
 | B26 | evidence revision invalidates a stale run | `test_b26_new_measurement_conflicting_with_the_old_one_creates_a_conflict_not_an_overwrite` | VERIFIED |
 | B27 | timestamps/attribution survive export | `test_b27_provenance_and_timestamps_survive_serialisation` | VERIFIED (record-level; export at Gate 2) |
@@ -168,3 +169,29 @@ been performed; axe findings are reported, not conformance (FR-014 status above)
 **Not claimed:** no phase-level accessibility audit has been performed with real assistive
 technology; axe runs on the primary views only. Cross-phase continuity is a modelling summary over
 reachability and does not establish legal compliance.
+
+## Gate 5 traceability (Fix This Plan - bounded optimisation)
+
+| ID | Requirement | Implementation | API dependency | Tests | Status |
+|---|---|---|---|---|---|
+| G5-01 | Validated, versioned intervention library | `optimization/library.py`, `data/demo/interventions.demo.json` | `GET /scenarios/{id}/optimization/interventions` | `test_bundled_library_loads_with_unique_validated_entries`, 7 × `test_library_rejects_*`, E2E-G5-01/02/03 | VERIFIED |
+| G5-02 | Eligibility with recorded reasons (disabled, excluded, wrong phase, failed precondition) | `optimization/generator.py` | interventions endpoint | `test_phase_filter_selects_the_right_interventions`, `test_client_exclusion_is_reported_with_reason`, `test_precondition_fails_closed_when_field_is_already_known`, E2E-G5-02/17 | VERIFIED |
+| G5-03 | Bounded enumeration with declared, echoed limits | `optimization/generator.py`, `optimization/service.py` | `POST /scenarios/{id}/optimization/search` | `test_candidate_limit_truncation_never_claims_optimality`, `test_duration_limit_truncation_is_incomplete_not_empty`, E2E-G5-04/22 | VERIFIED |
+| G5-04 | Every candidate re-verified by the unmodified analysis pipeline | `optimization/verify.py` -> `build_phase_graph` + `run_analysis` | search | `test_demo_phase_one_semantics`, `test_search_never_mutates_the_source_scenario`, E2E-G5-08 | VERIFIED |
+| G5-05 | Hard constraints reject; introduced UNKNOWNs are never certified | `optimization/verify.py`, `optimization/model.py` | search | `test_demo_phase_one_semantics`, `test_requires_verification_candidate_is_promotable_and_labelled`, E2E-G5-05/06/07 | VERIFIED |
+| G5-06 | Cost provenance; unknown cost is null and never zero | `optimization/verify.py` cost summary; library cost lines | search | `test_unknown_cost_is_never_treated_as_zero_or_fitting`, `test_lists_library_with_eligibility_reasons_and_cost_discipline`, E2E-G5-03/07 | VERIFIED |
+| G5-07 | Budget as a hard filter on a stated basis; no currency conversion | `optimization/verify.py::check_budget`, `optimization/service.py` | search | `test_zero_budget_rejects_every_candidate_and_says_why`, `test_budget_currency_mismatch_is_invalid_input`, E2E-G5-12/13 | VERIFIED |
+| G5-08 | Documented lexicographic ranking, tie groups, Pareto; monetary off by default | `optimization/rank.py`, `RankingPolicy` | search | `test_classification_group_then_restoration_decides`, `test_restoration_counts_and_tie_groups`, `test_monetary_objective_off_ignores_cost_known_before_unknown`, `test_pareto_domination_removes_dominated_candidates`, E2E-G5-23 | VERIFIED |
+| G5-09 | Persisted searches with deterministic replay | migration `bounded_optimization_runs`, repository store/get/list | `GET /scenarios/{id}/optimization/searches`, `GET /optimization/searches/{id}` | `test_search_persists_and_replays_identically`, `test_two_searches_both_persisted_with_distinct_execution_ids`, `test_restart_replay_reads_back_the_identical_payload`, E2E-G5-10/11/25 | VERIFIED |
+| G5-10 | Transactional apply-to-branch with post-persist re-verification | `optimization/promotion.py`, repository `promote_scenario` | `POST /optimization/promote` | `test_happy_path_reverifies_and_never_touches_the_source`, `test_stale_expected_revision_writes_nothing`, `test_duplicate_branch_id_is_409_and_writes_nothing`, `test_rejected_candidate_is_409_with_reasons`, E2E-G5-15..20 | VERIFIED |
+| G5-11 | Promotion preserves the full source plan, including its edits | `optimization/promotion.py` clone-with-edits | promote | `test_source_edits_phases_and_declarations_survive_promotion`, E2E-G5-24 | VERIFIED |
+| G5-12 | Single-phase scope is explicit; truncated searches never claim optimality | `SearchStatus.scope_note/limits_hit`, UI honesty strip | search | `test_truncated_with_certified_never_claims_optimality`, E2E-G5-15/22 | VERIFIED |
+| INV-02 (G5) | Promotion never mutates the source | clone + one transaction | promote | `test_search_never_mutates_the_source_scenario`, `test_happy_path_reverifies_and_never_touches_the_source`, E2E-G5-24 (revision + content hash unchanged) | VERIFIED |
+| INV-06 (G5) | An unverified element never becomes a pass | introduced-UNKNOWN rule | search | `test_demo_phase_one_semantics` (introduced unknowns ⇒ `requires_verification`), E2E-G5-07 | VERIFIED |
+| INV-07 (G5) | Promotion writes a new scenario; the source is untouched | `promote_scenario` inserts a branch | promote | `test_happy_path_reverifies_and_never_touches_the_source`, `test_branch_id_equal_to_source_is_400`, E2E-G5-24 | VERIFIED |
+
+**Not claimed:** candidate classification is performance against the demo rulepack model only; no
+legal, engineering or constructibility certification is expressed or implied. Costs are synthetic
+demo figures with no market meaning. A single-phase improvement is not whole-project continuity.
+Gate 6/7 capabilities (evidence queue, Failure Lab, PDF packet, real-world calibration) are not
+part of this section.

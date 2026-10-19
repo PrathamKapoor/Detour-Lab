@@ -23,7 +23,8 @@ unreachable — with the exact rule, evidence and units behind every verdict.
 | 2 | SQLite persistence, full API contracts, atomic import, JSON manifest, replay | **PASSED** — 282 backend tests |
 | 3 | Real accessible web UI, offline end-to-end journey | **PASSED** — 114 frontend tests, Playwright suite |
 | 4 | Construction phase intelligence: timeline, phase graphs, temporal analysis, branching | **PASSED** |
-| 5–7 | Fix This Plan, Failure Lab, PDF packet, audit | NOT STARTED |
+| 5 | Fix This Plan: bounded candidate search, re-verification, honest ranking, transactional apply-to-branch | **PASSED** — 373 backend tests, 127 frontend tests, 68 Playwright tests |
+| 6–7 | Failure Lab, PDF packet, audit | NOT STARTED |
 | R2 | Photo measurement, multi-jurisdiction packs, RBAC, scale | OUT OF SCOPE |
 
 Nothing above is a claim about field accuracy. Current results come from a **synthetic** fixture.
@@ -150,6 +151,9 @@ application reports that rather than implying the bypass improved the outcome.
 | `GET /api/v1/scenarios/{id}/revisions` · `GET /api/v1/scenarios/{id}/runs` | Immutable revision history / stored runs for a scenario |
 | `POST /api/v1/scenarios/{id}/evaluate` | Deterministic evaluation; returns a stored run |
 | `GET /api/v1/runs/{id}` · `GET /api/v1/runs/{id}/manifest` | Run result / canonical JSON manifest |
+| `GET /api/v1/scenarios/{id}/optimization/interventions` · `GET /api/v1/scenarios/{id}/optimization/searches` | Library eligibility for a phase / stored searches for the scenario |
+| `POST /api/v1/scenarios/{id}/optimization/search` | Bounded, deterministic search; every candidate is verified by the analysis engine |
+| `GET /api/v1/optimization/searches/{search_id}` · `POST /api/v1/optimization/promote` | Replay a stored search byte-for-byte / apply a verified candidate as a new branch |
 | `GET /api/v1/rulesets` | Rulepack (with `legal_applicability`) and the two demo profiles |
 
 ```powershell
@@ -256,8 +260,10 @@ Frontend-specific, stated plainly:
   attribute list is not user-extensible in R0.
 - Automated accessibility checks (axe) report findings, not conformance; no manual audit with
   assistive technologies has been performed.
-- The 3D/photogrammetry, cost and optimiser features of Gates 4–7 do not exist yet and are not
-  represented in the interface.
+- The 3D/photogrammetry features of Gates 4–7 do not exist yet and are not represented in the
+  interface. Fix This Plan searches a bundled synthetic intervention library only: it does not
+  estimate real prices, construction schedules or constructibility, and its costs are demo figures
+  that never drive ranking unless explicitly enabled.
 
 ## Licence
 

@@ -298,3 +298,133 @@ Owner decisions are marked **[OWNER DECISION]**. Synthetic fixture defaults are 
   differently from the start".
 - **Trade-off:** to continue from a specific edit, the engineer applies that edit to the new branch.
 - **Evidence:** `E2E-G4-09`, `E2E-G4-10`, and the backend branch tests from Gate 3.
+
+## D-026 - The intervention library is immutable versioned data, validated on load **(Gate 5)**
+
+- **Problem:** an intervention catalogue embedded in code could drift from the contract, and an
+  effect the contract forbids could be applied silently.
+- **Decision:** `data/demo/interventions.demo.json` (`DEMO_INTERVENTIONS_NOT_ENGINEERED`, version
+  `1.0.0`) is loaded and validated on every use: unique ids, no dangling `requires`, no cycles, no
+  unknown keys, every effect op inside `allowed_ops`, every target inside `target_element_ids`, and
+  no enabled intervention without an effect.
+- **Key rule:** the library is demo fixture data (`constructible_in_field: false`, costs
+  `demo_only`); it never claims field constructibility. Eligibility is a backend decision the
+  browser only displays.
+- **Trade-off:** each request re-reads and re-validates a small file - negligible at this size, and
+  it makes the data self-checking.
+- **Evidence:** `test_bundled_library_loads_with_unique_validated_entries` plus the seven
+  `test_library_rejects_*` tests; `test_lists_library_with_eligibility_reasons_and_cost_discipline`;
+  E2E-G5-01/02/03.
+
+## D-027 - A candidate is a derived in-memory scenario verified by the unmodified pipeline **(Gate 5)**
+
+- **Problem:** an optimiser that scored candidates with its own logic would be a second, unaudited
+  source of verdicts.
+- **Decision:** for each combination the engine materialises a derived `Scenario` (source declared
+  plan + source edits + intervention effects) and runs the real `build_phase_graph` ->
+  `run_analysis` for every selected profile. Before/after analyses are compared; the optimisation
+  package never evaluates a rule or builds a route itself.
+- **Key rule:** no cached or synthetic result is ever substituted for an analysis run; per-profile
+  semantic hashes of the comparison body are recorded for later re-verification.
+- **Trade-off:** each candidate costs a full analysis run (~10 combinations x 2 profiles is about a
+  second on the demo graph); that is the price of not having a second verdict engine.
+- **Evidence:** `test_demo_phase_one_semantics`, `test_search_never_mutates_the_source_scenario`,
+  `test_happy_path_reverifies_and_never_touches_the_source`, E2E-G5-08.
+
+## D-028 - Hard constraints reject; introduced UNKNOWNs are never certified **(Gate 5)**
+
+- **Problem:** "best" must not be able to buy a hard-constraint violation with a benefit, and an
+  unresolved element must never be reported as a pass.
+- **Decision:** `rejected` on any regression of a confirmed **or possible** pair, any new hard
+  model-FAIL, an invalid effect, an evaluation error or a budget refusal. `requires_verification`
+  when the candidate introduces elements whose verdicts are UNKNOWN, or when every benefit exists
+  only in the possible graph. `certified` only with no regression, no new hard FAIL, no introduced
+  UNKNOWN and at least one confirmed restoration or comparable shortening. Otherwise
+  `no_improvement`.
+- **Key rule:** `certified` describes performance against the model objective in this revision,
+  never legal or engineering approval. Restoration may hold for a subset of profiles; the ranking
+  prefers improvements that hold for every selected profile.
+- **Trade-off:** fewer certified candidates - e.g. `{CURB, BACKLANE}` restores both pairs but
+  introduces two UNKNOWN verdicts, so it is `requires_verification`.
+- **Evidence:** `test_demo_phase_one_semantics`,
+  `test_requires_verification_candidate_is_promotable_and_labelled`, E2E-G5-05/06/07.
+
+## D-029 - Ranking is lexicographic and weight-free; monetary ranking is off by default **(Gate 5)**
+
+- **Problem:** a hidden weight makes the result unauditable, and a weighted score would mix demo
+  prices into decisions they must not silently drive.
+- **Decision:** `DETOUR_LAB_LEXICOGRAPHIC_V1` applies the documented order (classification group ->
+  all-profile restorations -> any-profile restorations -> new hard FAILs -> introduced UNKNOWNs ->
+  regressions -> intervention count -> optional nominal cost -> comparable added distance ->
+  `proposal_id`) and returns that order verbatim in every response.
+- **Key rules:** cost participates only when `monetary_objective = "nominal"` is explicitly
+  requested; unknown values sort after known ones and are never treated as zero; `tie_group` groups
+  candidates equal on every measured axis and excludes the `proposal_id`; the Pareto frontier uses
+  only restoration, intervention count and comparable distance.
+- **Trade-off:** lexicographic order is opinionated (classification first); it is documented and
+  replayable instead of tunable.
+- **Evidence:** `test_classification_group_then_restoration_decides`,
+  `test_restoration_counts_and_tie_groups`, `test_intervention_count_beats_distance_by_policy`,
+  `test_pareto_domination_removes_dominated_candidates`, E2E-G5-04/14/23.
+
+## D-030 - Budget is a hard filter on a stated basis; unknown cost is never zero and never converted **(Gate 5)**
+
+- **Decision:** declared cost lines produce a nominal and a conservative-maximum figure only where
+  a price is declared; unknown cost is `null` with `cost_unknown: true`. A budget (`nominal` or
+  `conservative_max`) filters candidates: `exceeds` rejects with the figure and basis stated;
+  `cannot_certify_unknown_cost` rejects with an explicit reason. A budget in a currency no declared
+  cost uses is `400 INVALID_BUDGET_CURRENCY` - no exchange rate is invented.
+- **Key rule:** a zero budget rejects every candidate that declares any cost; no request can make
+  an unpriced candidate "fit".
+- **Evidence:** `test_unknown_cost_is_never_treated_as_zero_or_fitting`,
+  `test_zero_budget_rejects_any_known_cost`,
+  `test_zero_budget_rejects_every_candidate_and_says_why`,
+  `test_budget_currency_mismatch_is_invalid_input`, E2E-G5-12/13.
+
+## D-031 - Searches persist an execution id and a semantic hash; replay is the stored payload **(Gate 5)**
+
+- **Decision:** every accepted search is written to `optimization_runs` (migration 2) with its
+  canonical payload, `input_hash`, `semantic_hash`, evaluation instant and duration. The execution
+  id `opt-<uuid12>` is distinct per request; the semantic hash is equal for equal inputs.
+- **Key rule:** `GET /optimization/searches/{search_id}` serves the stored row verbatim - replay
+  never re-runs the engine, and promotion reads the stored outcome rather than recomputing it.
+- **Trade-off:** payloads duplicate derived data; storage is small here and replay becomes
+  observable and testable.
+- **Evidence:** `test_search_persists_and_replays_identically`,
+  `test_two_searches_both_persisted_with_distinct_execution_ids`,
+  `test_restart_replay_reads_back_the_identical_payload`, E2E-G5-10/11/25.
+
+## D-032 - Promotion applies a re-verified clone with edits, never the source **(Gate 5)**
+
+- **Problem:** promoting a candidate must not mutate the scenario under discussion, must preserve
+  what the source already contains, and must not accept a stale or unreproducible preview.
+- **Decision:** `POST /optimization/promote` re-materialises the candidate from the current source,
+  requires its content hash to equal the recorded preview hash, writes a new scenario (source
+  declared plan + **source `edits`** + intervention effects, `parent_scenario_id`, revision 1) in
+  one transaction, then re-analyses the persisted branch for every selected profile.
+- **Key rules:** source moved since the search -> `STALE_SEARCH`; moved since the caller's view ->
+  `STALE_REVISION`; id taken -> `SCENARIO_ID_EXISTS`; rejected candidate -> `CANDIDATE_REJECTED`;
+  the source revision and content hash are unchanged afterwards. Preview-vs-persisted comparison
+  excludes exactly `scenario_id`, `phase_graph_id` and `scenario_hash` (scenario identity/revision
+  labels) while everything content-based must match exactly (P-23).
+- **Distinction:** this is the Fix-This-Plan path and preserves the source's edits; ordinary branch
+  creation intentionally copies the declared plan without edits (D-025).
+- **Evidence:** `test_happy_path_reverifies_and_never_touches_the_source`,
+  `test_requires_verification_candidate_is_promotable_and_labelled`,
+  `test_stale_expected_revision_writes_nothing`, `test_duplicate_branch_id_is_409_and_writes_nothing`,
+  `test_rejected_candidate_is_409_with_reasons`,
+  `test_source_edits_phases_and_declarations_survive_promotion`, E2E-G5-15..20/24.
+
+## D-033 - Search limits are echoed, and a truncated search never claims optimality **(Gate 5)**
+
+- **Decision:** `SolverStatus` is derived from coverage, not optimism.
+  `OPTIMAL_IN_ENUMERATED_DOMAIN` only after the complete declared domain was enumerated;
+  a hit limit yields `FEASIBLE_NOT_PROVEN_OPTIMAL` (or `NO_FEASIBLE_IN_ENUMERATED_DOMAIN` when
+  nothing passes); duration exhaustion or evaluation errors yield `INCOMPLETE_OR_UNKNOWN`.
+  `limits_hit`, `domain.truncated_by`, `status.notes` and `scope_note` (single phase, selected
+  profiles, this revision; a single-phase improvement is not whole-project continuity) are returned
+  and rendered.
+- **Why:** a bounded search that hides its bound is an unbounded claim.
+- **Evidence:** `test_candidate_limit_truncation_never_claims_optimality`,
+  `test_duration_limit_truncation_is_incomplete_not_empty`,
+  `test_optimal_upgrade_requires_exhaustive_enumeration`, E2E-G5-22.

@@ -1,6 +1,8 @@
 ﻿# FLOW.md — DETOUR LAB execution flow and checkpoint
 
-Last updated: **18 October 2026**, after **Gate 4** completed and verified.
+Last updated: **19 October 2026**, Gate 5 ("Fix This Plan") implemented and verified after the
+Gate 4 baseline was re-verified (`scripts/verify.ps1` → VERIFICATION PASSED, log
+`var/verify-gate4-final.log`). Gate 5 verification log: `var/verify-gate5-final.log`.
 This file is the single resume point. Update it *before* reporting any step as complete.
 
 ## 1. Verified environment facts (observed, not assumed)
@@ -13,13 +15,13 @@ This file is the single resume point. Update it *before* reporting any step as c
 | Node | v24.21.0, npm 11.19.0 (`npm ping` → PONG) |
 | Python | 3.12.10 in repo venv `.venv` |
 | Backend deps installed | fastapi 0.143.3, pydantic 2.14.1, networkx 3.7, shapely 2.2.0, reportlab 5.0.1, uvicorn 0.54.0, pytest 9.1.1, httpx 0.28.1, hypothesis 6.170.1, ruff 0.17.1 |
-| Backend tests | **301 passed** (`python -m pytest apps/api/tests`), ~17 s |
+| Backend tests | **373 passed** (`python -m pytest apps/api/tests`), ruff clean |
 | Static analysis | `ruff check apps/api` → **All checks passed** |
 | Contracts | `packages/contracts/{openapi.json,types.ts,domain-schema.json}` generated from Pydantic; byte-identical on re-run |
-| Live API | uvicorn on `127.0.0.1:8077`; health, graph, evaluate, manifest and restart checks all exercised |
-| One-command verify | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1` -> **VERIFICATION PASSED**: ruff, 301 backend tests, tsc, eslint, 114 frontend tests, production build, 40 Playwright tests, live HTTP smoke, restart replay, contract determinism |
+| Live API | uvicorn on `127.0.0.1:8077`; health, graph, evaluate, manifest, restart and replay checks all exercised |
+| One-command verify | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1` -> **VERIFICATION PASSED** (exit 0): ruff, 373 backend tests, tsc, eslint, 127 frontend tests, production build, 68 Playwright tests, live HTTP smoke, restart replay, contract determinism |
 | Frontend stack | React 19.3.1, Vite 8.3.4, TypeScript 5.9.3, Vitest 5.0.5, Playwright 1.64.1, ESLint 9.39.5 (pinned in `apps/web/package.json`) |
-| Frontend bundle | `index.js` ~305 kB (~91 kB gzip), `index.css` ~23 kB (~5 kB gzip) |
+| Frontend bundle | `index.js` ~367 kB (~106 kB gzip), `index.css` ~28 kB (~6 kB gzip) |
 | E2E browsers | Playwright Chromium installed at `%LOCALAPPDATA%\ms-playwright` |
 | Pre-existing code in repo | **None** — repository created empty by this session |
 | Sibling projects in `C:\Pratham` | AegisCPG, freeflow, mental.ai, MORPH, sofa-problem, VeriKernel — untouched |
@@ -44,8 +46,8 @@ from stored canonical facts.
 | 1 | Immutable graph, evidence, four-valued rules, confirmed/possible routing, hashing | **PASSED** | 202 tests; INV-01..08 classes in `test_invariants.py`; 20-run determinism loop |
 | 2 | SQLite persistence, full API contracts, import, JSON manifest, replay | **PASSED** | `test_persistence.py`, `test_api_contracts.py`, `test_api_integration.py`, `test_contracts_generation.py`; restart replay reproduces the same semantic hash |
 | 3 | Real accessible UI journeys, offline E2E | **PASSED** | 82 vitest tests (geometry, client, presentation, components); 25 Playwright tests incl. the full demo journey; screenshots in `var/screenshots/`; axe clean on the three primary views |
-| 4 | Multi-phase timeline, branching | NOT STARTED | — |
-| 5 | Fix This Plan bounded optimisation | NOT STARTED | — |
+| 4 | Multi-phase timeline, branching | **PASSED** | 301 backend / 114 frontend / 43 Playwright tests; `scripts/verify.ps1` exit 0; phase reads, continuity matrix, branch explorer; `e59ca27`, `1bc66a7`, `50168c8` |
+| 5 | Fix This Plan bounded optimisation | **PASSED** | Engine, library, API, promotion, studio, baselines and E2E-G5-01..G5-25 verified; `scripts\verify.ps1` exit 0 (`var/verify-gate5-final.log`); see sections 5e-5f |
 | 6 | Evidence queue, Failure Lab, PDF packet | NOT STARTED | — |
 | 7 | Polish, CI, benchmarks/baselines, audit | NOT STARTED | — |
 
@@ -142,17 +144,97 @@ R0 = gates 0–3. R1 = gates 4–7. R2 stays out of scope.
 - [x] 301 backend tests, 114 frontend tests, 40 Playwright tests, ruff/tsc/eslint/build clean
 - [x] Four genuine defects found and fixed (P-19..P-22)
 
-## 6. Next exact actions (resume here - Gate 5)
+## 5e. Gate 5 working decisions — implemented (Fix This Plan, R1, MASTER_PROMPT §7)
 
-1. Re-run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1` before anything.
-2. Read `MASTER_PROMPT.md` gate-5 section and `prompts/06_GATE_5.md` in full.
-3. Reuse what Gate 4 already provides: the phase timeline, the per-phase phase-graph endpoint, the
-   branch mechanism and the scorecard. Do not add a second concept of a "phase graph".
-4. Optimisation must enumerate candidate interventions **against a phase graph** and re-run the
-   real engine for each candidate - never estimate feasibility in the browser.
-5. Costs stay demonstration-only (`CostProvenance.DEMO_ONLY`); do not introduce monetary figures.
-6. Every candidate result is a new persisted branch or revision, never an in-place overwrite.
-7. Extend `e2e/` with a Gate 5 journey using `useIsolatedScenario`-style isolation.
+Working decisions for this gate, recorded before coding and now implemented (promoted to
+DECISIONS.md as D-026..D-033):
+
+- **One engine, no second mutation path.** A candidate is materialised as a derived in-memory
+  `Scenario` (source declared plan + source edits + intervention effects) and verified by the
+  unmodified `build_phase_graph` → `run_analysis` pipeline. The optimizer never computes verdicts
+  itself.
+- **Intervention library is an immutable, versioned data file** (`data/demo/interventions.demo.json`,
+  demo-labelled). Interventions gain typed `effect` (edits / temporary_edges / phase_changes) and
+  declarative `preconditions`; an effect is validated against `allowed_ops` and `target_element_ids`.
+- **Scenario promotion is clone-with-edits** (preserves the source's edits on this path; ordinary
+  branch creation intentionally keeps D-025): the new branch copies the *declared plan and the source
+  edits*, appends the intervention effects, records `parent_scenario_id`, and is re-verified from its
+  persisted state. Atomic; 409 on a stale `expected_source_revision` or an existing branch id;
+  preview-vs-persisted hash mismatch is a surfaced internal defect, never silent.
+- **Objective is lexicographic and documented** (monetary off by default): no regression of any
+  model-confirmed OD pair → no new model-FAIL verdicts → restored OD pairs (all selected profiles,
+  then any) → fewer new unknowns → fewer interventions → demo-cost nominal (only when asked and
+  labelled) → comparable added distance (routes present on both sides only; a missing route is
+  never 0 m) → semantic proposal id. A Pareto (non-dominated) set is computed alongside; it is
+  never called a weighted score.
+- **Unknown never becomes Pass silently.** Modelled evidence a candidate introduces is listed in
+  the response with its provenance class and "requires field verification" framing. Candidates
+  whose benefit exists only in the *possible* graph, and candidates that introduce elements whose
+  model verdicts are UNKNOWN, are classified `requires_verification`, never certified. Unknown cost
+  renders as null + `cost_unknown: true` (the UI shows "Not estimated").
+- **Budgets are hard filters on the stated basis**: `nominal` or `conservative_max`; a currency no
+  declared cost uses is refused with `400 INVALID_BUDGET_CURRENCY` (no FX), and an unpriced
+  candidate is never assumed to fit.
+- **Honest search status** (`SolverStatus`): `OPTIMAL_IN_ENUMERATED_DOMAIN` only after complete
+  enumeration of the eligible domain; otherwise `FEASIBLE_NOT_PROVEN_OPTIMAL`;
+  `NO_FEASIBLE_IN_ENUMERATED_DOMAIN`; `INVALID_INPUT`; `INCOMPLETE_OR_UNKNOWN` (timeout/errors).
+  Domain counts, limits, `truncated_by` and the single-phase `scope_note` are echoed in the response.
+- **Search runs are persisted** (`optimization_runs`, schema migration 2) with execution id
+  (`opt-…`) and semantic hash so replay across a process restart is provable.
+- **Single-phase scope is explicit**: the response states that a phase-scoped improvement is not
+  whole-project continuity.
+
+Execution order: (1) contracts extensions → (2) optimization package (library/generator/verify/
+rank/service/promotion) → (3) library data file → (4) persistence + API routes → (5) backend tests
+incl. fixtures A–J and baselines B1–B4 → (6) Optimization Studio (frontend, panels A–G) →
+(7) E2E G5-01..G5-25 → (8) docs + full verify + commits.
+
+## 5f. Gate 5 checklist - COMPLETE
+
+- [x] Intervention contracts extended (typed effects, preconditions, phase changes); every effect
+      validated against the library entry's `allowed_ops` and declared targets
+- [x] `optimization/{model,library,generator,verify,rank,service,promotion}.py` implemented against
+      the unmodified analysis pipeline
+- [x] Eligibility reasons recorded for disabled / client-excluded / wrong-phase / failed-precondition
+      items
+- [x] Bounded enumeration with requires-closure expansion, mutual-exclusion blocking and hard
+      `max_candidates` / `max_duration_ms` limits
+- [x] Every candidate re-verified per profile; regression of a confirmed **or possible** pair and
+      any new hard model-FAIL reject
+- [x] Introduced UNKNOWNs ⇒ `requires_verification`; unknown cost stays null + `cost_unknown`
+      (UI "Not estimated")
+- [x] `DETOUR_LAB_LEXICOGRAPHIC_V1` ranking (monetary off by default), tie groups excluding the
+      proposal id, 3-axis Pareto frontier
+- [x] Honest solver statuses, echoed limits/truncation and single-phase scope note; a truncated
+      search never claims optimality
+- [x] Budget as hard filter (`nominal` / `conservative_max`); zero budget rejects;
+      `INVALID_BUDGET_CURRENCY` with no FX
+- [x] Searches persisted in `optimization_runs` (migration 2) with execution id + semantic hash;
+      byte-identical replay across a process restart
+- [x] Transactional apply-to-branch: preview-hash gate, ordered 409 refusals, post-persist
+      re-verification, source revision and content hash untouched
+- [x] Optimization Studio panels A-G + workspace navigation; the browser renders only
+      server-computed verdicts, deltas and costs
+- [x] Baselines B1-B4 measured into `var/optimization-baseline.json`
+- [x] Contracts regenerated (union-array fix) with determinism re-checked
+- [x] E2E-G5-01..G5-25 green against the real backend
+- [x] Three genuine defects found and fixed (P-23, P-24, P-25)
+- [x] `scripts\verify.ps1` → **VERIFICATION PASSED** (`var/verify-gate5-final.log`)
+
+## 6. Next exact actions (resume here - after Gate 5)
+
+Gate 5 is complete. Gates 6-7 are **not started** and must not begin without explicit owner
+direction.
+
+1. Owner decisions still open (do not resolve in code):
+   - **O-1** GitHub remote/push permission (publication stays local until approved);
+   - **O-2** real study area and map-data rights;
+   - **O-3** jurisdictionally reviewed rulepack;
+   - **O-4** named accessibility / domain reviewers;
+   - **O-5** verified construction unit prices.
+2. Before any new edit, run `scripts\verify.ps1` and confirm the baseline is green.
+3. Re-read `docs/OPTIMIZATION_DESIGN.md` before changing the optimisation engine; its guarantees
+   have named tests that must not be weakened to make new behaviour pass.
 ## 7. Recovery / resumption rules
 
 - Never trust a summary of previous work; re-run `scripts/verify.ps1` before editing code.
