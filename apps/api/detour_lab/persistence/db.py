@@ -26,7 +26,7 @@ from typing import Any
 
 __all__ = ["SCHEMA_VERSION", "Database", "MigrationError", "utc_now_iso"]
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 class MigrationError(RuntimeError):
@@ -192,6 +192,52 @@ MIGRATIONS: tuple[Migration, ...] = (
             """,
             "CREATE INDEX IF NOT EXISTS idx_optimization_runs_scenario"
             " ON optimization_runs(scenario_id, created_at)",
+        ),
+    ),
+    Migration(
+        version=3,
+        name="failure_lab_experiments_and_reports",
+        statements=(
+            """
+            CREATE TABLE IF NOT EXISTS failure_experiments (
+                id                  TEXT PRIMARY KEY,
+                project_id          TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                scenario_id         TEXT NOT NULL REFERENCES scenarios(id) ON DELETE CASCADE,
+                scenario_revision   INTEGER NOT NULL,
+                phase_id            TEXT NOT NULL,
+                profile_id          TEXT NOT NULL,
+                engine_version      TEXT NOT NULL,
+                status              TEXT NOT NULL,
+                input_hash          TEXT NOT NULL,
+                semantic_hash       TEXT NOT NULL,
+                duration_ms         REAL NOT NULL,
+                payload_json        TEXT NOT NULL,
+                created_at          TEXT NOT NULL
+            )
+            """,
+            "CREATE INDEX IF NOT EXISTS idx_failure_experiments_scenario"
+            " ON failure_experiments(scenario_id, created_at)",
+            """
+            CREATE TABLE IF NOT EXISTS review_reports (
+                id                  TEXT PRIMARY KEY,
+                project_id          TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                scenario_id         TEXT NOT NULL REFERENCES scenarios(id) ON DELETE CASCADE,
+                scenario_revision   INTEGER NOT NULL,
+                schema_version      TEXT NOT NULL,
+                generator_version   TEXT NOT NULL,
+                semantic_hash       TEXT NOT NULL,
+                pdf_sha256          TEXT NOT NULL,
+                pdf_bytes           INTEGER NOT NULL,
+                pdf_page_count      INTEGER NOT NULL,
+                selected_run_ids    TEXT NOT NULL,
+                selected_search_ids TEXT NOT NULL,
+                selected_experiment_ids TEXT NOT NULL,
+                payload_json        TEXT NOT NULL,
+                created_at          TEXT NOT NULL
+            )
+            """,
+            "CREATE INDEX IF NOT EXISTS idx_review_reports_scenario"
+            " ON review_reports(scenario_id, created_at)",
         ),
     ),
 )

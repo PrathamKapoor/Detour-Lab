@@ -217,6 +217,110 @@ export interface EdgeEvaluation {
 
 export type EdgeType = "sidewalk" | "crossing" | "temporary_path" | "shared_use_path" | "ramp";
 
+export interface ElementStateChange {
+  change: "element_added" | "element_removed" | "state_changed" | "evidence_added" | "evidence_masked";
+  element_id: string;
+  element_kind: "edge" | "node" | "evidence";
+  phase_id: string;
+  before_state?: VerdictState | null;
+  after_state?: VerdictState | null;
+  before_reason_codes?: ReasonCode[];
+  after_reason_codes?: ReasonCode[];
+  detail?: string;
+}
+
+export type EngineeringObservation = "confirmed_connectivity_preserved" | "confirmed_connectivity_gained" | "confirmed_connectivity_lost" | "confirmed_route_became_possible_only" | "possible_only_route_became_disconnected" | "new_known_rule_violation" | "new_unresolved_evidence_condition" | "no_relevant_modelled_change" | "analysis_unavailable";
+
+export interface EvidenceConflictReport {
+  element_id: string;
+  attribute: string;
+  resolution_status: ReasonCode;
+  resolved: boolean;
+  canonical_value?: number | string | boolean | null;
+  canonical_unit?: string | null;
+  explanation: string;
+  observations?: ObservationComparison[];
+  distinct_values?: string[];
+  resolution_requirement: string;
+  can_be_resolved_without_field_work: boolean;
+  selected_value_note?: string;
+}
+
+export type EvidenceCriticality = "decision_blocking" | "decision_relevant" | "supporting";
+
+export interface EvidenceIssue {
+  issue_id: string;
+  scope: string;
+  resolution_status: ReasonCode;
+  status_label: string;
+  element_id: string;
+  element_kind: "edge" | "node";
+  element_name: string;
+  attribute: string;
+  edge_u?: string | null;
+  edge_v?: string | null;
+  edge_length_m?: number | null;
+  edge_type?: string | null;
+  node_x?: number | null;
+  node_y?: number | null;
+  node_type?: string | null;
+  rule_ids?: string[];
+  affected_profile_ids?: string[];
+  affected_phase_ids?: string[];
+  observations?: ObservationComparison[];
+  evidence_record_ids?: string[];
+  recorded_measurement?: string | null;
+  missing_or_conflicting: string;
+  investigation_target: string;
+  od_pairs?: EvidenceIssuePair[];
+  od_pair_count?: number;
+  criticality: EvidenceCriticality;
+  criticality_rationale?: string[];
+  element_has_known_failure?: boolean;
+  queue_state?: QueueState;
+  dataset_notice?: string;
+}
+
+export interface EvidenceIssuePair {
+  pair_id: string;
+  origin_id: string;
+  destination_id: string;
+  profile_id: string;
+  role: "blocking" | "relevant" | "on_confirmed_route" | "on_possible_route";
+  confirmed_reachable: boolean;
+  possibly_reachable: boolean;
+  confirmed_distance_m?: number | null;
+  phase_id: string;
+}
+
+export interface EvidenceQueue {
+  schema_version?: string;
+  engine_version: string;
+  scope: EvidenceQueueScope;
+  issues?: EvidenceIssue[];
+  counts_by_status?: Record<string, number>;
+  counts_by_criticality?: Record<string, number>;
+  total_unresolved_attributes_scanned?: number;
+  ordering_rule: string;
+  prioritization_method: string;
+  limitations?: string[];
+}
+
+export interface EvidenceQueueScope {
+  scenario_id: string;
+  scenario_revision: number;
+  scenario_content_hash: string;
+  project_id: string;
+  phase_ids: string[];
+  profile_ids: string[];
+  rulepack_id: string;
+  rulepack_version: string;
+  rulepack_hash: string;
+  evaluation_instant: string;
+  additional_phases_inspected?: string[];
+  scope_note?: string;
+}
+
 export interface EvidenceRecord {
   id: string;
   element_id: string;
@@ -239,6 +343,132 @@ export interface EvidenceRecord {
 export interface ExcludedIntervention {
   intervention_id: string;
   reasons: string[];
+}
+
+export interface ExecutionError {
+  stage: "validation" | "materialisation" | "baseline_analysis" | "faulted_analysis" | "comparison" | "persistence";
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
+export interface ExperimentLimits {
+  max_faults_per_request?: number;
+  max_faults_per_suite?: number;
+  max_target_ids_per_fault?: number;
+  max_synthetic_observations_per_fault?: number;
+  max_suite_duration_ms?: number;
+  max_graph_elements?: number;
+  max_experiments_per_suite?: number;
+  note?: string;
+}
+
+export interface ExperimentOutcome {
+  schema_version?: string;
+  engine_version: string;
+  experiment_id: string;
+  created_at: string;
+  duration_ms?: number;
+  limits: ExperimentLimits;
+  status: ExperimentStatus;
+  source: ExperimentSource;
+  faults: FaultDefinition[];
+  isolated_scenario_hash?: string;
+  isolated_graph_hash?: string;
+  isolated_graph_version_id?: string;
+  faulted_evaluation_instant?: string;
+  baseline?: PhaseProfileOutcome[];
+  faulted?: PhaseProfileOutcome[];
+  transitions?: PairTransition[];
+  element_changes?: ElementStateChange[];
+  observations?: EngineeringObservation[];
+  evidence_change_log?: Record<string, unknown>[];
+  error?: ExecutionError | null;
+  input_hash?: string;
+  semantic_hash?: string;
+  limitations?: string[];
+  suite_id?: string | null;
+}
+
+export interface ExperimentRollup {
+  experiment_id: string;
+  status: ExperimentStatus;
+  fault_kinds: FaultKind[];
+  fault_labels: string[];
+  transitions_compared: number;
+  confirmed_preserved: number;
+  confirmed_gained: number;
+  confirmed_lost: number;
+  became_possible_only: number;
+  became_disconnected: number;
+  new_known_violations: number;
+  new_unknown_conditions: number;
+  comparable_routes: number;
+  total_distance_delta_m?: number | null;
+  observations: EngineeringObservation[];
+  error_code?: string | null;
+}
+
+export interface ExperimentSource {
+  project_id: string;
+  scenario_id: string;
+  scenario_revision: number;
+  scenario_content_hash: string;
+  base_graph_version_id: string;
+  base_graph_hash: string;
+  rulepack_id: string;
+  rulepack_version: string;
+  rulepack_hash: string;
+  phase_ids: string[];
+  profile_ids: string[];
+  evaluation_instant: string;
+  verified_baseline_run_ids?: string[];
+  baseline_link_note?: string;
+}
+
+export type ExperimentStatus = "completed" | "partially_completed" | "invalid_experiment" | "execution_failed" | "cancelled";
+
+export interface ExperimentSummary {
+  experiment_id: string;
+  scenario_id: string;
+  scenario_revision: number;
+  phase_ids: string[];
+  profile_ids: string[];
+  fault_kinds: FaultKind[];
+  fault_labels: string[];
+  status: ExperimentStatus;
+  observations: EngineeringObservation[];
+  input_hash: string;
+  semantic_hash: string;
+  created_at: string;
+  suite_id?: string | null;
+  error_code?: string | null;
+}
+
+export interface FaultDefinition {
+  fault_id?: string;
+  kind: FaultKind;
+  label?: string;
+  target_ids?: string[];
+  phase_ids?: string[];
+  observation?: FaultObservation | null;
+  evaluation_instant?: string | null;
+  note?: string;
+  semantic_hash?: string;
+}
+
+export type FaultKind = "edge_closure" | "temporary_connection_loss" | "evidence_removal" | "conflicting_observation" | "evidence_expiration" | "unsupported_unit_observation" | "path_obstruction";
+
+export interface FaultObservation {
+  field: string;
+  value?: number | string | boolean | null;
+  unit?: string | null;
+  method?: string;
+  source?: string;
+  verification_status?: "unverified" | "verified" | "disputed";
+  quality?: "high" | "medium" | "low";
+  provenance_class?: "assumed" | "synthetic" | "synthetic_fixture";
+  note?: string;
 }
 
 export interface Finding {
@@ -333,6 +563,26 @@ export interface MobilityProfile {
   notes?: string;
 }
 
+export interface NetworkEdge {
+  id: string;
+  u: string;
+  v: string;
+  length_m: number;
+  edge_type: string;
+  closed_in_phase: boolean;
+  temporary: boolean;
+  state?: string | null;
+  reason_codes?: string[];
+}
+
+export interface NetworkNode {
+  id: string;
+  x: number;
+  y: number;
+  node_type: string;
+  name?: string;
+}
+
 export interface Node {
   id: string;
   x: number;
@@ -377,6 +627,24 @@ export interface ODTransition {
   added_distance_m?: number | null;
 }
 
+export interface ObservationComparison {
+  evidence_id: string;
+  value?: number | string | boolean | null;
+  unit?: string | null;
+  method: string;
+  source: string;
+  source_url?: string | null;
+  observed_at?: string | null;
+  verification_status: string;
+  quality: string;
+  reviewer?: string | null;
+  provenance_class: string;
+  synthetic: boolean;
+  invalidated: boolean;
+  note?: string;
+  conversion?: Record<string, unknown> | null;
+}
+
 export type Operator = "gte" | "lte" | "gt" | "lt" | "eq" | "one_of" | "exists";
 
 export interface OriginDestination {
@@ -388,6 +656,26 @@ export interface OriginDestination {
   priority?: number;
   weight_source?: string;
   weight?: number | null;
+}
+
+export interface PairTransition {
+  pair_id: string;
+  origin_id: string;
+  destination_id: string;
+  profile_id: string;
+  phase_id: string;
+  before_confirmed: boolean;
+  before_possible: boolean;
+  before_distance_m?: number | null;
+  after_confirmed: boolean;
+  after_possible: boolean;
+  after_distance_m?: number | null;
+  distance_delta_m?: number | null;
+  observation: EngineeringObservation;
+  explanation: string;
+  new_fail_verdicts?: string[];
+  new_unknown_verdicts?: string[];
+  reference_route_comparison?: boolean;
 }
 
 export interface Phase {
@@ -402,7 +690,20 @@ export interface Phase {
   notes?: string;
 }
 
+export interface PhaseProfileOutcome {
+  phase_id: string;
+  profile_id: string;
+  available: boolean;
+  phase_graph_id?: string | null;
+  phase_graph_hash?: string | null;
+  analysis_semantic_hash?: string | null;
+  counts?: Record<string, number>;
+  unavailable_reason?: string;
+}
+
 export type ProvenanceClass = "measured" | "external_source" | "derived" | "assumed" | "synthetic" | "synthetic_fixture";
+
+export type QueueState = "open";
 
 export interface RankingPolicy {
   id?: string;
@@ -413,6 +714,236 @@ export interface RankingPolicy {
 }
 
 export type ReasonCode = "RULE_PASS" | "RULE_FAIL" | "RULE_NOT_APPLICABLE" | "RULE_UNKNOWN_ATTRIBUTE" | "NO_EVIDENCE" | "CONFLICTING_EVIDENCE" | "UNSUPPORTED_UNIT" | "INVALID_NUMERIC_VALUE" | "EVIDENCE_EXPIRED" | "EVIDENCE_NOT_VERIFIED" | "EVIDENCE_INVALIDATED" | "NO_FRESHNESS_POLICY" | "EDGE_CLOSED_IN_PHASE" | "EDGE_NOT_ACTIVE_IN_PHASE" | "NODE_BLOCKED" | "NO_APPLICABLE_RULES" | "DUPLICATE_ID" | "UNKNOWN_NODE_REFERENCE" | "SELF_LOOP" | "CROSSING_WITHOUT_NODE" | "CONFIRMED_ROUTE_FOUND" | "POSSIBLE_ROUTE_ONLY" | "NO_ROUTE" | "ORIGIN_NODE_MISSING" | "DESTINATION_NODE_MISSING" | "DEMO_RULEPACK_NOT_LEGAL" | "SYNTHETIC_DATA_NOTICE" | "NOT_CERTIFIED";
+
+export interface ReportAlternativePlan {
+  search_id: string;
+  scenario_revision: number;
+  phase_id: string;
+  profile_ids?: string[];
+  evaluation_instant: string;
+  solver_status: string;
+  exhaustive: boolean;
+  limits_hit?: string[];
+  best_proposal_id?: string | null;
+  domain_eligible_intervention_ids?: string[];
+  domain_evaluated_count: number;
+  domain_combination_count: number;
+  truncated_by?: string[];
+  scope_note: string;
+  permitted_interventions?: Record<string, unknown>[];
+  selected_candidates?: ReportCandidate[];
+  semantic_hash: string;
+  budget_note?: string;
+}
+
+export interface ReportCandidate {
+  proposal_id: string;
+  classification: string;
+  intervention_ids?: string[];
+  restored_all_profiles?: string[];
+  requires_verification: boolean;
+  introduced_unknown_verdict_count: number;
+  introduced_fail_verdict_count: number;
+  cost_currency?: string | null;
+  cost_nominal?: number | null;
+  cost_maximum?: number | null;
+  cost_unknown: boolean;
+  cost_note: string;
+  preview_scenario_hash?: string;
+}
+
+export interface ReportEvidenceIssue {
+  issue_id: string;
+  element_id: string;
+  attribute: string;
+  resolution_status: string;
+  status_label: string;
+  criticality: string;
+  rationale?: string[];
+  evidence_record_ids?: string[];
+  investigation_target: string;
+}
+
+export interface ReportEvidenceRow {
+  evidence_id: string;
+  element_id: string;
+  field: string;
+  value?: number | string | boolean | null;
+  unit?: string | null;
+  method: string;
+  source: string;
+  observed_at?: string | null;
+  verification_status: string;
+  provenance_class: string;
+  synthetic: boolean;
+  note?: string;
+}
+
+export interface ReportExperiment {
+  experiment_id: string;
+  status: string;
+  scenario_revision: number;
+  phase_ids?: string[];
+  profile_ids?: string[];
+  evaluation_instant: string;
+  faulted_evaluation_instant: string;
+  fault_kinds?: string[];
+  fault_labels?: string[];
+  fault_semantic_hashes?: string[];
+  fault_targets?: string[];
+  observations?: string[];
+  transitions?: Record<string, unknown>[];
+  element_changes?: Record<string, unknown>[];
+  evidence_change_log?: Record<string, unknown>[];
+  error?: Record<string, unknown> | null;
+  semantic_hash: string;
+  input_hash: string;
+}
+
+export interface ReportFinding {
+  finding_id: string;
+  element_id: string;
+  element_kind: string;
+  state: string;
+  severity: string;
+  reason_code: string;
+  rule_id?: string | null;
+  rule_version?: string | null;
+  rulepack_version: string;
+  profile_id: string;
+  phase_id: string;
+  explanation: string;
+  evidence_ids?: string[];
+  attributes?: Record<string, unknown>[];
+}
+
+export interface ReportIdentity {
+  report_id: string;
+  project_id: string;
+  project_name: string;
+  project_jurisdiction: string;
+  project_owner: string;
+  project_study_area: string;
+  scenario_id: string;
+  scenario_name: string;
+  scenario_revision: number;
+  scenario_content_hash: string;
+  parent_scenario_id?: string | null;
+  dataset_notice: string;
+  dataset_license: string;
+  dataset_attribution: string;
+  dataset_provenance_class: string;
+}
+
+export interface ReportLimitations {
+  statements: string[];
+  field_measurements_independently_verified?: boolean;
+  legal_applicability_reviewed?: boolean;
+  physical_safety_established?: boolean;
+  manual_accessibility_review_performed?: boolean;
+  costs_available?: boolean;
+  phases_not_analysed?: string[];
+  rules_are_demonstration_only?: boolean;
+}
+
+export interface ReportModification {
+  phase_id: string;
+  order: number;
+  label: string;
+  closed_edge_ids?: string[];
+  temporary_edge_ids?: string[];
+  notes?: string;
+}
+
+export interface ReportNetwork {
+  phase_id: string;
+  profile_id: string;
+  phase_graph_id: string;
+  phase_graph_hash: string;
+  nodes?: NetworkNode[];
+  edges?: NetworkEdge[];
+  unlinked_crossings?: Record<string, unknown>[];
+  bound_x: number;
+  bound_y: number;
+  bound_width: number;
+  bound_height: number;
+}
+
+export interface ReportODRow {
+  profile_id: string;
+  phase_id: string;
+  pair_id: string;
+  origin_id: string;
+  destination_id: string;
+  confirmed_reachable: boolean;
+  possibly_reachable: boolean;
+  confirmed_distance_m?: number | null;
+  possible_distance_m?: number | null;
+  confirmed_route_cost?: number | null;
+  confirmed_path_edge_ids?: string[];
+  possible_path_edge_ids?: string[];
+  blocking_finding_ids?: string[];
+  relevant_finding_ids?: string[];
+  reason_codes?: string[];
+  distance_note?: string;
+}
+
+export interface ReportReproducibility {
+  report_schema_version: string;
+  report_generator_version: string;
+  engine_version: string;
+  scenario_id: string;
+  scenario_revision: number;
+  scenario_content_hash: string;
+  base_graph_version_id: string;
+  base_graph_hash: string;
+  rulepack_id: string;
+  rulepack_version: string;
+  rulepack_hash: string;
+  selected_run_ids?: string[];
+  selected_run_semantic_hashes?: string[];
+  selected_run_input_hashes?: string[];
+  selected_search_ids?: string[];
+  selected_search_semantic_hashes?: string[];
+  selected_experiment_ids?: string[];
+  selected_experiment_semantic_hashes?: string[];
+  selected_experiment_input_hashes?: string[];
+  reproduction_steps?: string[];
+  canonical_json_bytes?: number;
+}
+
+export interface ReportScope {
+  synthetic_dataset: boolean;
+  synthetic_dataset_reason: string;
+  coordinate_basis_kind: string;
+  coordinate_basis_note: string;
+  local_origin_label?: string | null;
+  graph_version_id: string;
+  graph_content_hash: string;
+  node_count: number;
+  edge_count: number;
+  evidence_record_count: number;
+  rulepack_id: string;
+  rulepack_version: string;
+  rulepack_hash: string;
+  rulepack_legal_applicability: string;
+  rulepack_disclaimer: string;
+  rule_count: number;
+  profiles?: Record<string, unknown>[];
+  phases_analysed?: Record<string, unknown>[];
+  phases_declared?: Record<string, unknown>[];
+  origin_destination_requirements?: Record<string, unknown>[];
+  evaluation_instants?: string[];
+}
+
+export interface ReportSection12 {
+  review_recorded?: boolean;
+  reviewer?: string | null;
+  reviewer_role?: string | null;
+  reviewed_at?: string | null;
+  note?: string;
+  approval_status?: string;
+}
 
 export interface ResolvedAttribute {
   element_id: string;
@@ -426,6 +957,65 @@ export interface ResolvedAttribute {
   conflicting_values?: string[];
   conversions?: Record<string, unknown>[];
   conversions_explicit?: boolean;
+}
+
+export interface ReviewReport {
+  schema_version?: string;
+  generator_version?: string;
+  engine_version?: string;
+  identity: ReportIdentity;
+  scope: ReportScope;
+  network: ReportNetwork;
+  modifications?: ReportModification[];
+  executive_summary?: Record<string, unknown>;
+  od_rows?: ReportODRow[];
+  findings?: ReportFinding[];
+  evidence_rows?: ReportEvidenceRow[];
+  evidence_issues?: ReportEvidenceIssue[];
+  alternative_plans?: ReportAlternativePlan[];
+  experiments?: ReportExperiment[];
+  robustness?: Record<string, unknown> | null;
+  limitations: ReportLimitations;
+  reproducibility: ReportReproducibility;
+  human_review: ReportSection12;
+  section_availability?: Record<string, SectionAvailability>;
+  disclaimer?: string;
+  not_certified_note?: string;
+}
+
+export interface RobustnessSummary {
+  schema_version?: string;
+  scenario_id: string;
+  scenario_revision: number;
+  scenario_content_hash: string;
+  phase_ids: string[];
+  profile_ids: string[];
+  evaluation_instant: string;
+  rulepack_id: string;
+  rulepack_hash: string;
+  base_graph_hash: string;
+  experiments_requested: number;
+  experiments_completed: number;
+  experiments_partially_completed: number;
+  experiments_invalid: number;
+  experiments_failed: number;
+  fault_kinds_available: FaultKind[];
+  fault_kinds_tested: FaultKind[];
+  fault_kinds_untested: FaultKind[];
+  pairs_evaluated: number;
+  pairs_retaining_confirmed: number;
+  pairs_losing_confirmed: number;
+  pairs_becoming_possible_only: number;
+  pairs_becoming_disconnected: number;
+  pairs_with_new_known_violation: number;
+  pairs_with_new_unknown_condition: number;
+  pairs_gaining_confirmed: number;
+  comparable_routes: number;
+  total_distance_delta_m?: number | null;
+  per_experiment?: ExperimentRollup[];
+  denominator_note: string;
+  interpretation_note?: string;
+  limitations?: string[];
 }
 
 export interface Rule {
@@ -557,6 +1147,12 @@ export interface SearchStatus {
   best_proposal_id?: string | null;
   scope_note?: string;
   notes?: string[];
+}
+
+export interface SectionAvailability {
+  status: "available" | "unavailable" | "not_selected";
+  reason?: string;
+  source_ids?: string[];
 }
 
 export type SolverStatus = "OPTIMAL_IN_ENUMERATED_DOMAIN" | "FEASIBLE_NOT_PROVEN_OPTIMAL" | "NO_FEASIBLE_IN_ENUMERATED_DOMAIN" | "INVALID_INPUT" | "INCOMPLETE_OR_UNKNOWN";

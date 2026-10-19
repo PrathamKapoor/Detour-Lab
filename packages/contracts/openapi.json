@@ -43,6 +43,55 @@
         "title": "CreateProjectRequest",
         "type": "object"
       },
+      "CreateReportRequest": {
+        "additionalProperties": false,
+        "description": "Select stored artefacts to include. Unknown fields are refused.",
+        "properties": {
+          "experiment_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 24,
+            "title": "Experiment Ids",
+            "type": "array"
+          },
+          "include_evidence_queue": {
+            "default": true,
+            "title": "Include Evidence Queue",
+            "type": "boolean"
+          },
+          "queue_phase_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 6,
+            "title": "Queue Phase Ids",
+            "type": "array"
+          },
+          "run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 24,
+            "minItems": 1,
+            "title": "Run Ids",
+            "type": "array"
+          },
+          "search_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Search Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "run_ids"
+        ],
+        "title": "CreateReportRequest",
+        "type": "object"
+      },
       "EdgeType": {
         "enum": [
           "sidewalk",
@@ -81,6 +130,47 @@
           }
         },
         "title": "EvaluateRequest",
+        "type": "object"
+      },
+      "EvidenceExplainRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "element_id": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Element Id",
+            "type": "string"
+          },
+          "evaluation_instant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Instant"
+          },
+          "field": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "project_id": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Project Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "element_id",
+          "field"
+        ],
+        "title": "EvidenceExplainRequest",
         "type": "object"
       },
       "EvidenceRecord": {
@@ -216,6 +306,178 @@
           "provenance_class"
         ],
         "title": "EvidenceRecord",
+        "type": "object"
+      },
+      "FaultDefinition": {
+        "additionalProperties": false,
+        "description": "One explicitly modelled adversarial condition.\n\n``phase_ids`` is the fault's **scope**. An empty list means \"every phase in\nthe experiment\". A multi-entry scope is the multi-phase case (G6-06/F8):\nthe fault is applied to exactly those phases and no other, which preserves\nthe independent phase-snapshot model.",
+        "properties": {
+          "evaluation_instant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Instant"
+          },
+          "fault_id": {
+            "default": "",
+            "title": "Fault Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/FaultKind"
+          },
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FaultObservation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phase_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Phase Ids",
+            "type": "array"
+          },
+          "semantic_hash": {
+            "default": "",
+            "title": "Semantic Hash",
+            "type": "string"
+          },
+          "target_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Target Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "FaultDefinition",
+        "type": "object"
+      },
+      "FaultKind": {
+        "description": "The supported fault-injection primitives (MASTER_PROMPT \u00a78, Gate 6 G6-06).\n\nOnly a mutation the domain can genuinely represent is listed. Each entry\nmaps to one authoritative operation - see ``faults.py`` for the mapping.",
+        "enum": [
+          "edge_closure",
+          "temporary_connection_loss",
+          "evidence_removal",
+          "conflicting_observation",
+          "evidence_expiration",
+          "unsupported_unit_observation",
+          "path_obstruction"
+        ],
+        "title": "FaultKind",
+        "type": "string"
+      },
+      "FaultObservation": {
+        "additionalProperties": false,
+        "description": "An explicitly synthetic observation introduced by a fault.\n\n``synthetic`` is forced to ``True`` and the provenance class cannot claim to\nbe a field measurement: injected observations are synthetic by construction\nand must never be presented as evidence collected on site (GATE-6 INV-9).",
+        "properties": {
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "method": {
+            "default": "failure_lab_injected_observation",
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "Synthetic observation injected by an explicitly modelled Failure Lab fault. It is not a field measurement and carries no field provenance.",
+            "title": "Note",
+            "type": "string"
+          },
+          "provenance_class": {
+            "default": "synthetic",
+            "enum": [
+              "assumed",
+              "synthetic",
+              "synthetic_fixture"
+            ],
+            "title": "Provenance Class",
+            "type": "string"
+          },
+          "quality": {
+            "default": "low",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Quality",
+            "type": "string"
+          },
+          "source": {
+            "default": "DETOUR LAB Failure Lab (synthetic adversarial observation)",
+            "title": "Source",
+            "type": "string"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "verification_status": {
+            "default": "unverified",
+            "enum": [
+              "unverified",
+              "verified",
+              "disputed"
+            ],
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field"
+        ],
+        "title": "FaultObservation",
         "type": "object"
       },
       "GraphEdit": {
@@ -494,6 +756,65 @@
         ],
         "title": "ProvenanceClass",
         "type": "string"
+      },
+      "RunExperimentRequest": {
+        "additionalProperties": false,
+        "description": "Execute bounded experiments against one stored scenario revision.\n\n``extra=\"forbid\"`` means a typo is a ``422`` rather than a silently ignored\nfield that would change what was actually executed.",
+        "properties": {
+          "baseline_run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Baseline Run Ids",
+            "type": "array"
+          },
+          "evaluation_instant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Instant"
+          },
+          "faults": {
+            "items": {
+              "$ref": "#/components/schemas/FaultDefinition"
+            },
+            "maxItems": 12,
+            "title": "Faults",
+            "type": "array"
+          },
+          "phase_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 6,
+            "title": "Phase Ids",
+            "type": "array"
+          },
+          "profile_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "title": "Profile Ids",
+            "type": "array"
+          },
+          "suite_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "title": "Suite Ids",
+            "type": "array"
+          }
+        },
+        "title": "RunExperimentRequest",
+        "type": "object"
       },
       "ScenarioPatchRequest": {
         "properties": {
@@ -911,6 +1232,140 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/failure-lab/experiments/{experiment_id}": {
+      "get": {
+        "operationId": "get_experiment_api_v1_failure_lab_experiments__experiment_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experiment_id",
+            "required": true,
+            "schema": {
+              "title": "Experiment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Experiment Api V1 Failure Lab Experiments  Experiment Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Experiment",
+        "tags": [
+          "failure-lab"
+        ]
+      }
+    },
+    "/api/v1/failure-lab/experiments/{experiment_id}/graph-differences": {
+      "get": {
+        "description": "Element-level before/after for one experiment, in a nonvisual form.",
+        "operationId": "experiment_graph_differences_api_v1_failure_lab_experiments__experiment_id__graph_differences_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experiment_id",
+            "required": true,
+            "schema": {
+              "title": "Experiment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Experiment Graph Differences Api V1 Failure Lab Experiments  Experiment Id  Graph Differences Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Experiment Graph Differences",
+        "tags": [
+          "failure-lab"
+        ]
+      }
+    },
+    "/api/v1/failure-lab/experiments/{experiment_id}/replay": {
+      "post": {
+        "description": "Re-execute a stored experiment from its own recorded fault definitions.",
+        "operationId": "replay_experiment_route_api_v1_failure_lab_experiments__experiment_id__replay_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experiment_id",
+            "required": true,
+            "schema": {
+              "title": "Experiment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Replay Experiment Route Api V1 Failure Lab Experiments  Experiment Id  Replay Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Replay Experiment Route",
+        "tags": [
+          "failure-lab"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "health_api_v1_health_get",
@@ -1076,6 +1531,61 @@
           }
         },
         "summary": "Create Project"
+      }
+    },
+    "/api/v1/projects/{project_id}/evidence/attributes/explain": {
+      "post": {
+        "description": "Explain why one attribute is unresolved, using a project's latest graph.\n\nNo value is selected, no claim is preferred and nothing is averaged: the\nresponse reports what the authoritative resolver decided and why.",
+        "operationId": "explain_project_attribute_api_v1_projects__project_id__evidence_attributes_explain_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvidenceExplainRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Explain Project Attribute Api V1 Projects  Project Id  Evidence Attributes Explain Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Explain Project Attribute",
+        "tags": [
+          "evidence"
+        ]
       }
     },
     "/api/v1/projects/{project_id}/graph": {
@@ -1260,6 +1770,132 @@
           }
         },
         "summary": "Create Scenario"
+      }
+    },
+    "/api/v1/reports/{report_id}": {
+      "get": {
+        "operationId": "get_report_api_v1_reports__report_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Report Api V1 Reports  Report Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Report",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/{report_id}/document.pdf": {
+      "get": {
+        "description": "Regenerate the PDF from the **stored payload** and stream it.\n\nRegeneration is deterministic, so the bytes match what was originally\ngenerated; ``X-Detour-Lab-Pdf-Sha256`` lets a client verify that without\ntrusting the request.",
+        "operationId": "download_report_pdf_api_v1_reports__report_id__document_pdf_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download Report Pdf",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/{report_id}/manifest": {
+      "get": {
+        "description": "The canonical report manifest, served verbatim as downloadable JSON.",
+        "operationId": "get_report_manifest_api_v1_reports__report_id__manifest_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Report Manifest",
+        "tags": [
+          "reports"
+        ]
       }
     },
     "/api/v1/rulesets": {
@@ -1507,6 +2143,504 @@
         "summary": "Evaluate"
       }
     },
+    "/api/v1/scenarios/{scenario_id}/evidence/attributes/explain": {
+      "post": {
+        "description": "Explain why one attribute is unresolved, using a project's latest graph.\n\nNo value is selected, no claim is preferred and nothing is averaged: the\nresponse reports what the authoritative resolver decided and why.",
+        "operationId": "explain_project_attribute_api_v1_scenarios__scenario_id__evidence_attributes_explain_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvidenceExplainRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Explain Project Attribute Api V1 Scenarios  Scenario Id  Evidence Attributes Explain Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Explain Project Attribute",
+        "tags": [
+          "evidence"
+        ]
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/evidence/issues/{issue_id}": {
+      "get": {
+        "description": "One queue entry, including the resolver's own explanation.",
+        "operationId": "evidence_issue_api_v1_scenarios__scenario_id__evidence_issues__issue_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "issue_id",
+            "required": true,
+            "schema": {
+              "title": "Issue Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "phase_ids",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase Ids"
+            }
+          },
+          {
+            "in": "query",
+            "name": "profile_ids",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Profile Ids"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Evidence Issue Api V1 Scenarios  Scenario Id  Evidence Issues  Issue Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Evidence Issue",
+        "tags": [
+          "evidence"
+        ]
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/evidence/queue": {
+      "get": {
+        "description": "Derive the deterministic evidence-verification queue for a selection.",
+        "operationId": "evidence_queue_api_v1_scenarios__scenario_id__evidence_queue_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated phase ids. Defaults to every declared phase.",
+            "in": "query",
+            "name": "phase_ids",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated phase ids. Defaults to every declared phase.",
+              "title": "Phase Ids"
+            }
+          },
+          {
+            "description": "Comma-separated mobility profile ids. Defaults to the scenario's.",
+            "in": "query",
+            "name": "profile_ids",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated mobility profile ids. Defaults to the scenario's.",
+              "title": "Profile Ids"
+            }
+          },
+          {
+            "description": "Comma-separated resolver status codes to keep, for example NO_EVIDENCE,CONFLICTING_EVIDENCE,UNSUPPORTED_UNIT,EVIDENCE_EXPIRED,EVIDENCE_NOT_VERIFIED.",
+            "in": "query",
+            "name": "statuses",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated resolver status codes to keep, for example NO_EVIDENCE,CONFLICTING_EVIDENCE,UNSUPPORTED_UNIT,EVIDENCE_EXPIRED,EVIDENCE_NOT_VERIFIED.",
+              "title": "Statuses"
+            }
+          },
+          {
+            "description": "decision_blocking|decision_relevant|supporting",
+            "in": "query",
+            "name": "criticalities",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "decision_blocking|decision_relevant|supporting",
+              "title": "Criticalities"
+            }
+          },
+          {
+            "description": "Restrict to one graph element.",
+            "in": "query",
+            "name": "element_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Restrict to one graph element.",
+              "title": "Element Id"
+            }
+          },
+          {
+            "description": "Restrict to one observation attribute.",
+            "in": "query",
+            "name": "field",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Restrict to one observation attribute.",
+              "title": "Field"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Evidence Queue Api V1 Scenarios  Scenario Id  Evidence Queue Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Evidence Queue",
+        "tags": [
+          "evidence"
+        ]
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/failure-lab/catalog": {
+      "get": {
+        "description": "Supported fault kinds, suite readiness and the conditions left out.",
+        "operationId": "failure_lab_catalog_api_v1_scenarios__scenario_id__failure_lab_catalog_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "phase_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Phase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Failure Lab Catalog Api V1 Scenarios  Scenario Id  Failure Lab Catalog Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Failure Lab Catalog",
+        "tags": [
+          "failure-lab"
+        ]
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/failure-lab/experiments": {
+      "get": {
+        "description": "Stored experiment history, oldest first, with both identity hashes.",
+        "operationId": "list_experiments_api_v1_scenarios__scenario_id__failure_lab_experiments_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Experiments Api V1 Scenarios  Scenario Id  Failure Lab Experiments Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Experiments",
+        "tags": [
+          "failure-lab"
+        ]
+      },
+      "post": {
+        "description": "Run the requested fault suites and/or ad-hoc fault definitions.",
+        "operationId": "create_experiment_api_v1_scenarios__scenario_id__failure_lab_experiments_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunExperimentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Experiment Api V1 Scenarios  Scenario Id  Failure Lab Experiments Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Experiment",
+        "tags": [
+          "failure-lab"
+        ]
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/failure-lab/limits": {
+      "get": {
+        "description": "The enforced bounds, so the interface can show them before execution.",
+        "operationId": "failure_lab_limits_api_v1_scenarios__scenario_id__failure_lab_limits_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Failure Lab Limits Api V1 Scenarios  Scenario Id  Failure Lab Limits Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Failure Lab Limits",
+        "tags": [
+          "failure-lab"
+        ]
+      }
+    },
     "/api/v1/scenarios/{scenario_id}/optimization/interventions": {
       "get": {
         "description": "The bundled intervention library as applicable to the selected phase.",
@@ -1717,6 +2851,104 @@
           }
         },
         "summary": "Scenario Phase Graph"
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/reports": {
+      "get": {
+        "description": "Stored packets for a scenario, with the revision each one describes.",
+        "operationId": "list_reports_api_v1_scenarios__scenario_id__reports_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Reports Api V1 Scenarios  Scenario Id  Reports Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Reports",
+        "tags": [
+          "reports"
+        ]
+      },
+      "post": {
+        "description": "Generate a review packet from specific stored runs and experiments.",
+        "operationId": "create_report_api_v1_scenarios__scenario_id__reports_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scenario_id",
+            "required": true,
+            "schema": {
+              "title": "Scenario Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Report Api V1 Scenarios  Scenario Id  Reports Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Report",
+        "tags": [
+          "reports"
+        ]
       }
     },
     "/api/v1/scenarios/{scenario_id}/revisions": {

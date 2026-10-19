@@ -26,7 +26,10 @@ from detour_lab.api.state import (
     default_source,
     seed_dataset_path,
 )
+from detour_lab.api.v1.evidence import router as evidence_router
+from detour_lab.api.v1.failure_lab import router as failure_lab_router
 from detour_lab.api.v1.optimization import router as optimization_router
+from detour_lab.api.v1.reports import router as reports_router
 from detour_lab.api.v1.routers import router as v1_router
 from detour_lab.domain.contracts import Scenario
 from detour_lab.domain.units import UnitError
@@ -202,6 +205,9 @@ def create_app(database: str | Path | None = None) -> FastAPI:
 
     application.include_router(v1_router)
     application.include_router(optimization_router)
+    application.include_router(evidence_router)
+    application.include_router(failure_lab_router)
+    application.include_router(reports_router)
     return application
 
 

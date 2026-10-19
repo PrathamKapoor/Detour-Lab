@@ -45,7 +45,9 @@ __all__ = [
     "Repository",
     "RunRecord",
     "ScenarioIdExistsError",
+    "StoredFailureExperiment",
     "StoredOptimizationRun",
+    "StoredReviewReport",
 ]
 
 
@@ -93,6 +95,55 @@ class StoredOptimizationRun:
     semantic_hash: str
     created_at: str
     payload: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StoredFailureExperiment:
+    """One persisted Failure Lab experiment (Gate 6).
+
+    ``experiment_id`` is an execution handle and ``semantic_hash`` is the
+    identity of what the experiment found. They are deliberately separate: the
+    same modelled condition executed twice yields two ids and one hash.
+    """
+
+    experiment_id: str
+    project_id: str
+    scenario_id: str
+    scenario_revision: int
+    phase_id: str
+    profile_id: str
+    engine_version: str
+    status: str
+    input_hash: str
+    semantic_hash: str
+    duration_ms: float
+    created_at: str
+    payload: dict[str, Any]
+
+
+@dataclass(frozen=True, slots=True)
+class StoredReviewReport:
+    """One persisted review packet and the exact selections behind it.
+
+    A report is historical evidence about the runs it selected. It is never
+    relabelled as representing a newer scenario revision.
+    """
+
+    report_id: str
+    project_id: str
+    scenario_id: str
+    scenario_revision: int
+    schema_version: str
+    generator_version: str
+    semantic_hash: str
+    pdf_sha256: str
+    pdf_bytes: int
+    pdf_page_count: int
+    selected_run_ids: list[str]
+    selected_search_ids: list[str]
+    selected_experiment_ids: list[str]
+    payload: dict[str, Any]
+    created_at: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -714,11 +765,180 @@ class Repository:
                 "scenario_revisions",
                 "analysis_runs",
                 "optimization_runs",
+                "failure_experiments",
+                "review_reports",
             ):
                 out[table] = int(
                     connection.execute(f"SELECT COUNT(*) AS c FROM {table}").fetchone()["c"]
                 )
             return out
+
+    # ------------------------------------------------------- Gate 6: Failure Lab
+    def store_failure_experiment(
+        self,
+        *,
+        experiment_id: str,
+        scenario_id: str,
+        scenario_revision: int,
+        phase_id: str,
+        profile_id: str,
+        engine_version: str,
+        status: str,
+        input_hash: str,
+        semantic_hash: str,
+        duration_ms: float,
+        payload: dict[str, Any],
+        created_at: str,
+    ) -> None:
+        """Persist one experiment's complete record.
+
+        Write-only and append-only: an experiment is historical evidence of what
+        the model reported at a stated instant. Re-executing an experiment
+        inserts a **new** row with a new ``experiment_id``; no stored experiment
+        is ever updated or overwritten.
+        """
+        with self.database.transaction() as connection:
+            connection.execute(
+                "INSERT INTO failure_experiments (id, project_id, scenario_id, scenario_revision,"
+                " phase_id, profile_id, engine_version, status, input_hash, semantic_hash,"
+                " duration_ms, payload_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    experiment_id,
+                    _project_id_for(connection, scenario_id),
+                    scenario_id,
+                    scenario_revision,
+                    phase_id,
+                    profile_id,
+                    engine_version,
+                    status,
+                    input_hash,
+                    semantic_hash,
+                    duration_ms,
+                    dumps(payload),
+                    created_at,
+                ),
+            )
+
+    def get_failure_experiment(self, experiment_id: str) -> StoredFailureExperiment:
+        with self.database.read() as connection:
+            row = connection.execute(
+                "SELECT * FROM failure_experiments WHERE id = ?", (experiment_id,)
+            ).fetchone()
+        if row is None:
+            raise NotFoundError("failure experiment", experiment_id)
+        return StoredFailureExperiment(
+            experiment_id=row["id"],
+            project_id=row["project_id"],
+            scenario_id=row["scenario_id"],
+            scenario_revision=row["scenario_revision"],
+            phase_id=row["phase_id"],
+            profile_id=row["profile_id"],
+            engine_version=row["engine_version"],
+            status=row["status"],
+            input_hash=row["input_hash"],
+            semantic_hash=row["semantic_hash"],
+            duration_ms=row["duration_ms"],
+            created_at=row["created_at"],
+            payload=loads(row["payload_json"]),
+        )
+
+    def list_failure_experiments(self, scenario_id: str) -> list[StoredFailureExperiment]:
+        with self.database.read() as connection:
+            rows = connection.execute(
+                "SELECT id FROM failure_experiments WHERE scenario_id = ? ORDER BY created_at, id",
+                (scenario_id,),
+            ).fetchall()
+        return [self.get_failure_experiment(row["id"]) for row in rows]
+
+    def project_id_for_scenario(self, scenario_id: str) -> str:
+        """Public accessor so derived artefacts can be stamped with their project."""
+        with self.database.read() as connection:
+            return _project_id_for(connection, scenario_id)
+
+    # ------------------------------------------------------- Gate 6: reporting
+    def store_review_report(
+        self,
+        *,
+        report_id: str,
+        scenario_id: str,
+        scenario_revision: int,
+        schema_version: str,
+        generator_version: str,
+        semantic_hash: str,
+        pdf_sha256: str,
+        pdf_bytes: int,
+        pdf_page_count: int,
+        selected_run_ids: list[str],
+        selected_search_ids: list[str],
+        selected_experiment_ids: list[str],
+        payload: dict[str, Any],
+        created_at: str,
+    ) -> StoredReviewReport:
+        """Persist a generated review packet plus its exact source selections.
+
+        The PDF **bytes** are not stored: they are regenerated on demand from the
+        stored payload by the same renderer, and the stored ``pdf_sha256`` lets a
+        caller verify that regeneration produced identical content.
+        """
+        with self.database.transaction() as connection:
+            connection.execute(
+                "INSERT INTO review_reports (id, project_id, scenario_id, scenario_revision,"
+                " schema_version, generator_version, semantic_hash, pdf_sha256, pdf_bytes,"
+                " pdf_page_count, selected_run_ids, selected_search_ids,"
+                " selected_experiment_ids, payload_json, created_at)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    report_id,
+                    _project_id_for(connection, scenario_id),
+                    scenario_id,
+                    scenario_revision,
+                    schema_version,
+                    generator_version,
+                    semantic_hash,
+                    pdf_sha256,
+                    pdf_bytes,
+                    pdf_page_count,
+                    dumps(sorted(selected_run_ids)),
+                    dumps(sorted(selected_search_ids)),
+                    dumps(sorted(selected_experiment_ids)),
+                    dumps(payload),
+                    created_at,
+                ),
+            )
+        return self.get_review_report(report_id)
+
+    def get_review_report(self, report_id: str) -> StoredReviewReport:
+        with self.database.read() as connection:
+            row = connection.execute(
+                "SELECT * FROM review_reports WHERE id = ?", (report_id,)
+            ).fetchone()
+        if row is None:
+            raise NotFoundError("review report", report_id)
+        return StoredReviewReport(
+            report_id=row["id"],
+            project_id=row["project_id"],
+            scenario_id=row["scenario_id"],
+            scenario_revision=row["scenario_revision"],
+            schema_version=row["schema_version"],
+            generator_version=row["generator_version"],
+            semantic_hash=row["semantic_hash"],
+            pdf_sha256=row["pdf_sha256"],
+            pdf_bytes=row["pdf_bytes"],
+            pdf_page_count=row["pdf_page_count"],
+            selected_run_ids=list(loads(row["selected_run_ids"])),
+            selected_search_ids=list(loads(row["selected_search_ids"])),
+            selected_experiment_ids=list(loads(row["selected_experiment_ids"])),
+            payload=loads(row["payload_json"]),
+            created_at=row["created_at"],
+        )
+
+    def list_review_reports(self, scenario_id: str) -> list[StoredReviewReport]:
+        with self.database.read() as connection:
+            rows = connection.execute(
+                "SELECT id FROM review_reports WHERE scenario_id = ? ORDER BY created_at, id",
+                (scenario_id,),
+            ).fetchall()
+        return [self.get_review_report(row["id"]) for row in rows]
 
 
 def _project_id_for(connection: sqlite3.Connection, scenario_id: str) -> str:

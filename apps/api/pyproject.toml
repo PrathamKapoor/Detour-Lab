@@ -31,6 +31,9 @@ ignore = ["E501"]
 # FastAPI's documented pattern is Depends(...) in the argument default.
 "apps/api/detour_lab/api/v1/routers.py" = ["B008"]
 "apps/api/detour_lab/api/v1/optimization.py" = ["B008"]
+"apps/api/detour_lab/api/v1/evidence.py" = ["B008"]
+"apps/api/detour_lab/api/v1/failure_lab.py" = ["B008"]
+"apps/api/detour_lab/api/v1/reports.py" = ["B008"]
 # Nested `with` in the rollback tests is deliberate: it proves the inner block
 # aborts the outer transaction.
 "apps/api/tests/test_persistence.py" = ["SIM117"]

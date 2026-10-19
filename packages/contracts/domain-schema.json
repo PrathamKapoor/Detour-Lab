@@ -3333,6 +3333,1668 @@
     "title": "EdgeEvaluation",
     "type": "object"
   },
+  "ElementStateChange": {
+    "$defs": {
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      },
+      "VerdictState": {
+        "description": "Four-valued result of a single rule applied to a single element.\n\nNOT_APPLICABLE applies only to one rule proved inapplicable to one element.\nIt is never a way of clearing an element with missing evidence\n(MASTER_PROMPT \u00a75.3, PRD FR-008).",
+        "enum": [
+          "PASS",
+          "FAIL",
+          "UNKNOWN",
+          "NOT_APPLICABLE"
+        ],
+        "title": "VerdictState",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "One graph/evidence element that differs between baseline and faulted state.",
+    "properties": {
+      "after_reason_codes": {
+        "items": {
+          "$ref": "#/$defs/ReasonCode"
+        },
+        "title": "After Reason Codes",
+        "type": "array"
+      },
+      "after_state": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/VerdictState"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "before_reason_codes": {
+        "items": {
+          "$ref": "#/$defs/ReasonCode"
+        },
+        "title": "Before Reason Codes",
+        "type": "array"
+      },
+      "before_state": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/VerdictState"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "change": {
+        "enum": [
+          "element_added",
+          "element_removed",
+          "state_changed",
+          "evidence_added",
+          "evidence_masked"
+        ],
+        "title": "Change",
+        "type": "string"
+      },
+      "detail": {
+        "default": "",
+        "title": "Detail",
+        "type": "string"
+      },
+      "element_id": {
+        "title": "Element Id",
+        "type": "string"
+      },
+      "element_kind": {
+        "enum": [
+          "edge",
+          "node",
+          "evidence"
+        ],
+        "title": "Element Kind",
+        "type": "string"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "change",
+      "element_id",
+      "element_kind",
+      "phase_id"
+    ],
+    "title": "ElementStateChange",
+    "type": "object"
+  },
+  "EvidenceConflictReport": {
+    "$defs": {
+      "ObservationComparison": {
+        "additionalProperties": false,
+        "description": "One observation behind an unresolved attribute, with full provenance.\n\n``value`` and ``unit`` are exactly what the source reported. Canonical\nconversion, where one happened, is reported separately so the original\nrecord is never overwritten.",
+        "properties": {
+          "conversion": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Conversion"
+          },
+          "evidence_id": {
+            "title": "Evidence Id",
+            "type": "string"
+          },
+          "invalidated": {
+            "title": "Invalidated",
+            "type": "boolean"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
+          "provenance_class": {
+            "title": "Provenance Class",
+            "type": "string"
+          },
+          "quality": {
+            "title": "Quality",
+            "type": "string"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewer"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "method",
+          "source",
+          "verification_status",
+          "quality",
+          "provenance_class",
+          "synthetic",
+          "invalidated"
+        ],
+        "title": "ObservationComparison",
+        "type": "object"
+      },
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Structured answer to \"why is this attribute unresolved?\" (G6-04).\n\nReports every observation and the resolver's own reason. It never picks a\nwinner, never averages, and never infers reliability from a source name.",
+    "properties": {
+      "attribute": {
+        "title": "Attribute",
+        "type": "string"
+      },
+      "can_be_resolved_without_field_work": {
+        "title": "Can Be Resolved Without Field Work",
+        "type": "boolean"
+      },
+      "canonical_unit": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Canonical Unit"
+      },
+      "canonical_value": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Canonical Value"
+      },
+      "distinct_values": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Distinct Values",
+        "type": "array"
+      },
+      "element_id": {
+        "title": "Element Id",
+        "type": "string"
+      },
+      "explanation": {
+        "title": "Explanation",
+        "type": "string"
+      },
+      "observations": {
+        "items": {
+          "$ref": "#/$defs/ObservationComparison"
+        },
+        "title": "Observations",
+        "type": "array"
+      },
+      "resolution_requirement": {
+        "title": "Resolution Requirement",
+        "type": "string"
+      },
+      "resolution_status": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "resolved": {
+        "title": "Resolved",
+        "type": "boolean"
+      },
+      "selected_value_note": {
+        "default": "No observation is selected as the answer. Selecting the most favourable claim, or the most recent one, would silently change the accessibility result and is not done.",
+        "title": "Selected Value Note",
+        "type": "string"
+      }
+    },
+    "required": [
+      "element_id",
+      "attribute",
+      "resolution_status",
+      "resolved",
+      "explanation",
+      "resolution_requirement",
+      "can_be_resolved_without_field_work"
+    ],
+    "title": "EvidenceConflictReport",
+    "type": "object"
+  },
+  "EvidenceIssue": {
+    "$defs": {
+      "EvidenceCriticality": {
+        "description": "Explainable decision-relevance category. **Not** a probability or a score.\n\nThe names describe what the *modelled decision* is waiting on, not how\nlikely a field visit is to succeed. No value-of-information semantics are\nclaimed because none is computed (MASTER_PROMPT \u00a78).",
+        "enum": [
+          "decision_blocking",
+          "decision_relevant",
+          "supporting"
+        ],
+        "title": "EvidenceCriticality",
+        "type": "string"
+      },
+      "EvidenceIssuePair": {
+        "additionalProperties": false,
+        "description": "One origin-destination pair this unresolved attribute is connected to.\n\n``role`` is deliberately explicit. ``blocking`` means the existing analysis\n*demonstrated* this element blocks the pair by counterexample; anything else\nis ``relevant``, and \"relevant\" never implies causation.",
+        "properties": {
+          "confirmed_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmed Distance M"
+          },
+          "confirmed_reachable": {
+            "title": "Confirmed Reachable",
+            "type": "boolean"
+          },
+          "destination_id": {
+            "title": "Destination Id",
+            "type": "string"
+          },
+          "origin_id": {
+            "title": "Origin Id",
+            "type": "string"
+          },
+          "pair_id": {
+            "title": "Pair Id",
+            "type": "string"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "possibly_reachable": {
+            "title": "Possibly Reachable",
+            "type": "boolean"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "blocking",
+              "relevant",
+              "on_confirmed_route",
+              "on_possible_route"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pair_id",
+          "origin_id",
+          "destination_id",
+          "profile_id",
+          "role",
+          "confirmed_reachable",
+          "possibly_reachable",
+          "phase_id"
+        ],
+        "title": "EvidenceIssuePair",
+        "type": "object"
+      },
+      "ObservationComparison": {
+        "additionalProperties": false,
+        "description": "One observation behind an unresolved attribute, with full provenance.\n\n``value`` and ``unit`` are exactly what the source reported. Canonical\nconversion, where one happened, is reported separately so the original\nrecord is never overwritten.",
+        "properties": {
+          "conversion": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Conversion"
+          },
+          "evidence_id": {
+            "title": "Evidence Id",
+            "type": "string"
+          },
+          "invalidated": {
+            "title": "Invalidated",
+            "type": "boolean"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
+          "provenance_class": {
+            "title": "Provenance Class",
+            "type": "string"
+          },
+          "quality": {
+            "title": "Quality",
+            "type": "string"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewer"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "method",
+          "source",
+          "verification_status",
+          "quality",
+          "provenance_class",
+          "synthetic",
+          "invalidated"
+        ],
+        "title": "ObservationComparison",
+        "type": "object"
+      },
+      "QueueState": {
+        "description": "Lifecycle of a derived queue entry.\n\nThe queue is *derived*, so it carries no reviewer workflow state: an entry\nexists while the authoritative resolver still reports the attribute\nunresolved, and it disappears when the resolver stops reporting it. Reviewer\nactions (recording an observation, invalidating one) change the evidence, and\nthe queue is recomputed - it is never patched.",
+        "enum": [
+          "open"
+        ],
+        "title": "QueueState",
+        "type": "string"
+      },
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "One unresolved ``(element, attribute)`` pair with its decision context.",
+    "properties": {
+      "affected_phase_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Affected Phase Ids",
+        "type": "array"
+      },
+      "affected_profile_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Affected Profile Ids",
+        "type": "array"
+      },
+      "attribute": {
+        "title": "Attribute",
+        "type": "string"
+      },
+      "criticality": {
+        "$ref": "#/$defs/EvidenceCriticality"
+      },
+      "criticality_rationale": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Criticality Rationale",
+        "type": "array"
+      },
+      "dataset_notice": {
+        "default": "",
+        "title": "Dataset Notice",
+        "type": "string"
+      },
+      "edge_length_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Edge Length M"
+      },
+      "edge_type": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Edge Type"
+      },
+      "edge_u": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Edge U"
+      },
+      "edge_v": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Edge V"
+      },
+      "element_has_known_failure": {
+        "default": false,
+        "title": "Element Has Known Failure",
+        "type": "boolean"
+      },
+      "element_id": {
+        "title": "Element Id",
+        "type": "string"
+      },
+      "element_kind": {
+        "enum": [
+          "edge",
+          "node"
+        ],
+        "title": "Element Kind",
+        "type": "string"
+      },
+      "element_name": {
+        "title": "Element Name",
+        "type": "string"
+      },
+      "evidence_record_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Evidence Record Ids",
+        "type": "array"
+      },
+      "investigation_target": {
+        "title": "Investigation Target",
+        "type": "string"
+      },
+      "issue_id": {
+        "title": "Issue Id",
+        "type": "string"
+      },
+      "missing_or_conflicting": {
+        "title": "Missing Or Conflicting",
+        "type": "string"
+      },
+      "node_type": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Node Type"
+      },
+      "node_x": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Node X"
+      },
+      "node_y": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Node Y"
+      },
+      "observations": {
+        "items": {
+          "$ref": "#/$defs/ObservationComparison"
+        },
+        "title": "Observations",
+        "type": "array"
+      },
+      "od_pair_count": {
+        "default": 0,
+        "title": "Od Pair Count",
+        "type": "integer"
+      },
+      "od_pairs": {
+        "items": {
+          "$ref": "#/$defs/EvidenceIssuePair"
+        },
+        "title": "Od Pairs",
+        "type": "array"
+      },
+      "queue_state": {
+        "$ref": "#/$defs/QueueState",
+        "default": "open"
+      },
+      "recorded_measurement": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Recorded Measurement"
+      },
+      "resolution_status": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "rule_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Rule Ids",
+        "type": "array"
+      },
+      "scope": {
+        "title": "Scope",
+        "type": "string"
+      },
+      "status_label": {
+        "title": "Status Label",
+        "type": "string"
+      }
+    },
+    "required": [
+      "issue_id",
+      "scope",
+      "resolution_status",
+      "status_label",
+      "element_id",
+      "element_kind",
+      "element_name",
+      "attribute",
+      "missing_or_conflicting",
+      "investigation_target",
+      "criticality"
+    ],
+    "title": "EvidenceIssue",
+    "type": "object"
+  },
+  "EvidenceIssuePair": {
+    "additionalProperties": false,
+    "description": "One origin-destination pair this unresolved attribute is connected to.\n\n``role`` is deliberately explicit. ``blocking`` means the existing analysis\n*demonstrated* this element blocks the pair by counterexample; anything else\nis ``relevant``, and \"relevant\" never implies causation.",
+    "properties": {
+      "confirmed_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Confirmed Distance M"
+      },
+      "confirmed_reachable": {
+        "title": "Confirmed Reachable",
+        "type": "boolean"
+      },
+      "destination_id": {
+        "title": "Destination Id",
+        "type": "string"
+      },
+      "origin_id": {
+        "title": "Origin Id",
+        "type": "string"
+      },
+      "pair_id": {
+        "title": "Pair Id",
+        "type": "string"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "possibly_reachable": {
+        "title": "Possibly Reachable",
+        "type": "boolean"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "role": {
+        "enum": [
+          "blocking",
+          "relevant",
+          "on_confirmed_route",
+          "on_possible_route"
+        ],
+        "title": "Role",
+        "type": "string"
+      }
+    },
+    "required": [
+      "pair_id",
+      "origin_id",
+      "destination_id",
+      "profile_id",
+      "role",
+      "confirmed_reachable",
+      "possibly_reachable",
+      "phase_id"
+    ],
+    "title": "EvidenceIssuePair",
+    "type": "object"
+  },
+  "EvidenceQueue": {
+    "$defs": {
+      "EvidenceCriticality": {
+        "description": "Explainable decision-relevance category. **Not** a probability or a score.\n\nThe names describe what the *modelled decision* is waiting on, not how\nlikely a field visit is to succeed. No value-of-information semantics are\nclaimed because none is computed (MASTER_PROMPT \u00a78).",
+        "enum": [
+          "decision_blocking",
+          "decision_relevant",
+          "supporting"
+        ],
+        "title": "EvidenceCriticality",
+        "type": "string"
+      },
+      "EvidenceIssue": {
+        "additionalProperties": false,
+        "description": "One unresolved ``(element, attribute)`` pair with its decision context.",
+        "properties": {
+          "affected_phase_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Affected Phase Ids",
+            "type": "array"
+          },
+          "affected_profile_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Affected Profile Ids",
+            "type": "array"
+          },
+          "attribute": {
+            "title": "Attribute",
+            "type": "string"
+          },
+          "criticality": {
+            "$ref": "#/$defs/EvidenceCriticality"
+          },
+          "criticality_rationale": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Criticality Rationale",
+            "type": "array"
+          },
+          "dataset_notice": {
+            "default": "",
+            "title": "Dataset Notice",
+            "type": "string"
+          },
+          "edge_length_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Edge Length M"
+          },
+          "edge_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Edge Type"
+          },
+          "edge_u": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Edge U"
+          },
+          "edge_v": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Edge V"
+          },
+          "element_has_known_failure": {
+            "default": false,
+            "title": "Element Has Known Failure",
+            "type": "boolean"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "element_kind": {
+            "enum": [
+              "edge",
+              "node"
+            ],
+            "title": "Element Kind",
+            "type": "string"
+          },
+          "element_name": {
+            "title": "Element Name",
+            "type": "string"
+          },
+          "evidence_record_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Record Ids",
+            "type": "array"
+          },
+          "investigation_target": {
+            "title": "Investigation Target",
+            "type": "string"
+          },
+          "issue_id": {
+            "title": "Issue Id",
+            "type": "string"
+          },
+          "missing_or_conflicting": {
+            "title": "Missing Or Conflicting",
+            "type": "string"
+          },
+          "node_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Node Type"
+          },
+          "node_x": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Node X"
+          },
+          "node_y": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Node Y"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/$defs/ObservationComparison"
+            },
+            "title": "Observations",
+            "type": "array"
+          },
+          "od_pair_count": {
+            "default": 0,
+            "title": "Od Pair Count",
+            "type": "integer"
+          },
+          "od_pairs": {
+            "items": {
+              "$ref": "#/$defs/EvidenceIssuePair"
+            },
+            "title": "Od Pairs",
+            "type": "array"
+          },
+          "queue_state": {
+            "$ref": "#/$defs/QueueState",
+            "default": "open"
+          },
+          "recorded_measurement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Recorded Measurement"
+          },
+          "resolution_status": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "rule_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rule Ids",
+            "type": "array"
+          },
+          "scope": {
+            "title": "Scope",
+            "type": "string"
+          },
+          "status_label": {
+            "title": "Status Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id",
+          "scope",
+          "resolution_status",
+          "status_label",
+          "element_id",
+          "element_kind",
+          "element_name",
+          "attribute",
+          "missing_or_conflicting",
+          "investigation_target",
+          "criticality"
+        ],
+        "title": "EvidenceIssue",
+        "type": "object"
+      },
+      "EvidenceIssuePair": {
+        "additionalProperties": false,
+        "description": "One origin-destination pair this unresolved attribute is connected to.\n\n``role`` is deliberately explicit. ``blocking`` means the existing analysis\n*demonstrated* this element blocks the pair by counterexample; anything else\nis ``relevant``, and \"relevant\" never implies causation.",
+        "properties": {
+          "confirmed_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmed Distance M"
+          },
+          "confirmed_reachable": {
+            "title": "Confirmed Reachable",
+            "type": "boolean"
+          },
+          "destination_id": {
+            "title": "Destination Id",
+            "type": "string"
+          },
+          "origin_id": {
+            "title": "Origin Id",
+            "type": "string"
+          },
+          "pair_id": {
+            "title": "Pair Id",
+            "type": "string"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "possibly_reachable": {
+            "title": "Possibly Reachable",
+            "type": "boolean"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "blocking",
+              "relevant",
+              "on_confirmed_route",
+              "on_possible_route"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pair_id",
+          "origin_id",
+          "destination_id",
+          "profile_id",
+          "role",
+          "confirmed_reachable",
+          "possibly_reachable",
+          "phase_id"
+        ],
+        "title": "EvidenceIssuePair",
+        "type": "object"
+      },
+      "EvidenceQueueScope": {
+        "additionalProperties": false,
+        "description": "Exactly which analysis inputs the returned queue was derived from.\n\nEchoed on every response so a reviewer can never mistake a narrow queue for\na whole-project finding.",
+        "properties": {
+          "additional_phases_inspected": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Additional Phases Inspected",
+            "type": "array"
+          },
+          "evaluation_instant": {
+            "title": "Evaluation Instant",
+            "type": "string"
+          },
+          "phase_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Phase Ids",
+            "type": "array"
+          },
+          "profile_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Profile Ids",
+            "type": "array"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "rulepack_hash": {
+            "title": "Rulepack Hash",
+            "type": "string"
+          },
+          "rulepack_id": {
+            "title": "Rulepack Id",
+            "type": "string"
+          },
+          "rulepack_version": {
+            "title": "Rulepack Version",
+            "type": "string"
+          },
+          "scenario_content_hash": {
+            "title": "Scenario Content Hash",
+            "type": "string"
+          },
+          "scenario_id": {
+            "title": "Scenario Id",
+            "type": "string"
+          },
+          "scenario_revision": {
+            "title": "Scenario Revision",
+            "type": "integer"
+          },
+          "scope_note": {
+            "default": "The queue lists attributes that the authoritative resolver cannot resolve for at least one rule in scope for the selected phase(s) and mobility profile(s). It is not a list of physical defects: an unresolved attribute means the model cannot determine the condition, not that the element is unsuitable.",
+            "title": "Scope Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scenario_id",
+          "scenario_revision",
+          "scenario_content_hash",
+          "project_id",
+          "phase_ids",
+          "profile_ids",
+          "rulepack_id",
+          "rulepack_version",
+          "rulepack_hash",
+          "evaluation_instant"
+        ],
+        "title": "EvidenceQueueScope",
+        "type": "object"
+      },
+      "ObservationComparison": {
+        "additionalProperties": false,
+        "description": "One observation behind an unresolved attribute, with full provenance.\n\n``value`` and ``unit`` are exactly what the source reported. Canonical\nconversion, where one happened, is reported separately so the original\nrecord is never overwritten.",
+        "properties": {
+          "conversion": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Conversion"
+          },
+          "evidence_id": {
+            "title": "Evidence Id",
+            "type": "string"
+          },
+          "invalidated": {
+            "title": "Invalidated",
+            "type": "boolean"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
+          "provenance_class": {
+            "title": "Provenance Class",
+            "type": "string"
+          },
+          "quality": {
+            "title": "Quality",
+            "type": "string"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewer"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "method",
+          "source",
+          "verification_status",
+          "quality",
+          "provenance_class",
+          "synthetic",
+          "invalidated"
+        ],
+        "title": "ObservationComparison",
+        "type": "object"
+      },
+      "QueueState": {
+        "description": "Lifecycle of a derived queue entry.\n\nThe queue is *derived*, so it carries no reviewer workflow state: an entry\nexists while the authoritative resolver still reports the attribute\nunresolved, and it disappears when the resolver stops reporting it. Reviewer\nactions (recording an observation, invalidating one) change the evidence, and\nthe queue is recomputed - it is never patched.",
+        "enum": [
+          "open"
+        ],
+        "title": "QueueState",
+        "type": "string"
+      },
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Ordered, deterministic queue of unresolved attributes.",
+    "properties": {
+      "counts_by_criticality": {
+        "additionalProperties": {
+          "type": "integer"
+        },
+        "title": "Counts By Criticality",
+        "type": "object"
+      },
+      "counts_by_status": {
+        "additionalProperties": {
+          "type": "integer"
+        },
+        "title": "Counts By Status",
+        "type": "object"
+      },
+      "engine_version": {
+        "title": "Engine Version",
+        "type": "string"
+      },
+      "issues": {
+        "items": {
+          "$ref": "#/$defs/EvidenceIssue"
+        },
+        "title": "Issues",
+        "type": "array"
+      },
+      "limitations": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Limitations",
+        "type": "array"
+      },
+      "ordering_rule": {
+        "title": "Ordering Rule",
+        "type": "string"
+      },
+      "prioritization_method": {
+        "title": "Prioritization Method",
+        "type": "string"
+      },
+      "schema_version": {
+        "default": "1.0.0",
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "scope": {
+        "$ref": "#/$defs/EvidenceQueueScope"
+      },
+      "total_unresolved_attributes_scanned": {
+        "default": 0,
+        "title": "Total Unresolved Attributes Scanned",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "engine_version",
+      "scope",
+      "ordering_rule",
+      "prioritization_method"
+    ],
+    "title": "EvidenceQueue",
+    "type": "object"
+  },
+  "EvidenceQueueScope": {
+    "additionalProperties": false,
+    "description": "Exactly which analysis inputs the returned queue was derived from.\n\nEchoed on every response so a reviewer can never mistake a narrow queue for\na whole-project finding.",
+    "properties": {
+      "additional_phases_inspected": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Additional Phases Inspected",
+        "type": "array"
+      },
+      "evaluation_instant": {
+        "title": "Evaluation Instant",
+        "type": "string"
+      },
+      "phase_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Phase Ids",
+        "type": "array"
+      },
+      "profile_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Profile Ids",
+        "type": "array"
+      },
+      "project_id": {
+        "title": "Project Id",
+        "type": "string"
+      },
+      "rulepack_hash": {
+        "title": "Rulepack Hash",
+        "type": "string"
+      },
+      "rulepack_id": {
+        "title": "Rulepack Id",
+        "type": "string"
+      },
+      "rulepack_version": {
+        "title": "Rulepack Version",
+        "type": "string"
+      },
+      "scenario_content_hash": {
+        "title": "Scenario Content Hash",
+        "type": "string"
+      },
+      "scenario_id": {
+        "title": "Scenario Id",
+        "type": "string"
+      },
+      "scenario_revision": {
+        "title": "Scenario Revision",
+        "type": "integer"
+      },
+      "scope_note": {
+        "default": "The queue lists attributes that the authoritative resolver cannot resolve for at least one rule in scope for the selected phase(s) and mobility profile(s). It is not a list of physical defects: an unresolved attribute means the model cannot determine the condition, not that the element is unsuitable.",
+        "title": "Scope Note",
+        "type": "string"
+      }
+    },
+    "required": [
+      "scenario_id",
+      "scenario_revision",
+      "scenario_content_hash",
+      "project_id",
+      "phase_ids",
+      "profile_ids",
+      "rulepack_id",
+      "rulepack_version",
+      "rulepack_hash",
+      "evaluation_instant"
+    ],
+    "title": "EvidenceQueueScope",
+    "type": "object"
+  },
   "EvidenceRecord": {
     "$defs": {
       "ProvenanceClass": {
@@ -3518,6 +5180,1616 @@
       "reasons"
     ],
     "title": "ExcludedIntervention",
+    "type": "object"
+  },
+  "ExecutionError": {
+    "additionalProperties": false,
+    "description": "A structured, non-throwing failure record.\n\n``stage`` distinguishes a fault that could not be represented from an\nanalysis that could not be executed. Neither is a modelled network result.",
+    "properties": {
+      "code": {
+        "title": "Code",
+        "type": "string"
+      },
+      "details": {
+        "additionalProperties": true,
+        "title": "Details",
+        "type": "object"
+      },
+      "message": {
+        "title": "Message",
+        "type": "string"
+      },
+      "stage": {
+        "enum": [
+          "validation",
+          "materialisation",
+          "baseline_analysis",
+          "faulted_analysis",
+          "comparison",
+          "persistence"
+        ],
+        "title": "Stage",
+        "type": "string"
+      }
+    },
+    "required": [
+      "stage",
+      "code",
+      "message"
+    ],
+    "title": "ExecutionError",
+    "type": "object"
+  },
+  "ExperimentLimits": {
+    "additionalProperties": false,
+    "description": "Defensible, documented bounds. Enforced in ``faults.py`` and ``engine.py``.",
+    "properties": {
+      "max_experiments_per_suite": {
+        "default": 12,
+        "title": "Max Experiments Per Suite",
+        "type": "integer"
+      },
+      "max_faults_per_request": {
+        "default": 12,
+        "title": "Max Faults Per Request",
+        "type": "integer"
+      },
+      "max_faults_per_suite": {
+        "default": 12,
+        "title": "Max Faults Per Suite",
+        "type": "integer"
+      },
+      "max_graph_elements": {
+        "default": 5000,
+        "title": "Max Graph Elements",
+        "type": "integer"
+      },
+      "max_suite_duration_ms": {
+        "default": 60000,
+        "title": "Max Suite Duration Ms",
+        "type": "integer"
+      },
+      "max_synthetic_observations_per_fault": {
+        "default": 4,
+        "title": "Max Synthetic Observations Per Fault",
+        "type": "integer"
+      },
+      "max_target_ids_per_fault": {
+        "default": 32,
+        "title": "Max Target Ids Per Fault",
+        "type": "integer"
+      },
+      "note": {
+        "default": "Bounds are enforced server-side before any analysis runs. They exist so a fault definition cannot be used to request unbounded work.",
+        "title": "Note",
+        "type": "string"
+      }
+    },
+    "title": "ExperimentLimits",
+    "type": "object"
+  },
+  "ExperimentOutcome": {
+    "$defs": {
+      "ElementStateChange": {
+        "additionalProperties": false,
+        "description": "One graph/evidence element that differs between baseline and faulted state.",
+        "properties": {
+          "after_reason_codes": {
+            "items": {
+              "$ref": "#/$defs/ReasonCode"
+            },
+            "title": "After Reason Codes",
+            "type": "array"
+          },
+          "after_state": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/VerdictState"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "before_reason_codes": {
+            "items": {
+              "$ref": "#/$defs/ReasonCode"
+            },
+            "title": "Before Reason Codes",
+            "type": "array"
+          },
+          "before_state": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/VerdictState"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "change": {
+            "enum": [
+              "element_added",
+              "element_removed",
+              "state_changed",
+              "evidence_added",
+              "evidence_masked"
+            ],
+            "title": "Change",
+            "type": "string"
+          },
+          "detail": {
+            "default": "",
+            "title": "Detail",
+            "type": "string"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "element_kind": {
+            "enum": [
+              "edge",
+              "node",
+              "evidence"
+            ],
+            "title": "Element Kind",
+            "type": "string"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "change",
+          "element_id",
+          "element_kind",
+          "phase_id"
+        ],
+        "title": "ElementStateChange",
+        "type": "object"
+      },
+      "EngineeringObservation": {
+        "description": "What the authoritative engine actually reported about the plan.\n\nEvery value describes *modelled software behaviour under an explicitly\nmodelled condition*. None of them is a statement about the physical world.",
+        "enum": [
+          "confirmed_connectivity_preserved",
+          "confirmed_connectivity_gained",
+          "confirmed_connectivity_lost",
+          "confirmed_route_became_possible_only",
+          "possible_only_route_became_disconnected",
+          "new_known_rule_violation",
+          "new_unresolved_evidence_condition",
+          "no_relevant_modelled_change",
+          "analysis_unavailable"
+        ],
+        "title": "EngineeringObservation",
+        "type": "string"
+      },
+      "ExecutionError": {
+        "additionalProperties": false,
+        "description": "A structured, non-throwing failure record.\n\n``stage`` distinguishes a fault that could not be represented from an\nanalysis that could not be executed. Neither is a modelled network result.",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "stage": {
+            "enum": [
+              "validation",
+              "materialisation",
+              "baseline_analysis",
+              "faulted_analysis",
+              "comparison",
+              "persistence"
+            ],
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage",
+          "code",
+          "message"
+        ],
+        "title": "ExecutionError",
+        "type": "object"
+      },
+      "ExperimentLimits": {
+        "additionalProperties": false,
+        "description": "Defensible, documented bounds. Enforced in ``faults.py`` and ``engine.py``.",
+        "properties": {
+          "max_experiments_per_suite": {
+            "default": 12,
+            "title": "Max Experiments Per Suite",
+            "type": "integer"
+          },
+          "max_faults_per_request": {
+            "default": 12,
+            "title": "Max Faults Per Request",
+            "type": "integer"
+          },
+          "max_faults_per_suite": {
+            "default": 12,
+            "title": "Max Faults Per Suite",
+            "type": "integer"
+          },
+          "max_graph_elements": {
+            "default": 5000,
+            "title": "Max Graph Elements",
+            "type": "integer"
+          },
+          "max_suite_duration_ms": {
+            "default": 60000,
+            "title": "Max Suite Duration Ms",
+            "type": "integer"
+          },
+          "max_synthetic_observations_per_fault": {
+            "default": 4,
+            "title": "Max Synthetic Observations Per Fault",
+            "type": "integer"
+          },
+          "max_target_ids_per_fault": {
+            "default": 32,
+            "title": "Max Target Ids Per Fault",
+            "type": "integer"
+          },
+          "note": {
+            "default": "Bounds are enforced server-side before any analysis runs. They exist so a fault definition cannot be used to request unbounded work.",
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "ExperimentLimits",
+        "type": "object"
+      },
+      "ExperimentSource": {
+        "additionalProperties": false,
+        "description": "Everything about the state an experiment starts from.\n\nRecorded so a stored experiment can be tied to the exact revision it tested,\nand so a later revision of the same scenario can never silently adopt it.",
+        "properties": {
+          "base_graph_hash": {
+            "title": "Base Graph Hash",
+            "type": "string"
+          },
+          "base_graph_version_id": {
+            "title": "Base Graph Version Id",
+            "type": "string"
+          },
+          "baseline_link_note": {
+            "default": "No stored run was linked to this experiment. The baseline was recomputed with the same authoritative engine at the same explicit evaluation instant, so it is directly comparable.",
+            "title": "Baseline Link Note",
+            "type": "string"
+          },
+          "evaluation_instant": {
+            "title": "Evaluation Instant",
+            "type": "string"
+          },
+          "phase_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Phase Ids",
+            "type": "array"
+          },
+          "profile_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Profile Ids",
+            "type": "array"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "rulepack_hash": {
+            "title": "Rulepack Hash",
+            "type": "string"
+          },
+          "rulepack_id": {
+            "title": "Rulepack Id",
+            "type": "string"
+          },
+          "rulepack_version": {
+            "title": "Rulepack Version",
+            "type": "string"
+          },
+          "scenario_content_hash": {
+            "title": "Scenario Content Hash",
+            "type": "string"
+          },
+          "scenario_id": {
+            "title": "Scenario Id",
+            "type": "string"
+          },
+          "scenario_revision": {
+            "title": "Scenario Revision",
+            "type": "integer"
+          },
+          "verified_baseline_run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Verified Baseline Run Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "project_id",
+          "scenario_id",
+          "scenario_revision",
+          "scenario_content_hash",
+          "base_graph_version_id",
+          "base_graph_hash",
+          "rulepack_id",
+          "rulepack_version",
+          "rulepack_hash",
+          "phase_ids",
+          "profile_ids",
+          "evaluation_instant"
+        ],
+        "title": "ExperimentSource",
+        "type": "object"
+      },
+      "ExperimentStatus": {
+        "description": "Did the experiment run? Nothing about the plan's modelled behaviour.",
+        "enum": [
+          "completed",
+          "partially_completed",
+          "invalid_experiment",
+          "execution_failed",
+          "cancelled"
+        ],
+        "title": "ExperimentStatus",
+        "type": "string"
+      },
+      "FaultDefinition": {
+        "additionalProperties": false,
+        "description": "One explicitly modelled adversarial condition.\n\n``phase_ids`` is the fault's **scope**. An empty list means \"every phase in\nthe experiment\". A multi-entry scope is the multi-phase case (G6-06/F8):\nthe fault is applied to exactly those phases and no other, which preserves\nthe independent phase-snapshot model.",
+        "properties": {
+          "evaluation_instant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evaluation Instant"
+          },
+          "fault_id": {
+            "default": "",
+            "title": "Fault Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/$defs/FaultKind"
+          },
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FaultObservation"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "phase_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Phase Ids",
+            "type": "array"
+          },
+          "semantic_hash": {
+            "default": "",
+            "title": "Semantic Hash",
+            "type": "string"
+          },
+          "target_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Target Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "FaultDefinition",
+        "type": "object"
+      },
+      "FaultKind": {
+        "description": "The supported fault-injection primitives (MASTER_PROMPT \u00a78, Gate 6 G6-06).\n\nOnly a mutation the domain can genuinely represent is listed. Each entry\nmaps to one authoritative operation - see ``faults.py`` for the mapping.",
+        "enum": [
+          "edge_closure",
+          "temporary_connection_loss",
+          "evidence_removal",
+          "conflicting_observation",
+          "evidence_expiration",
+          "unsupported_unit_observation",
+          "path_obstruction"
+        ],
+        "title": "FaultKind",
+        "type": "string"
+      },
+      "FaultObservation": {
+        "additionalProperties": false,
+        "description": "An explicitly synthetic observation introduced by a fault.\n\n``synthetic`` is forced to ``True`` and the provenance class cannot claim to\nbe a field measurement: injected observations are synthetic by construction\nand must never be presented as evidence collected on site (GATE-6 INV-9).",
+        "properties": {
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "method": {
+            "default": "failure_lab_injected_observation",
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "Synthetic observation injected by an explicitly modelled Failure Lab fault. It is not a field measurement and carries no field provenance.",
+            "title": "Note",
+            "type": "string"
+          },
+          "provenance_class": {
+            "default": "synthetic",
+            "enum": [
+              "assumed",
+              "synthetic",
+              "synthetic_fixture"
+            ],
+            "title": "Provenance Class",
+            "type": "string"
+          },
+          "quality": {
+            "default": "low",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Quality",
+            "type": "string"
+          },
+          "source": {
+            "default": "DETOUR LAB Failure Lab (synthetic adversarial observation)",
+            "title": "Source",
+            "type": "string"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "default": "unverified",
+            "enum": [
+              "unverified",
+              "verified",
+              "disputed"
+            ],
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field"
+        ],
+        "title": "FaultObservation",
+        "type": "object"
+      },
+      "PairTransition": {
+        "additionalProperties": false,
+        "description": "Before/after outcome for one origin-destination pair under one profile.",
+        "properties": {
+          "after_confirmed": {
+            "title": "After Confirmed",
+            "type": "boolean"
+          },
+          "after_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "After Distance M"
+          },
+          "after_possible": {
+            "title": "After Possible",
+            "type": "boolean"
+          },
+          "before_confirmed": {
+            "title": "Before Confirmed",
+            "type": "boolean"
+          },
+          "before_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Before Distance M"
+          },
+          "before_possible": {
+            "title": "Before Possible",
+            "type": "boolean"
+          },
+          "destination_id": {
+            "title": "Destination Id",
+            "type": "string"
+          },
+          "distance_delta_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Distance Delta M"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "new_fail_verdicts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "New Fail Verdicts",
+            "type": "array"
+          },
+          "new_unknown_verdicts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "New Unknown Verdicts",
+            "type": "array"
+          },
+          "observation": {
+            "$ref": "#/$defs/EngineeringObservation"
+          },
+          "origin_id": {
+            "title": "Origin Id",
+            "type": "string"
+          },
+          "pair_id": {
+            "title": "Pair Id",
+            "type": "string"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "reference_route_comparison": {
+            "default": false,
+            "title": "Reference Route Comparison",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "pair_id",
+          "origin_id",
+          "destination_id",
+          "profile_id",
+          "phase_id",
+          "before_confirmed",
+          "before_possible",
+          "after_confirmed",
+          "after_possible",
+          "observation",
+          "explanation"
+        ],
+        "title": "PairTransition",
+        "type": "object"
+      },
+      "PhaseProfileOutcome": {
+        "additionalProperties": false,
+        "description": "Analysis identity for one (phase, profile) on one side of the experiment.",
+        "properties": {
+          "analysis_semantic_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Analysis Semantic Hash"
+          },
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "phase_graph_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Phase Graph Hash"
+          },
+          "phase_graph_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Phase Graph Id"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "unavailable_reason": {
+            "default": "",
+            "title": "Unavailable Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phase_id",
+          "profile_id",
+          "available"
+        ],
+        "title": "PhaseProfileOutcome",
+        "type": "object"
+      },
+      "ReasonCode": {
+        "description": "Stable machine-readable reason codes attached to every finding.\n\nThese strings appear in exports and are contract-frozen once published.",
+        "enum": [
+          "RULE_PASS",
+          "RULE_FAIL",
+          "RULE_NOT_APPLICABLE",
+          "RULE_UNKNOWN_ATTRIBUTE",
+          "NO_EVIDENCE",
+          "CONFLICTING_EVIDENCE",
+          "UNSUPPORTED_UNIT",
+          "INVALID_NUMERIC_VALUE",
+          "EVIDENCE_EXPIRED",
+          "EVIDENCE_NOT_VERIFIED",
+          "EVIDENCE_INVALIDATED",
+          "NO_FRESHNESS_POLICY",
+          "EDGE_CLOSED_IN_PHASE",
+          "EDGE_NOT_ACTIVE_IN_PHASE",
+          "NODE_BLOCKED",
+          "NO_APPLICABLE_RULES",
+          "DUPLICATE_ID",
+          "UNKNOWN_NODE_REFERENCE",
+          "SELF_LOOP",
+          "CROSSING_WITHOUT_NODE",
+          "CONFIRMED_ROUTE_FOUND",
+          "POSSIBLE_ROUTE_ONLY",
+          "NO_ROUTE",
+          "ORIGIN_NODE_MISSING",
+          "DESTINATION_NODE_MISSING",
+          "DEMO_RULEPACK_NOT_LEGAL",
+          "SYNTHETIC_DATA_NOTICE",
+          "NOT_CERTIFIED"
+        ],
+        "title": "ReasonCode",
+        "type": "string"
+      },
+      "VerdictState": {
+        "description": "Four-valued result of a single rule applied to a single element.\n\nNOT_APPLICABLE applies only to one rule proved inapplicable to one element.\nIt is never a way of clearing an element with missing evidence\n(MASTER_PROMPT \u00a75.3, PRD FR-008).",
+        "enum": [
+          "PASS",
+          "FAIL",
+          "UNKNOWN",
+          "NOT_APPLICABLE"
+        ],
+        "title": "VerdictState",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Complete, replayable record of one failure experiment.",
+    "properties": {
+      "baseline": {
+        "items": {
+          "$ref": "#/$defs/PhaseProfileOutcome"
+        },
+        "title": "Baseline",
+        "type": "array"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      },
+      "duration_ms": {
+        "default": 0.0,
+        "title": "Duration Ms",
+        "type": "number"
+      },
+      "element_changes": {
+        "items": {
+          "$ref": "#/$defs/ElementStateChange"
+        },
+        "title": "Element Changes",
+        "type": "array"
+      },
+      "engine_version": {
+        "title": "Engine Version",
+        "type": "string"
+      },
+      "error": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ExecutionError"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "evidence_change_log": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Evidence Change Log",
+        "type": "array"
+      },
+      "experiment_id": {
+        "title": "Experiment Id",
+        "type": "string"
+      },
+      "faulted": {
+        "items": {
+          "$ref": "#/$defs/PhaseProfileOutcome"
+        },
+        "title": "Faulted",
+        "type": "array"
+      },
+      "faulted_evaluation_instant": {
+        "default": "",
+        "title": "Faulted Evaluation Instant",
+        "type": "string"
+      },
+      "faults": {
+        "items": {
+          "$ref": "#/$defs/FaultDefinition"
+        },
+        "title": "Faults",
+        "type": "array"
+      },
+      "input_hash": {
+        "default": "",
+        "title": "Input Hash",
+        "type": "string"
+      },
+      "isolated_graph_hash": {
+        "default": "",
+        "title": "Isolated Graph Hash",
+        "type": "string"
+      },
+      "isolated_graph_version_id": {
+        "default": "",
+        "title": "Isolated Graph Version Id",
+        "type": "string"
+      },
+      "isolated_scenario_hash": {
+        "default": "",
+        "title": "Isolated Scenario Hash",
+        "type": "string"
+      },
+      "limitations": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Limitations",
+        "type": "array"
+      },
+      "limits": {
+        "$ref": "#/$defs/ExperimentLimits"
+      },
+      "observations": {
+        "items": {
+          "$ref": "#/$defs/EngineeringObservation"
+        },
+        "title": "Observations",
+        "type": "array"
+      },
+      "schema_version": {
+        "default": "1.0.0",
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "semantic_hash": {
+        "default": "",
+        "title": "Semantic Hash",
+        "type": "string"
+      },
+      "source": {
+        "$ref": "#/$defs/ExperimentSource"
+      },
+      "status": {
+        "$ref": "#/$defs/ExperimentStatus"
+      },
+      "suite_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Suite Id"
+      },
+      "transitions": {
+        "items": {
+          "$ref": "#/$defs/PairTransition"
+        },
+        "title": "Transitions",
+        "type": "array"
+      }
+    },
+    "required": [
+      "engine_version",
+      "experiment_id",
+      "created_at",
+      "limits",
+      "status",
+      "source",
+      "faults"
+    ],
+    "title": "ExperimentOutcome",
+    "type": "object"
+  },
+  "ExperimentRollup": {
+    "$defs": {
+      "EngineeringObservation": {
+        "description": "What the authoritative engine actually reported about the plan.\n\nEvery value describes *modelled software behaviour under an explicitly\nmodelled condition*. None of them is a statement about the physical world.",
+        "enum": [
+          "confirmed_connectivity_preserved",
+          "confirmed_connectivity_gained",
+          "confirmed_connectivity_lost",
+          "confirmed_route_became_possible_only",
+          "possible_only_route_became_disconnected",
+          "new_known_rule_violation",
+          "new_unresolved_evidence_condition",
+          "no_relevant_modelled_change",
+          "analysis_unavailable"
+        ],
+        "title": "EngineeringObservation",
+        "type": "string"
+      },
+      "ExperimentStatus": {
+        "description": "Did the experiment run? Nothing about the plan's modelled behaviour.",
+        "enum": [
+          "completed",
+          "partially_completed",
+          "invalid_experiment",
+          "execution_failed",
+          "cancelled"
+        ],
+        "title": "ExperimentStatus",
+        "type": "string"
+      },
+      "FaultKind": {
+        "description": "The supported fault-injection primitives (MASTER_PROMPT \u00a78, Gate 6 G6-06).\n\nOnly a mutation the domain can genuinely represent is listed. Each entry\nmaps to one authoritative operation - see ``faults.py`` for the mapping.",
+        "enum": [
+          "edge_closure",
+          "temporary_connection_loss",
+          "evidence_removal",
+          "conflicting_observation",
+          "evidence_expiration",
+          "unsupported_unit_observation",
+          "path_obstruction"
+        ],
+        "title": "FaultKind",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Per-experiment contribution to the summary.",
+    "properties": {
+      "became_disconnected": {
+        "title": "Became Disconnected",
+        "type": "integer"
+      },
+      "became_possible_only": {
+        "title": "Became Possible Only",
+        "type": "integer"
+      },
+      "comparable_routes": {
+        "title": "Comparable Routes",
+        "type": "integer"
+      },
+      "confirmed_gained": {
+        "title": "Confirmed Gained",
+        "type": "integer"
+      },
+      "confirmed_lost": {
+        "title": "Confirmed Lost",
+        "type": "integer"
+      },
+      "confirmed_preserved": {
+        "title": "Confirmed Preserved",
+        "type": "integer"
+      },
+      "error_code": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error Code"
+      },
+      "experiment_id": {
+        "title": "Experiment Id",
+        "type": "string"
+      },
+      "fault_kinds": {
+        "items": {
+          "$ref": "#/$defs/FaultKind"
+        },
+        "title": "Fault Kinds",
+        "type": "array"
+      },
+      "fault_labels": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Fault Labels",
+        "type": "array"
+      },
+      "new_known_violations": {
+        "title": "New Known Violations",
+        "type": "integer"
+      },
+      "new_unknown_conditions": {
+        "title": "New Unknown Conditions",
+        "type": "integer"
+      },
+      "observations": {
+        "items": {
+          "$ref": "#/$defs/EngineeringObservation"
+        },
+        "title": "Observations",
+        "type": "array"
+      },
+      "status": {
+        "$ref": "#/$defs/ExperimentStatus"
+      },
+      "total_distance_delta_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Total Distance Delta M"
+      },
+      "transitions_compared": {
+        "title": "Transitions Compared",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "experiment_id",
+      "status",
+      "fault_kinds",
+      "fault_labels",
+      "transitions_compared",
+      "confirmed_preserved",
+      "confirmed_gained",
+      "confirmed_lost",
+      "became_possible_only",
+      "became_disconnected",
+      "new_known_violations",
+      "new_unknown_conditions",
+      "comparable_routes",
+      "observations"
+    ],
+    "title": "ExperimentRollup",
+    "type": "object"
+  },
+  "ExperimentSource": {
+    "additionalProperties": false,
+    "description": "Everything about the state an experiment starts from.\n\nRecorded so a stored experiment can be tied to the exact revision it tested,\nand so a later revision of the same scenario can never silently adopt it.",
+    "properties": {
+      "base_graph_hash": {
+        "title": "Base Graph Hash",
+        "type": "string"
+      },
+      "base_graph_version_id": {
+        "title": "Base Graph Version Id",
+        "type": "string"
+      },
+      "baseline_link_note": {
+        "default": "No stored run was linked to this experiment. The baseline was recomputed with the same authoritative engine at the same explicit evaluation instant, so it is directly comparable.",
+        "title": "Baseline Link Note",
+        "type": "string"
+      },
+      "evaluation_instant": {
+        "title": "Evaluation Instant",
+        "type": "string"
+      },
+      "phase_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Phase Ids",
+        "type": "array"
+      },
+      "profile_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Profile Ids",
+        "type": "array"
+      },
+      "project_id": {
+        "title": "Project Id",
+        "type": "string"
+      },
+      "rulepack_hash": {
+        "title": "Rulepack Hash",
+        "type": "string"
+      },
+      "rulepack_id": {
+        "title": "Rulepack Id",
+        "type": "string"
+      },
+      "rulepack_version": {
+        "title": "Rulepack Version",
+        "type": "string"
+      },
+      "scenario_content_hash": {
+        "title": "Scenario Content Hash",
+        "type": "string"
+      },
+      "scenario_id": {
+        "title": "Scenario Id",
+        "type": "string"
+      },
+      "scenario_revision": {
+        "title": "Scenario Revision",
+        "type": "integer"
+      },
+      "verified_baseline_run_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Verified Baseline Run Ids",
+        "type": "array"
+      }
+    },
+    "required": [
+      "project_id",
+      "scenario_id",
+      "scenario_revision",
+      "scenario_content_hash",
+      "base_graph_version_id",
+      "base_graph_hash",
+      "rulepack_id",
+      "rulepack_version",
+      "rulepack_hash",
+      "phase_ids",
+      "profile_ids",
+      "evaluation_instant"
+    ],
+    "title": "ExperimentSource",
+    "type": "object"
+  },
+  "ExperimentSummary": {
+    "$defs": {
+      "EngineeringObservation": {
+        "description": "What the authoritative engine actually reported about the plan.\n\nEvery value describes *modelled software behaviour under an explicitly\nmodelled condition*. None of them is a statement about the physical world.",
+        "enum": [
+          "confirmed_connectivity_preserved",
+          "confirmed_connectivity_gained",
+          "confirmed_connectivity_lost",
+          "confirmed_route_became_possible_only",
+          "possible_only_route_became_disconnected",
+          "new_known_rule_violation",
+          "new_unresolved_evidence_condition",
+          "no_relevant_modelled_change",
+          "analysis_unavailable"
+        ],
+        "title": "EngineeringObservation",
+        "type": "string"
+      },
+      "ExperimentStatus": {
+        "description": "Did the experiment run? Nothing about the plan's modelled behaviour.",
+        "enum": [
+          "completed",
+          "partially_completed",
+          "invalid_experiment",
+          "execution_failed",
+          "cancelled"
+        ],
+        "title": "ExperimentStatus",
+        "type": "string"
+      },
+      "FaultKind": {
+        "description": "The supported fault-injection primitives (MASTER_PROMPT \u00a78, Gate 6 G6-06).\n\nOnly a mutation the domain can genuinely represent is listed. Each entry\nmaps to one authoritative operation - see ``faults.py`` for the mapping.",
+        "enum": [
+          "edge_closure",
+          "temporary_connection_loss",
+          "evidence_removal",
+          "conflicting_observation",
+          "evidence_expiration",
+          "unsupported_unit_observation",
+          "path_obstruction"
+        ],
+        "title": "FaultKind",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Compact row used by history lists and robustness roll-ups.",
+    "properties": {
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      },
+      "error_code": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error Code"
+      },
+      "experiment_id": {
+        "title": "Experiment Id",
+        "type": "string"
+      },
+      "fault_kinds": {
+        "items": {
+          "$ref": "#/$defs/FaultKind"
+        },
+        "title": "Fault Kinds",
+        "type": "array"
+      },
+      "fault_labels": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Fault Labels",
+        "type": "array"
+      },
+      "input_hash": {
+        "title": "Input Hash",
+        "type": "string"
+      },
+      "observations": {
+        "items": {
+          "$ref": "#/$defs/EngineeringObservation"
+        },
+        "title": "Observations",
+        "type": "array"
+      },
+      "phase_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Phase Ids",
+        "type": "array"
+      },
+      "profile_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Profile Ids",
+        "type": "array"
+      },
+      "scenario_id": {
+        "title": "Scenario Id",
+        "type": "string"
+      },
+      "scenario_revision": {
+        "title": "Scenario Revision",
+        "type": "integer"
+      },
+      "semantic_hash": {
+        "title": "Semantic Hash",
+        "type": "string"
+      },
+      "status": {
+        "$ref": "#/$defs/ExperimentStatus"
+      },
+      "suite_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Suite Id"
+      }
+    },
+    "required": [
+      "experiment_id",
+      "scenario_id",
+      "scenario_revision",
+      "phase_ids",
+      "profile_ids",
+      "fault_kinds",
+      "fault_labels",
+      "status",
+      "observations",
+      "input_hash",
+      "semantic_hash",
+      "created_at"
+    ],
+    "title": "ExperimentSummary",
+    "type": "object"
+  },
+  "FaultDefinition": {
+    "$defs": {
+      "FaultKind": {
+        "description": "The supported fault-injection primitives (MASTER_PROMPT \u00a78, Gate 6 G6-06).\n\nOnly a mutation the domain can genuinely represent is listed. Each entry\nmaps to one authoritative operation - see ``faults.py`` for the mapping.",
+        "enum": [
+          "edge_closure",
+          "temporary_connection_loss",
+          "evidence_removal",
+          "conflicting_observation",
+          "evidence_expiration",
+          "unsupported_unit_observation",
+          "path_obstruction"
+        ],
+        "title": "FaultKind",
+        "type": "string"
+      },
+      "FaultObservation": {
+        "additionalProperties": false,
+        "description": "An explicitly synthetic observation introduced by a fault.\n\n``synthetic`` is forced to ``True`` and the provenance class cannot claim to\nbe a field measurement: injected observations are synthetic by construction\nand must never be presented as evidence collected on site (GATE-6 INV-9).",
+        "properties": {
+          "field": {
+            "minLength": 1,
+            "title": "Field",
+            "type": "string"
+          },
+          "method": {
+            "default": "failure_lab_injected_observation",
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "Synthetic observation injected by an explicitly modelled Failure Lab fault. It is not a field measurement and carries no field provenance.",
+            "title": "Note",
+            "type": "string"
+          },
+          "provenance_class": {
+            "default": "synthetic",
+            "enum": [
+              "assumed",
+              "synthetic",
+              "synthetic_fixture"
+            ],
+            "title": "Provenance Class",
+            "type": "string"
+          },
+          "quality": {
+            "default": "low",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Quality",
+            "type": "string"
+          },
+          "source": {
+            "default": "DETOUR LAB Failure Lab (synthetic adversarial observation)",
+            "title": "Source",
+            "type": "string"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "default": "unverified",
+            "enum": [
+              "unverified",
+              "verified",
+              "disputed"
+            ],
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field"
+        ],
+        "title": "FaultObservation",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "One explicitly modelled adversarial condition.\n\n``phase_ids`` is the fault's **scope**. An empty list means \"every phase in\nthe experiment\". A multi-entry scope is the multi-phase case (G6-06/F8):\nthe fault is applied to exactly those phases and no other, which preserves\nthe independent phase-snapshot model.",
+    "properties": {
+      "evaluation_instant": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Evaluation Instant"
+      },
+      "fault_id": {
+        "default": "",
+        "title": "Fault Id",
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/$defs/FaultKind"
+      },
+      "label": {
+        "default": "",
+        "title": "Label",
+        "type": "string"
+      },
+      "note": {
+        "default": "",
+        "title": "Note",
+        "type": "string"
+      },
+      "observation": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/FaultObservation"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "phase_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Phase Ids",
+        "type": "array"
+      },
+      "semantic_hash": {
+        "default": "",
+        "title": "Semantic Hash",
+        "type": "string"
+      },
+      "target_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Target Ids",
+        "type": "array"
+      }
+    },
+    "required": [
+      "kind"
+    ],
+    "title": "FaultDefinition",
+    "type": "object"
+  },
+  "FaultObservation": {
+    "additionalProperties": false,
+    "description": "An explicitly synthetic observation introduced by a fault.\n\n``synthetic`` is forced to ``True`` and the provenance class cannot claim to\nbe a field measurement: injected observations are synthetic by construction\nand must never be presented as evidence collected on site (GATE-6 INV-9).",
+    "properties": {
+      "field": {
+        "minLength": 1,
+        "title": "Field",
+        "type": "string"
+      },
+      "method": {
+        "default": "failure_lab_injected_observation",
+        "title": "Method",
+        "type": "string"
+      },
+      "note": {
+        "default": "Synthetic observation injected by an explicitly modelled Failure Lab fault. It is not a field measurement and carries no field provenance.",
+        "title": "Note",
+        "type": "string"
+      },
+      "provenance_class": {
+        "default": "synthetic",
+        "enum": [
+          "assumed",
+          "synthetic",
+          "synthetic_fixture"
+        ],
+        "title": "Provenance Class",
+        "type": "string"
+      },
+      "quality": {
+        "default": "low",
+        "enum": [
+          "high",
+          "medium",
+          "low"
+        ],
+        "title": "Quality",
+        "type": "string"
+      },
+      "source": {
+        "default": "DETOUR LAB Failure Lab (synthetic adversarial observation)",
+        "title": "Source",
+        "type": "string"
+      },
+      "unit": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Unit"
+      },
+      "value": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Value"
+      },
+      "verification_status": {
+        "default": "unverified",
+        "enum": [
+          "unverified",
+          "verified",
+          "disputed"
+        ],
+        "title": "Verification Status",
+        "type": "string"
+      }
+    },
+    "required": [
+      "field"
+    ],
+    "title": "FaultObservation",
     "type": "object"
   },
   "Finding": {
@@ -5410,6 +8682,140 @@
     "title": "ODTransition",
     "type": "object"
   },
+  "ObservationComparison": {
+    "additionalProperties": false,
+    "description": "One observation behind an unresolved attribute, with full provenance.\n\n``value`` and ``unit`` are exactly what the source reported. Canonical\nconversion, where one happened, is reported separately so the original\nrecord is never overwritten.",
+    "properties": {
+      "conversion": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Conversion"
+      },
+      "evidence_id": {
+        "title": "Evidence Id",
+        "type": "string"
+      },
+      "invalidated": {
+        "title": "Invalidated",
+        "type": "boolean"
+      },
+      "method": {
+        "title": "Method",
+        "type": "string"
+      },
+      "note": {
+        "default": "",
+        "title": "Note",
+        "type": "string"
+      },
+      "observed_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Observed At"
+      },
+      "provenance_class": {
+        "title": "Provenance Class",
+        "type": "string"
+      },
+      "quality": {
+        "title": "Quality",
+        "type": "string"
+      },
+      "reviewer": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Reviewer"
+      },
+      "source": {
+        "title": "Source",
+        "type": "string"
+      },
+      "source_url": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Source Url"
+      },
+      "synthetic": {
+        "title": "Synthetic",
+        "type": "boolean"
+      },
+      "unit": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Unit"
+      },
+      "value": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Value"
+      },
+      "verification_status": {
+        "title": "Verification Status",
+        "type": "string"
+      }
+    },
+    "required": [
+      "evidence_id",
+      "method",
+      "source",
+      "verification_status",
+      "quality",
+      "provenance_class",
+      "synthetic",
+      "invalidated"
+    ],
+    "title": "ObservationComparison",
+    "type": "object"
+  },
   "OriginDestination": {
     "additionalProperties": false,
     "description": "OD endpoint bound to a **graph node ID**, never to a nearby coordinate.",
@@ -5475,6 +8881,143 @@
       "kind"
     ],
     "title": "OriginDestination",
+    "type": "object"
+  },
+  "PairTransition": {
+    "$defs": {
+      "EngineeringObservation": {
+        "description": "What the authoritative engine actually reported about the plan.\n\nEvery value describes *modelled software behaviour under an explicitly\nmodelled condition*. None of them is a statement about the physical world.",
+        "enum": [
+          "confirmed_connectivity_preserved",
+          "confirmed_connectivity_gained",
+          "confirmed_connectivity_lost",
+          "confirmed_route_became_possible_only",
+          "possible_only_route_became_disconnected",
+          "new_known_rule_violation",
+          "new_unresolved_evidence_condition",
+          "no_relevant_modelled_change",
+          "analysis_unavailable"
+        ],
+        "title": "EngineeringObservation",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Before/after outcome for one origin-destination pair under one profile.",
+    "properties": {
+      "after_confirmed": {
+        "title": "After Confirmed",
+        "type": "boolean"
+      },
+      "after_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "After Distance M"
+      },
+      "after_possible": {
+        "title": "After Possible",
+        "type": "boolean"
+      },
+      "before_confirmed": {
+        "title": "Before Confirmed",
+        "type": "boolean"
+      },
+      "before_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Before Distance M"
+      },
+      "before_possible": {
+        "title": "Before Possible",
+        "type": "boolean"
+      },
+      "destination_id": {
+        "title": "Destination Id",
+        "type": "string"
+      },
+      "distance_delta_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Distance Delta M"
+      },
+      "explanation": {
+        "title": "Explanation",
+        "type": "string"
+      },
+      "new_fail_verdicts": {
+        "items": {
+          "type": "string"
+        },
+        "title": "New Fail Verdicts",
+        "type": "array"
+      },
+      "new_unknown_verdicts": {
+        "items": {
+          "type": "string"
+        },
+        "title": "New Unknown Verdicts",
+        "type": "array"
+      },
+      "observation": {
+        "$ref": "#/$defs/EngineeringObservation"
+      },
+      "origin_id": {
+        "title": "Origin Id",
+        "type": "string"
+      },
+      "pair_id": {
+        "title": "Pair Id",
+        "type": "string"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "reference_route_comparison": {
+        "default": false,
+        "title": "Reference Route Comparison",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "pair_id",
+      "origin_id",
+      "destination_id",
+      "profile_id",
+      "phase_id",
+      "before_confirmed",
+      "before_possible",
+      "after_confirmed",
+      "after_possible",
+      "observation",
+      "explanation"
+    ],
+    "title": "PairTransition",
     "type": "object"
   },
   "Phase": {
@@ -5556,6 +9099,79 @@
     "title": "Phase",
     "type": "object"
   },
+  "PhaseProfileOutcome": {
+    "additionalProperties": false,
+    "description": "Analysis identity for one (phase, profile) on one side of the experiment.",
+    "properties": {
+      "analysis_semantic_hash": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Analysis Semantic Hash"
+      },
+      "available": {
+        "title": "Available",
+        "type": "boolean"
+      },
+      "counts": {
+        "additionalProperties": {
+          "type": "integer"
+        },
+        "title": "Counts",
+        "type": "object"
+      },
+      "phase_graph_hash": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Phase Graph Hash"
+      },
+      "phase_graph_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Phase Graph Id"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "unavailable_reason": {
+        "default": "",
+        "title": "Unavailable Reason",
+        "type": "string"
+      }
+    },
+    "required": [
+      "phase_id",
+      "profile_id",
+      "available"
+    ],
+    "title": "PhaseProfileOutcome",
+    "type": "object"
+  },
   "RankingPolicy": {
     "additionalProperties": false,
     "description": "The documented, deterministic ordering. Weights: none.",
@@ -5590,6 +9206,1391 @@
       }
     },
     "title": "RankingPolicy",
+    "type": "object"
+  },
+  "ReportAlternativePlan": {
+    "$defs": {
+      "ReportCandidate": {
+        "additionalProperties": false,
+        "description": "Section 8 - one optimisation candidate as stored.",
+        "properties": {
+          "classification": {
+            "title": "Classification",
+            "type": "string"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Currency"
+          },
+          "cost_maximum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Maximum"
+          },
+          "cost_nominal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Nominal"
+          },
+          "cost_note": {
+            "title": "Cost Note",
+            "type": "string"
+          },
+          "cost_unknown": {
+            "title": "Cost Unknown",
+            "type": "boolean"
+          },
+          "intervention_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Intervention Ids",
+            "type": "array"
+          },
+          "introduced_fail_verdict_count": {
+            "title": "Introduced Fail Verdict Count",
+            "type": "integer"
+          },
+          "introduced_unknown_verdict_count": {
+            "title": "Introduced Unknown Verdict Count",
+            "type": "integer"
+          },
+          "preview_scenario_hash": {
+            "default": "",
+            "title": "Preview Scenario Hash",
+            "type": "string"
+          },
+          "proposal_id": {
+            "title": "Proposal Id",
+            "type": "string"
+          },
+          "requires_verification": {
+            "title": "Requires Verification",
+            "type": "boolean"
+          },
+          "restored_all_profiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Restored All Profiles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "proposal_id",
+          "classification",
+          "requires_verification",
+          "introduced_unknown_verdict_count",
+          "introduced_fail_verdict_count",
+          "cost_unknown",
+          "cost_note"
+        ],
+        "title": "ReportCandidate",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Section 8 - one stored optimisation search.",
+    "properties": {
+      "best_proposal_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Best Proposal Id"
+      },
+      "budget_note": {
+        "default": "Monetary ranking is disabled by default because no verified price data exists in this project. Costs shown are the declared demonstration values only.",
+        "title": "Budget Note",
+        "type": "string"
+      },
+      "domain_combination_count": {
+        "title": "Domain Combination Count",
+        "type": "integer"
+      },
+      "domain_eligible_intervention_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Domain Eligible Intervention Ids",
+        "type": "array"
+      },
+      "domain_evaluated_count": {
+        "title": "Domain Evaluated Count",
+        "type": "integer"
+      },
+      "evaluation_instant": {
+        "title": "Evaluation Instant",
+        "type": "string"
+      },
+      "exhaustive": {
+        "title": "Exhaustive",
+        "type": "boolean"
+      },
+      "limits_hit": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Limits Hit",
+        "type": "array"
+      },
+      "permitted_interventions": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Permitted Interventions",
+        "type": "array"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "profile_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Profile Ids",
+        "type": "array"
+      },
+      "scenario_revision": {
+        "title": "Scenario Revision",
+        "type": "integer"
+      },
+      "scope_note": {
+        "title": "Scope Note",
+        "type": "string"
+      },
+      "search_id": {
+        "title": "Search Id",
+        "type": "string"
+      },
+      "selected_candidates": {
+        "items": {
+          "$ref": "#/$defs/ReportCandidate"
+        },
+        "title": "Selected Candidates",
+        "type": "array"
+      },
+      "semantic_hash": {
+        "title": "Semantic Hash",
+        "type": "string"
+      },
+      "solver_status": {
+        "title": "Solver Status",
+        "type": "string"
+      },
+      "truncated_by": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Truncated By",
+        "type": "array"
+      }
+    },
+    "required": [
+      "search_id",
+      "scenario_revision",
+      "phase_id",
+      "evaluation_instant",
+      "solver_status",
+      "exhaustive",
+      "domain_evaluated_count",
+      "domain_combination_count",
+      "scope_note",
+      "semantic_hash"
+    ],
+    "title": "ReportAlternativePlan",
+    "type": "object"
+  },
+  "ReportCandidate": {
+    "additionalProperties": false,
+    "description": "Section 8 - one optimisation candidate as stored.",
+    "properties": {
+      "classification": {
+        "title": "Classification",
+        "type": "string"
+      },
+      "cost_currency": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Cost Currency"
+      },
+      "cost_maximum": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Cost Maximum"
+      },
+      "cost_nominal": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Cost Nominal"
+      },
+      "cost_note": {
+        "title": "Cost Note",
+        "type": "string"
+      },
+      "cost_unknown": {
+        "title": "Cost Unknown",
+        "type": "boolean"
+      },
+      "intervention_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Intervention Ids",
+        "type": "array"
+      },
+      "introduced_fail_verdict_count": {
+        "title": "Introduced Fail Verdict Count",
+        "type": "integer"
+      },
+      "introduced_unknown_verdict_count": {
+        "title": "Introduced Unknown Verdict Count",
+        "type": "integer"
+      },
+      "preview_scenario_hash": {
+        "default": "",
+        "title": "Preview Scenario Hash",
+        "type": "string"
+      },
+      "proposal_id": {
+        "title": "Proposal Id",
+        "type": "string"
+      },
+      "requires_verification": {
+        "title": "Requires Verification",
+        "type": "boolean"
+      },
+      "restored_all_profiles": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Restored All Profiles",
+        "type": "array"
+      }
+    },
+    "required": [
+      "proposal_id",
+      "classification",
+      "requires_verification",
+      "introduced_unknown_verdict_count",
+      "introduced_fail_verdict_count",
+      "cost_unknown",
+      "cost_note"
+    ],
+    "title": "ReportCandidate",
+    "type": "object"
+  },
+  "ReportEvidenceIssue": {
+    "additionalProperties": false,
+    "description": "Section 7 - one unresolved attribute from the evidence queue.",
+    "properties": {
+      "attribute": {
+        "title": "Attribute",
+        "type": "string"
+      },
+      "criticality": {
+        "title": "Criticality",
+        "type": "string"
+      },
+      "element_id": {
+        "title": "Element Id",
+        "type": "string"
+      },
+      "evidence_record_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Evidence Record Ids",
+        "type": "array"
+      },
+      "investigation_target": {
+        "title": "Investigation Target",
+        "type": "string"
+      },
+      "issue_id": {
+        "title": "Issue Id",
+        "type": "string"
+      },
+      "rationale": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Rationale",
+        "type": "array"
+      },
+      "resolution_status": {
+        "title": "Resolution Status",
+        "type": "string"
+      },
+      "status_label": {
+        "title": "Status Label",
+        "type": "string"
+      }
+    },
+    "required": [
+      "issue_id",
+      "element_id",
+      "attribute",
+      "resolution_status",
+      "status_label",
+      "criticality",
+      "investigation_target"
+    ],
+    "title": "ReportEvidenceIssue",
+    "type": "object"
+  },
+  "ReportEvidenceRow": {
+    "additionalProperties": false,
+    "description": "Section 7 - one observation, with its original value, unit and provenance.",
+    "properties": {
+      "element_id": {
+        "title": "Element Id",
+        "type": "string"
+      },
+      "evidence_id": {
+        "title": "Evidence Id",
+        "type": "string"
+      },
+      "field": {
+        "title": "Field",
+        "type": "string"
+      },
+      "method": {
+        "title": "Method",
+        "type": "string"
+      },
+      "note": {
+        "default": "",
+        "title": "Note",
+        "type": "string"
+      },
+      "observed_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Observed At"
+      },
+      "provenance_class": {
+        "title": "Provenance Class",
+        "type": "string"
+      },
+      "source": {
+        "title": "Source",
+        "type": "string"
+      },
+      "synthetic": {
+        "title": "Synthetic",
+        "type": "boolean"
+      },
+      "unit": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Unit"
+      },
+      "value": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Value"
+      },
+      "verification_status": {
+        "title": "Verification Status",
+        "type": "string"
+      }
+    },
+    "required": [
+      "evidence_id",
+      "element_id",
+      "field",
+      "method",
+      "source",
+      "verification_status",
+      "provenance_class",
+      "synthetic"
+    ],
+    "title": "ReportEvidenceRow",
+    "type": "object"
+  },
+  "ReportExperiment": {
+    "additionalProperties": false,
+    "description": "Section 9 - one stored Failure Lab experiment.",
+    "properties": {
+      "element_changes": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Element Changes",
+        "type": "array"
+      },
+      "error": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Error"
+      },
+      "evaluation_instant": {
+        "title": "Evaluation Instant",
+        "type": "string"
+      },
+      "evidence_change_log": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Evidence Change Log",
+        "type": "array"
+      },
+      "experiment_id": {
+        "title": "Experiment Id",
+        "type": "string"
+      },
+      "fault_kinds": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Fault Kinds",
+        "type": "array"
+      },
+      "fault_labels": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Fault Labels",
+        "type": "array"
+      },
+      "fault_semantic_hashes": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Fault Semantic Hashes",
+        "type": "array"
+      },
+      "fault_targets": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Fault Targets",
+        "type": "array"
+      },
+      "faulted_evaluation_instant": {
+        "title": "Faulted Evaluation Instant",
+        "type": "string"
+      },
+      "input_hash": {
+        "title": "Input Hash",
+        "type": "string"
+      },
+      "observations": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Observations",
+        "type": "array"
+      },
+      "phase_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Phase Ids",
+        "type": "array"
+      },
+      "profile_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Profile Ids",
+        "type": "array"
+      },
+      "scenario_revision": {
+        "title": "Scenario Revision",
+        "type": "integer"
+      },
+      "semantic_hash": {
+        "title": "Semantic Hash",
+        "type": "string"
+      },
+      "status": {
+        "title": "Status",
+        "type": "string"
+      },
+      "transitions": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Transitions",
+        "type": "array"
+      }
+    },
+    "required": [
+      "experiment_id",
+      "status",
+      "scenario_revision",
+      "evaluation_instant",
+      "faulted_evaluation_instant",
+      "semantic_hash",
+      "input_hash"
+    ],
+    "title": "ReportExperiment",
+    "type": "object"
+  },
+  "ReportFinding": {
+    "additionalProperties": false,
+    "description": "Section 6 - one real finding with its rule, evidence and explanation.",
+    "properties": {
+      "attributes": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Attributes",
+        "type": "array"
+      },
+      "element_id": {
+        "title": "Element Id",
+        "type": "string"
+      },
+      "element_kind": {
+        "title": "Element Kind",
+        "type": "string"
+      },
+      "evidence_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Evidence Ids",
+        "type": "array"
+      },
+      "explanation": {
+        "title": "Explanation",
+        "type": "string"
+      },
+      "finding_id": {
+        "title": "Finding Id",
+        "type": "string"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "reason_code": {
+        "title": "Reason Code",
+        "type": "string"
+      },
+      "rule_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Rule Id"
+      },
+      "rule_version": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Rule Version"
+      },
+      "rulepack_version": {
+        "title": "Rulepack Version",
+        "type": "string"
+      },
+      "severity": {
+        "title": "Severity",
+        "type": "string"
+      },
+      "state": {
+        "title": "State",
+        "type": "string"
+      }
+    },
+    "required": [
+      "finding_id",
+      "element_id",
+      "element_kind",
+      "state",
+      "severity",
+      "reason_code",
+      "rulepack_version",
+      "profile_id",
+      "phase_id",
+      "explanation"
+    ],
+    "title": "ReportFinding",
+    "type": "object"
+  },
+  "ReportIdentity": {
+    "additionalProperties": false,
+    "properties": {
+      "dataset_attribution": {
+        "title": "Dataset Attribution",
+        "type": "string"
+      },
+      "dataset_license": {
+        "title": "Dataset License",
+        "type": "string"
+      },
+      "dataset_notice": {
+        "title": "Dataset Notice",
+        "type": "string"
+      },
+      "dataset_provenance_class": {
+        "title": "Dataset Provenance Class",
+        "type": "string"
+      },
+      "parent_scenario_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Parent Scenario Id"
+      },
+      "project_id": {
+        "title": "Project Id",
+        "type": "string"
+      },
+      "project_jurisdiction": {
+        "title": "Project Jurisdiction",
+        "type": "string"
+      },
+      "project_name": {
+        "title": "Project Name",
+        "type": "string"
+      },
+      "project_owner": {
+        "title": "Project Owner",
+        "type": "string"
+      },
+      "project_study_area": {
+        "title": "Project Study Area",
+        "type": "string"
+      },
+      "report_id": {
+        "title": "Report Id",
+        "type": "string"
+      },
+      "scenario_content_hash": {
+        "title": "Scenario Content Hash",
+        "type": "string"
+      },
+      "scenario_id": {
+        "title": "Scenario Id",
+        "type": "string"
+      },
+      "scenario_name": {
+        "title": "Scenario Name",
+        "type": "string"
+      },
+      "scenario_revision": {
+        "title": "Scenario Revision",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "report_id",
+      "project_id",
+      "project_name",
+      "project_jurisdiction",
+      "project_owner",
+      "project_study_area",
+      "scenario_id",
+      "scenario_name",
+      "scenario_revision",
+      "scenario_content_hash",
+      "dataset_notice",
+      "dataset_license",
+      "dataset_attribution",
+      "dataset_provenance_class"
+    ],
+    "title": "ReportIdentity",
+    "type": "object"
+  },
+  "ReportLimitations": {
+    "additionalProperties": false,
+    "description": "Section 10 - the statements that must survive into every rendering.",
+    "properties": {
+      "costs_available": {
+        "default": false,
+        "title": "Costs Available",
+        "type": "boolean"
+      },
+      "field_measurements_independently_verified": {
+        "default": false,
+        "title": "Field Measurements Independently Verified",
+        "type": "boolean"
+      },
+      "legal_applicability_reviewed": {
+        "default": false,
+        "title": "Legal Applicability Reviewed",
+        "type": "boolean"
+      },
+      "manual_accessibility_review_performed": {
+        "default": false,
+        "title": "Manual Accessibility Review Performed",
+        "type": "boolean"
+      },
+      "phases_not_analysed": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Phases Not Analysed",
+        "type": "array"
+      },
+      "physical_safety_established": {
+        "default": false,
+        "title": "Physical Safety Established",
+        "type": "boolean"
+      },
+      "rules_are_demonstration_only": {
+        "default": true,
+        "title": "Rules Are Demonstration Only",
+        "type": "boolean"
+      },
+      "statements": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Statements",
+        "type": "array"
+      }
+    },
+    "required": [
+      "statements"
+    ],
+    "title": "ReportLimitations",
+    "type": "object"
+  },
+  "ReportModification": {
+    "additionalProperties": false,
+    "description": "Section 5 - declared construction modifications for the reported phases.",
+    "properties": {
+      "closed_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Closed Edge Ids",
+        "type": "array"
+      },
+      "label": {
+        "title": "Label",
+        "type": "string"
+      },
+      "notes": {
+        "default": "",
+        "title": "Notes",
+        "type": "string"
+      },
+      "order": {
+        "title": "Order",
+        "type": "integer"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "temporary_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Temporary Edge Ids",
+        "type": "array"
+      }
+    },
+    "required": [
+      "phase_id",
+      "order",
+      "label"
+    ],
+    "title": "ReportModification",
+    "type": "object"
+  },
+  "ReportNetwork": {
+    "$defs": {
+      "NetworkEdge": {
+        "additionalProperties": false,
+        "properties": {
+          "closed_in_phase": {
+            "title": "Closed In Phase",
+            "type": "boolean"
+          },
+          "edge_type": {
+            "title": "Edge Type",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "length_m": {
+            "title": "Length M",
+            "type": "number"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "State"
+          },
+          "temporary": {
+            "title": "Temporary",
+            "type": "boolean"
+          },
+          "u": {
+            "title": "U",
+            "type": "string"
+          },
+          "v": {
+            "title": "V",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "u",
+          "v",
+          "length_m",
+          "edge_type",
+          "closed_in_phase",
+          "temporary"
+        ],
+        "title": "NetworkEdge",
+        "type": "object"
+      },
+      "NetworkNode": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "node_type": {
+            "title": "Node Type",
+            "type": "string"
+          },
+          "x": {
+            "title": "X",
+            "type": "number"
+          },
+          "y": {
+            "title": "Y",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "x",
+          "y",
+          "node_type"
+        ],
+        "title": "NetworkNode",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Section 4 - the authoritative graph, plus the state the analysis used.",
+    "properties": {
+      "bound_height": {
+        "title": "Bound Height",
+        "type": "number"
+      },
+      "bound_width": {
+        "title": "Bound Width",
+        "type": "number"
+      },
+      "bound_x": {
+        "title": "Bound X",
+        "type": "number"
+      },
+      "bound_y": {
+        "title": "Bound Y",
+        "type": "number"
+      },
+      "edges": {
+        "items": {
+          "$ref": "#/$defs/NetworkEdge"
+        },
+        "title": "Edges",
+        "type": "array"
+      },
+      "nodes": {
+        "items": {
+          "$ref": "#/$defs/NetworkNode"
+        },
+        "title": "Nodes",
+        "type": "array"
+      },
+      "phase_graph_hash": {
+        "title": "Phase Graph Hash",
+        "type": "string"
+      },
+      "phase_graph_id": {
+        "title": "Phase Graph Id",
+        "type": "string"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "unlinked_crossings": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Unlinked Crossings",
+        "type": "array"
+      }
+    },
+    "required": [
+      "phase_id",
+      "profile_id",
+      "phase_graph_id",
+      "phase_graph_hash",
+      "bound_x",
+      "bound_y",
+      "bound_width",
+      "bound_height"
+    ],
+    "title": "ReportNetwork",
+    "type": "object"
+  },
+  "ReportODRow": {
+    "additionalProperties": false,
+    "description": "Section 6 - one origin-destination outcome, kept deliberately honest.",
+    "properties": {
+      "blocking_finding_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Blocking Finding Ids",
+        "type": "array"
+      },
+      "confirmed_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Confirmed Distance M"
+      },
+      "confirmed_path_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Confirmed Path Edge Ids",
+        "type": "array"
+      },
+      "confirmed_reachable": {
+        "title": "Confirmed Reachable",
+        "type": "boolean"
+      },
+      "confirmed_route_cost": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Confirmed Route Cost"
+      },
+      "destination_id": {
+        "title": "Destination Id",
+        "type": "string"
+      },
+      "distance_note": {
+        "default": "Distance is the physical route length in metres. A missing route is reported as 'not established' and never as zero. Ranking cost additionally applies preference weights and is never presented as distance.",
+        "title": "Distance Note",
+        "type": "string"
+      },
+      "origin_id": {
+        "title": "Origin Id",
+        "type": "string"
+      },
+      "pair_id": {
+        "title": "Pair Id",
+        "type": "string"
+      },
+      "phase_id": {
+        "title": "Phase Id",
+        "type": "string"
+      },
+      "possible_distance_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Possible Distance M"
+      },
+      "possible_path_edge_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Possible Path Edge Ids",
+        "type": "array"
+      },
+      "possibly_reachable": {
+        "title": "Possibly Reachable",
+        "type": "boolean"
+      },
+      "profile_id": {
+        "title": "Profile Id",
+        "type": "string"
+      },
+      "reason_codes": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Reason Codes",
+        "type": "array"
+      },
+      "relevant_finding_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Relevant Finding Ids",
+        "type": "array"
+      }
+    },
+    "required": [
+      "profile_id",
+      "phase_id",
+      "pair_id",
+      "origin_id",
+      "destination_id",
+      "confirmed_reachable",
+      "possibly_reachable"
+    ],
+    "title": "ReportODRow",
+    "type": "object"
+  },
+  "ReportScope": {
+    "additionalProperties": false,
+    "description": "Section 3 - exactly what was evaluated.",
+    "properties": {
+      "coordinate_basis_kind": {
+        "title": "Coordinate Basis Kind",
+        "type": "string"
+      },
+      "coordinate_basis_note": {
+        "title": "Coordinate Basis Note",
+        "type": "string"
+      },
+      "edge_count": {
+        "title": "Edge Count",
+        "type": "integer"
+      },
+      "evaluation_instants": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Evaluation Instants",
+        "type": "array"
+      },
+      "evidence_record_count": {
+        "title": "Evidence Record Count",
+        "type": "integer"
+      },
+      "graph_content_hash": {
+        "title": "Graph Content Hash",
+        "type": "string"
+      },
+      "graph_version_id": {
+        "title": "Graph Version Id",
+        "type": "string"
+      },
+      "local_origin_label": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Local Origin Label"
+      },
+      "node_count": {
+        "title": "Node Count",
+        "type": "integer"
+      },
+      "origin_destination_requirements": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Origin Destination Requirements",
+        "type": "array"
+      },
+      "phases_analysed": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Phases Analysed",
+        "type": "array"
+      },
+      "phases_declared": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Phases Declared",
+        "type": "array"
+      },
+      "profiles": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Profiles",
+        "type": "array"
+      },
+      "rule_count": {
+        "title": "Rule Count",
+        "type": "integer"
+      },
+      "rulepack_disclaimer": {
+        "title": "Rulepack Disclaimer",
+        "type": "string"
+      },
+      "rulepack_hash": {
+        "title": "Rulepack Hash",
+        "type": "string"
+      },
+      "rulepack_id": {
+        "title": "Rulepack Id",
+        "type": "string"
+      },
+      "rulepack_legal_applicability": {
+        "title": "Rulepack Legal Applicability",
+        "type": "string"
+      },
+      "rulepack_version": {
+        "title": "Rulepack Version",
+        "type": "string"
+      },
+      "synthetic_dataset": {
+        "title": "Synthetic Dataset",
+        "type": "boolean"
+      },
+      "synthetic_dataset_reason": {
+        "title": "Synthetic Dataset Reason",
+        "type": "string"
+      }
+    },
+    "required": [
+      "synthetic_dataset",
+      "synthetic_dataset_reason",
+      "coordinate_basis_kind",
+      "coordinate_basis_note",
+      "graph_version_id",
+      "graph_content_hash",
+      "node_count",
+      "edge_count",
+      "evidence_record_count",
+      "rulepack_id",
+      "rulepack_version",
+      "rulepack_hash",
+      "rulepack_legal_applicability",
+      "rulepack_disclaimer",
+      "rule_count"
+    ],
+    "title": "ReportScope",
+    "type": "object"
+  },
+  "ReportSection12": {
+    "additionalProperties": false,
+    "description": "Section 12 - human review. Never populated with invented sign-off.\n\nThe defaults are the honest state: no reviewer exists. A caller may record a\nreal reviewer, but the API never supplies one, and no signature, seal or\napproval is ever generated.",
+    "properties": {
+      "approval_status": {
+        "default": "NO REVIEW RECORDED - NOT APPROVED FOR ANY USE",
+        "title": "Approval Status",
+        "type": "string"
+      },
+      "note": {
+        "default": "No human review has been recorded for this packet. DETOUR LAB does not assign reviewers, does not collect signatures and cannot grant approval. This section is deliberately blank: it states that the analysis has not been reviewed by a named accessibility or civil engineering professional.",
+        "title": "Note",
+        "type": "string"
+      },
+      "review_recorded": {
+        "default": false,
+        "title": "Review Recorded",
+        "type": "boolean"
+      },
+      "reviewed_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Reviewed At"
+      },
+      "reviewer": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Reviewer"
+      },
+      "reviewer_role": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Reviewer Role"
+      }
+    },
+    "title": "ReportSection12",
     "type": "object"
   },
   "ResolvedAttribute": {
@@ -5725,6 +10726,1939 @@
       "known"
     ],
     "title": "ResolvedAttribute",
+    "type": "object"
+  },
+  "ReviewReport": {
+    "$defs": {
+      "NetworkEdge": {
+        "additionalProperties": false,
+        "properties": {
+          "closed_in_phase": {
+            "title": "Closed In Phase",
+            "type": "boolean"
+          },
+          "edge_type": {
+            "title": "Edge Type",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "length_m": {
+            "title": "Length M",
+            "type": "number"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "State"
+          },
+          "temporary": {
+            "title": "Temporary",
+            "type": "boolean"
+          },
+          "u": {
+            "title": "U",
+            "type": "string"
+          },
+          "v": {
+            "title": "V",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "u",
+          "v",
+          "length_m",
+          "edge_type",
+          "closed_in_phase",
+          "temporary"
+        ],
+        "title": "NetworkEdge",
+        "type": "object"
+      },
+      "NetworkNode": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "node_type": {
+            "title": "Node Type",
+            "type": "string"
+          },
+          "x": {
+            "title": "X",
+            "type": "number"
+          },
+          "y": {
+            "title": "Y",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "x",
+          "y",
+          "node_type"
+        ],
+        "title": "NetworkNode",
+        "type": "object"
+      },
+      "ReportAlternativePlan": {
+        "additionalProperties": false,
+        "description": "Section 8 - one stored optimisation search.",
+        "properties": {
+          "best_proposal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Best Proposal Id"
+          },
+          "budget_note": {
+            "default": "Monetary ranking is disabled by default because no verified price data exists in this project. Costs shown are the declared demonstration values only.",
+            "title": "Budget Note",
+            "type": "string"
+          },
+          "domain_combination_count": {
+            "title": "Domain Combination Count",
+            "type": "integer"
+          },
+          "domain_eligible_intervention_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Domain Eligible Intervention Ids",
+            "type": "array"
+          },
+          "domain_evaluated_count": {
+            "title": "Domain Evaluated Count",
+            "type": "integer"
+          },
+          "evaluation_instant": {
+            "title": "Evaluation Instant",
+            "type": "string"
+          },
+          "exhaustive": {
+            "title": "Exhaustive",
+            "type": "boolean"
+          },
+          "limits_hit": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limits Hit",
+            "type": "array"
+          },
+          "permitted_interventions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Permitted Interventions",
+            "type": "array"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "profile_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Profile Ids",
+            "type": "array"
+          },
+          "scenario_revision": {
+            "title": "Scenario Revision",
+            "type": "integer"
+          },
+          "scope_note": {
+            "title": "Scope Note",
+            "type": "string"
+          },
+          "search_id": {
+            "title": "Search Id",
+            "type": "string"
+          },
+          "selected_candidates": {
+            "items": {
+              "$ref": "#/$defs/ReportCandidate"
+            },
+            "title": "Selected Candidates",
+            "type": "array"
+          },
+          "semantic_hash": {
+            "title": "Semantic Hash",
+            "type": "string"
+          },
+          "solver_status": {
+            "title": "Solver Status",
+            "type": "string"
+          },
+          "truncated_by": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Truncated By",
+            "type": "array"
+          }
+        },
+        "required": [
+          "search_id",
+          "scenario_revision",
+          "phase_id",
+          "evaluation_instant",
+          "solver_status",
+          "exhaustive",
+          "domain_evaluated_count",
+          "domain_combination_count",
+          "scope_note",
+          "semantic_hash"
+        ],
+        "title": "ReportAlternativePlan",
+        "type": "object"
+      },
+      "ReportCandidate": {
+        "additionalProperties": false,
+        "description": "Section 8 - one optimisation candidate as stored.",
+        "properties": {
+          "classification": {
+            "title": "Classification",
+            "type": "string"
+          },
+          "cost_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Currency"
+          },
+          "cost_maximum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Maximum"
+          },
+          "cost_nominal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Nominal"
+          },
+          "cost_note": {
+            "title": "Cost Note",
+            "type": "string"
+          },
+          "cost_unknown": {
+            "title": "Cost Unknown",
+            "type": "boolean"
+          },
+          "intervention_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Intervention Ids",
+            "type": "array"
+          },
+          "introduced_fail_verdict_count": {
+            "title": "Introduced Fail Verdict Count",
+            "type": "integer"
+          },
+          "introduced_unknown_verdict_count": {
+            "title": "Introduced Unknown Verdict Count",
+            "type": "integer"
+          },
+          "preview_scenario_hash": {
+            "default": "",
+            "title": "Preview Scenario Hash",
+            "type": "string"
+          },
+          "proposal_id": {
+            "title": "Proposal Id",
+            "type": "string"
+          },
+          "requires_verification": {
+            "title": "Requires Verification",
+            "type": "boolean"
+          },
+          "restored_all_profiles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Restored All Profiles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "proposal_id",
+          "classification",
+          "requires_verification",
+          "introduced_unknown_verdict_count",
+          "introduced_fail_verdict_count",
+          "cost_unknown",
+          "cost_note"
+        ],
+        "title": "ReportCandidate",
+        "type": "object"
+      },
+      "ReportEvidenceIssue": {
+        "additionalProperties": false,
+        "description": "Section 7 - one unresolved attribute from the evidence queue.",
+        "properties": {
+          "attribute": {
+            "title": "Attribute",
+            "type": "string"
+          },
+          "criticality": {
+            "title": "Criticality",
+            "type": "string"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "evidence_record_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Record Ids",
+            "type": "array"
+          },
+          "investigation_target": {
+            "title": "Investigation Target",
+            "type": "string"
+          },
+          "issue_id": {
+            "title": "Issue Id",
+            "type": "string"
+          },
+          "rationale": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rationale",
+            "type": "array"
+          },
+          "resolution_status": {
+            "title": "Resolution Status",
+            "type": "string"
+          },
+          "status_label": {
+            "title": "Status Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id",
+          "element_id",
+          "attribute",
+          "resolution_status",
+          "status_label",
+          "criticality",
+          "investigation_target"
+        ],
+        "title": "ReportEvidenceIssue",
+        "type": "object"
+      },
+      "ReportEvidenceRow": {
+        "additionalProperties": false,
+        "description": "Section 7 - one observation, with its original value, unit and provenance.",
+        "properties": {
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "evidence_id": {
+            "title": "Evidence Id",
+            "type": "string"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
+          "provenance_class": {
+            "title": "Provenance Class",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          },
+          "verification_status": {
+            "title": "Verification Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "element_id",
+          "field",
+          "method",
+          "source",
+          "verification_status",
+          "provenance_class",
+          "synthetic"
+        ],
+        "title": "ReportEvidenceRow",
+        "type": "object"
+      },
+      "ReportExperiment": {
+        "additionalProperties": false,
+        "description": "Section 9 - one stored Failure Lab experiment.",
+        "properties": {
+          "element_changes": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Element Changes",
+            "type": "array"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Error"
+          },
+          "evaluation_instant": {
+            "title": "Evaluation Instant",
+            "type": "string"
+          },
+          "evidence_change_log": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Evidence Change Log",
+            "type": "array"
+          },
+          "experiment_id": {
+            "title": "Experiment Id",
+            "type": "string"
+          },
+          "fault_kinds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fault Kinds",
+            "type": "array"
+          },
+          "fault_labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fault Labels",
+            "type": "array"
+          },
+          "fault_semantic_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fault Semantic Hashes",
+            "type": "array"
+          },
+          "fault_targets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fault Targets",
+            "type": "array"
+          },
+          "faulted_evaluation_instant": {
+            "title": "Faulted Evaluation Instant",
+            "type": "string"
+          },
+          "input_hash": {
+            "title": "Input Hash",
+            "type": "string"
+          },
+          "observations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Observations",
+            "type": "array"
+          },
+          "phase_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Phase Ids",
+            "type": "array"
+          },
+          "profile_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Profile Ids",
+            "type": "array"
+          },
+          "scenario_revision": {
+            "title": "Scenario Revision",
+            "type": "integer"
+          },
+          "semantic_hash": {
+            "title": "Semantic Hash",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "transitions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Transitions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "experiment_id",
+          "status",
+          "scenario_revision",
+          "evaluation_instant",
+          "faulted_evaluation_instant",
+          "semantic_hash",
+          "input_hash"
+        ],
+        "title": "ReportExperiment",
+        "type": "object"
+      },
+      "ReportFinding": {
+        "additionalProperties": false,
+        "description": "Section 6 - one real finding with its rule, evidence and explanation.",
+        "properties": {
+          "attributes": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Attributes",
+            "type": "array"
+          },
+          "element_id": {
+            "title": "Element Id",
+            "type": "string"
+          },
+          "element_kind": {
+            "title": "Element Kind",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "finding_id": {
+            "title": "Finding Id",
+            "type": "string"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "reason_code": {
+            "title": "Reason Code",
+            "type": "string"
+          },
+          "rule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rule Id"
+          },
+          "rule_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rule Version"
+          },
+          "rulepack_version": {
+            "title": "Rulepack Version",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "finding_id",
+          "element_id",
+          "element_kind",
+          "state",
+          "severity",
+          "reason_code",
+          "rulepack_version",
+          "profile_id",
+          "phase_id",
+          "explanation"
+        ],
+        "title": "ReportFinding",
+        "type": "object"
+      },
+      "ReportIdentity": {
+        "additionalProperties": false,
+        "properties": {
+          "dataset_attribution": {
+            "title": "Dataset Attribution",
+            "type": "string"
+          },
+          "dataset_license": {
+            "title": "Dataset License",
+            "type": "string"
+          },
+          "dataset_notice": {
+            "title": "Dataset Notice",
+            "type": "string"
+          },
+          "dataset_provenance_class": {
+            "title": "Dataset Provenance Class",
+            "type": "string"
+          },
+          "parent_scenario_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Parent Scenario Id"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "project_jurisdiction": {
+            "title": "Project Jurisdiction",
+            "type": "string"
+          },
+          "project_name": {
+            "title": "Project Name",
+            "type": "string"
+          },
+          "project_owner": {
+            "title": "Project Owner",
+            "type": "string"
+          },
+          "project_study_area": {
+            "title": "Project Study Area",
+            "type": "string"
+          },
+          "report_id": {
+            "title": "Report Id",
+            "type": "string"
+          },
+          "scenario_content_hash": {
+            "title": "Scenario Content Hash",
+            "type": "string"
+          },
+          "scenario_id": {
+            "title": "Scenario Id",
+            "type": "string"
+          },
+          "scenario_name": {
+            "title": "Scenario Name",
+            "type": "string"
+          },
+          "scenario_revision": {
+            "title": "Scenario Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "report_id",
+          "project_id",
+          "project_name",
+          "project_jurisdiction",
+          "project_owner",
+          "project_study_area",
+          "scenario_id",
+          "scenario_name",
+          "scenario_revision",
+          "scenario_content_hash",
+          "dataset_notice",
+          "dataset_license",
+          "dataset_attribution",
+          "dataset_provenance_class"
+        ],
+        "title": "ReportIdentity",
+        "type": "object"
+      },
+      "ReportLimitations": {
+        "additionalProperties": false,
+        "description": "Section 10 - the statements that must survive into every rendering.",
+        "properties": {
+          "costs_available": {
+            "default": false,
+            "title": "Costs Available",
+            "type": "boolean"
+          },
+          "field_measurements_independently_verified": {
+            "default": false,
+            "title": "Field Measurements Independently Verified",
+            "type": "boolean"
+          },
+          "legal_applicability_reviewed": {
+            "default": false,
+            "title": "Legal Applicability Reviewed",
+            "type": "boolean"
+          },
+          "manual_accessibility_review_performed": {
+            "default": false,
+            "title": "Manual Accessibility Review Performed",
+            "type": "boolean"
+          },
+          "phases_not_analysed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Phases Not Analysed",
+            "type": "array"
+          },
+          "physical_safety_established": {
+            "default": false,
+            "title": "Physical Safety Established",
+            "type": "boolean"
+          },
+          "rules_are_demonstration_only": {
+            "default": true,
+            "title": "Rules Are Demonstration Only",
+            "type": "boolean"
+          },
+          "statements": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Statements",
+            "type": "array"
+          }
+        },
+        "required": [
+          "statements"
+        ],
+        "title": "ReportLimitations",
+        "type": "object"
+      },
+      "ReportModification": {
+        "additionalProperties": false,
+        "description": "Section 5 - declared construction modifications for the reported phases.",
+        "properties": {
+          "closed_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Closed Edge Ids",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "title": "Notes",
+            "type": "string"
+          },
+          "order": {
+            "title": "Order",
+            "type": "integer"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "temporary_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Temporary Edge Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "phase_id",
+          "order",
+          "label"
+        ],
+        "title": "ReportModification",
+        "type": "object"
+      },
+      "ReportNetwork": {
+        "additionalProperties": false,
+        "description": "Section 4 - the authoritative graph, plus the state the analysis used.",
+        "properties": {
+          "bound_height": {
+            "title": "Bound Height",
+            "type": "number"
+          },
+          "bound_width": {
+            "title": "Bound Width",
+            "type": "number"
+          },
+          "bound_x": {
+            "title": "Bound X",
+            "type": "number"
+          },
+          "bound_y": {
+            "title": "Bound Y",
+            "type": "number"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/$defs/NetworkEdge"
+            },
+            "title": "Edges",
+            "type": "array"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/$defs/NetworkNode"
+            },
+            "title": "Nodes",
+            "type": "array"
+          },
+          "phase_graph_hash": {
+            "title": "Phase Graph Hash",
+            "type": "string"
+          },
+          "phase_graph_id": {
+            "title": "Phase Graph Id",
+            "type": "string"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "unlinked_crossings": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Unlinked Crossings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "phase_id",
+          "profile_id",
+          "phase_graph_id",
+          "phase_graph_hash",
+          "bound_x",
+          "bound_y",
+          "bound_width",
+          "bound_height"
+        ],
+        "title": "ReportNetwork",
+        "type": "object"
+      },
+      "ReportODRow": {
+        "additionalProperties": false,
+        "description": "Section 6 - one origin-destination outcome, kept deliberately honest.",
+        "properties": {
+          "blocking_finding_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Blocking Finding Ids",
+            "type": "array"
+          },
+          "confirmed_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmed Distance M"
+          },
+          "confirmed_path_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Confirmed Path Edge Ids",
+            "type": "array"
+          },
+          "confirmed_reachable": {
+            "title": "Confirmed Reachable",
+            "type": "boolean"
+          },
+          "confirmed_route_cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmed Route Cost"
+          },
+          "destination_id": {
+            "title": "Destination Id",
+            "type": "string"
+          },
+          "distance_note": {
+            "default": "Distance is the physical route length in metres. A missing route is reported as 'not established' and never as zero. Ranking cost additionally applies preference weights and is never presented as distance.",
+            "title": "Distance Note",
+            "type": "string"
+          },
+          "origin_id": {
+            "title": "Origin Id",
+            "type": "string"
+          },
+          "pair_id": {
+            "title": "Pair Id",
+            "type": "string"
+          },
+          "phase_id": {
+            "title": "Phase Id",
+            "type": "string"
+          },
+          "possible_distance_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Possible Distance M"
+          },
+          "possible_path_edge_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Possible Path Edge Ids",
+            "type": "array"
+          },
+          "possibly_reachable": {
+            "title": "Possibly Reachable",
+            "type": "boolean"
+          },
+          "profile_id": {
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "relevant_finding_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Relevant Finding Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "profile_id",
+          "phase_id",
+          "pair_id",
+          "origin_id",
+          "destination_id",
+          "confirmed_reachable",
+          "possibly_reachable"
+        ],
+        "title": "ReportODRow",
+        "type": "object"
+      },
+      "ReportReproducibility": {
+        "additionalProperties": false,
+        "description": "Section 11 - everything needed to reproduce these conclusions.",
+        "properties": {
+          "base_graph_hash": {
+            "title": "Base Graph Hash",
+            "type": "string"
+          },
+          "base_graph_version_id": {
+            "title": "Base Graph Version Id",
+            "type": "string"
+          },
+          "canonical_json_bytes": {
+            "default": 0,
+            "title": "Canonical Json Bytes",
+            "type": "integer"
+          },
+          "engine_version": {
+            "title": "Engine Version",
+            "type": "string"
+          },
+          "report_generator_version": {
+            "title": "Report Generator Version",
+            "type": "string"
+          },
+          "report_schema_version": {
+            "title": "Report Schema Version",
+            "type": "string"
+          },
+          "reproduction_steps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reproduction Steps",
+            "type": "array"
+          },
+          "rulepack_hash": {
+            "title": "Rulepack Hash",
+            "type": "string"
+          },
+          "rulepack_id": {
+            "title": "Rulepack Id",
+            "type": "string"
+          },
+          "rulepack_version": {
+            "title": "Rulepack Version",
+            "type": "string"
+          },
+          "scenario_content_hash": {
+            "title": "Scenario Content Hash",
+            "type": "string"
+          },
+          "scenario_id": {
+            "title": "Scenario Id",
+            "type": "string"
+          },
+          "scenario_revision": {
+            "title": "Scenario Revision",
+            "type": "integer"
+          },
+          "selected_experiment_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selected Experiment Ids",
+            "type": "array"
+          },
+          "selected_experiment_input_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selected Experiment Input Hashes",
+            "type": "array"
+          },
+          "selected_experiment_semantic_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selected Experiment Semantic Hashes",
+            "type": "array"
+          },
+          "selected_run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selected Run Ids",
+            "type": "array"
+          },
+          "selected_run_input_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selected Run Input Hashes",
+            "type": "array"
+          },
+          "selected_run_semantic_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selected Run Semantic Hashes",
+            "type": "array"
+          },
+          "selected_search_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selected Search Ids",
+            "type": "array"
+          },
+          "selected_search_semantic_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selected Search Semantic Hashes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "report_schema_version",
+          "report_generator_version",
+          "engine_version",
+          "scenario_id",
+          "scenario_revision",
+          "scenario_content_hash",
+          "base_graph_version_id",
+          "base_graph_hash",
+          "rulepack_id",
+          "rulepack_version",
+          "rulepack_hash"
+        ],
+        "title": "ReportReproducibility",
+        "type": "object"
+      },
+      "ReportScope": {
+        "additionalProperties": false,
+        "description": "Section 3 - exactly what was evaluated.",
+        "properties": {
+          "coordinate_basis_kind": {
+            "title": "Coordinate Basis Kind",
+            "type": "string"
+          },
+          "coordinate_basis_note": {
+            "title": "Coordinate Basis Note",
+            "type": "string"
+          },
+          "edge_count": {
+            "title": "Edge Count",
+            "type": "integer"
+          },
+          "evaluation_instants": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evaluation Instants",
+            "type": "array"
+          },
+          "evidence_record_count": {
+            "title": "Evidence Record Count",
+            "type": "integer"
+          },
+          "graph_content_hash": {
+            "title": "Graph Content Hash",
+            "type": "string"
+          },
+          "graph_version_id": {
+            "title": "Graph Version Id",
+            "type": "string"
+          },
+          "local_origin_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Local Origin Label"
+          },
+          "node_count": {
+            "title": "Node Count",
+            "type": "integer"
+          },
+          "origin_destination_requirements": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Origin Destination Requirements",
+            "type": "array"
+          },
+          "phases_analysed": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Phases Analysed",
+            "type": "array"
+          },
+          "phases_declared": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Phases Declared",
+            "type": "array"
+          },
+          "profiles": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Profiles",
+            "type": "array"
+          },
+          "rule_count": {
+            "title": "Rule Count",
+            "type": "integer"
+          },
+          "rulepack_disclaimer": {
+            "title": "Rulepack Disclaimer",
+            "type": "string"
+          },
+          "rulepack_hash": {
+            "title": "Rulepack Hash",
+            "type": "string"
+          },
+          "rulepack_id": {
+            "title": "Rulepack Id",
+            "type": "string"
+          },
+          "rulepack_legal_applicability": {
+            "title": "Rulepack Legal Applicability",
+            "type": "string"
+          },
+          "rulepack_version": {
+            "title": "Rulepack Version",
+            "type": "string"
+          },
+          "synthetic_dataset": {
+            "title": "Synthetic Dataset",
+            "type": "boolean"
+          },
+          "synthetic_dataset_reason": {
+            "title": "Synthetic Dataset Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "synthetic_dataset",
+          "synthetic_dataset_reason",
+          "coordinate_basis_kind",
+          "coordinate_basis_note",
+          "graph_version_id",
+          "graph_content_hash",
+          "node_count",
+          "edge_count",
+          "evidence_record_count",
+          "rulepack_id",
+          "rulepack_version",
+          "rulepack_hash",
+          "rulepack_legal_applicability",
+          "rulepack_disclaimer",
+          "rule_count"
+        ],
+        "title": "ReportScope",
+        "type": "object"
+      },
+      "ReportSection12": {
+        "additionalProperties": false,
+        "description": "Section 12 - human review. Never populated with invented sign-off.\n\nThe defaults are the honest state: no reviewer exists. A caller may record a\nreal reviewer, but the API never supplies one, and no signature, seal or\napproval is ever generated.",
+        "properties": {
+          "approval_status": {
+            "default": "NO REVIEW RECORDED - NOT APPROVED FOR ANY USE",
+            "title": "Approval Status",
+            "type": "string"
+          },
+          "note": {
+            "default": "No human review has been recorded for this packet. DETOUR LAB does not assign reviewers, does not collect signatures and cannot grant approval. This section is deliberately blank: it states that the analysis has not been reviewed by a named accessibility or civil engineering professional.",
+            "title": "Note",
+            "type": "string"
+          },
+          "review_recorded": {
+            "default": false,
+            "title": "Review Recorded",
+            "type": "boolean"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewed At"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewer"
+          },
+          "reviewer_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reviewer Role"
+          }
+        },
+        "title": "ReportSection12",
+        "type": "object"
+      },
+      "SectionAvailability": {
+        "additionalProperties": false,
+        "description": "Whether a report section could be populated, and why not.",
+        "properties": {
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          },
+          "source_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Source Ids",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "available",
+              "unavailable",
+              "not_selected"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "SectionAvailability",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "The complete, deterministic report model.",
+    "properties": {
+      "alternative_plans": {
+        "items": {
+          "$ref": "#/$defs/ReportAlternativePlan"
+        },
+        "title": "Alternative Plans",
+        "type": "array"
+      },
+      "disclaimer": {
+        "default": "PLANNING ANALYSIS - NOT CERTIFIED. This packet describes what DETOUR LAB's deterministic model computed for the stored runs selected below. It is not a legal compliance statement, not professional engineering approval, not a structural or traffic assessment, and not a guarantee that any person can travel any route. No human reviewer is named or implied. All bundled geometry, measurements and observations are synthetic.",
+        "title": "Disclaimer",
+        "type": "string"
+      },
+      "engine_version": {
+        "default": "detour-lab-engine/0.1.0",
+        "title": "Engine Version",
+        "type": "string"
+      },
+      "evidence_issues": {
+        "items": {
+          "$ref": "#/$defs/ReportEvidenceIssue"
+        },
+        "title": "Evidence Issues",
+        "type": "array"
+      },
+      "evidence_rows": {
+        "items": {
+          "$ref": "#/$defs/ReportEvidenceRow"
+        },
+        "title": "Evidence Rows",
+        "type": "array"
+      },
+      "executive_summary": {
+        "additionalProperties": true,
+        "title": "Executive Summary",
+        "type": "object"
+      },
+      "experiments": {
+        "items": {
+          "$ref": "#/$defs/ReportExperiment"
+        },
+        "title": "Experiments",
+        "type": "array"
+      },
+      "findings": {
+        "items": {
+          "$ref": "#/$defs/ReportFinding"
+        },
+        "title": "Findings",
+        "type": "array"
+      },
+      "generator_version": {
+        "default": "detour-lab-report/1.0.0",
+        "title": "Generator Version",
+        "type": "string"
+      },
+      "human_review": {
+        "$ref": "#/$defs/ReportSection12"
+      },
+      "identity": {
+        "$ref": "#/$defs/ReportIdentity"
+      },
+      "limitations": {
+        "$ref": "#/$defs/ReportLimitations"
+      },
+      "modifications": {
+        "items": {
+          "$ref": "#/$defs/ReportModification"
+        },
+        "title": "Modifications",
+        "type": "array"
+      },
+      "network": {
+        "$ref": "#/$defs/ReportNetwork"
+      },
+      "not_certified_note": {
+        "default": "A model-confirmed route means every modelled check in DEMO_RULEPACK_NOT_LEGAL passed for the evidence available at the stated evaluation instant. It is not a physical safety guarantee. A possible-only route assumes unresolved edges are usable and is never confirmed accessibility.",
+        "title": "Not Certified Note",
+        "type": "string"
+      },
+      "od_rows": {
+        "items": {
+          "$ref": "#/$defs/ReportODRow"
+        },
+        "title": "Od Rows",
+        "type": "array"
+      },
+      "reproducibility": {
+        "$ref": "#/$defs/ReportReproducibility"
+      },
+      "robustness": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Robustness"
+      },
+      "schema_version": {
+        "default": "1.0.0",
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "scope": {
+        "$ref": "#/$defs/ReportScope"
+      },
+      "section_availability": {
+        "additionalProperties": {
+          "$ref": "#/$defs/SectionAvailability"
+        },
+        "title": "Section Availability",
+        "type": "object"
+      }
+    },
+    "required": [
+      "identity",
+      "scope",
+      "network",
+      "limitations",
+      "reproducibility",
+      "human_review"
+    ],
+    "title": "ReviewReport",
+    "type": "object"
+  },
+  "RobustnessSummary": {
+    "$defs": {
+      "EngineeringObservation": {
+        "description": "What the authoritative engine actually reported about the plan.\n\nEvery value describes *modelled software behaviour under an explicitly\nmodelled condition*. None of them is a statement about the physical world.",
+        "enum": [
+          "confirmed_connectivity_preserved",
+          "confirmed_connectivity_gained",
+          "confirmed_connectivity_lost",
+          "confirmed_route_became_possible_only",
+          "possible_only_route_became_disconnected",
+          "new_known_rule_violation",
+          "new_unresolved_evidence_condition",
+          "no_relevant_modelled_change",
+          "analysis_unavailable"
+        ],
+        "title": "EngineeringObservation",
+        "type": "string"
+      },
+      "ExperimentRollup": {
+        "additionalProperties": false,
+        "description": "Per-experiment contribution to the summary.",
+        "properties": {
+          "became_disconnected": {
+            "title": "Became Disconnected",
+            "type": "integer"
+          },
+          "became_possible_only": {
+            "title": "Became Possible Only",
+            "type": "integer"
+          },
+          "comparable_routes": {
+            "title": "Comparable Routes",
+            "type": "integer"
+          },
+          "confirmed_gained": {
+            "title": "Confirmed Gained",
+            "type": "integer"
+          },
+          "confirmed_lost": {
+            "title": "Confirmed Lost",
+            "type": "integer"
+          },
+          "confirmed_preserved": {
+            "title": "Confirmed Preserved",
+            "type": "integer"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Error Code"
+          },
+          "experiment_id": {
+            "title": "Experiment Id",
+            "type": "string"
+          },
+          "fault_kinds": {
+            "items": {
+              "$ref": "#/$defs/FaultKind"
+            },
+            "title": "Fault Kinds",
+            "type": "array"
+          },
+          "fault_labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fault Labels",
+            "type": "array"
+          },
+          "new_known_violations": {
+            "title": "New Known Violations",
+            "type": "integer"
+          },
+          "new_unknown_conditions": {
+            "title": "New Unknown Conditions",
+            "type": "integer"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/$defs/EngineeringObservation"
+            },
+            "title": "Observations",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/$defs/ExperimentStatus"
+          },
+          "total_distance_delta_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Distance Delta M"
+          },
+          "transitions_compared": {
+            "title": "Transitions Compared",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "experiment_id",
+          "status",
+          "fault_kinds",
+          "fault_labels",
+          "transitions_compared",
+          "confirmed_preserved",
+          "confirmed_gained",
+          "confirmed_lost",
+          "became_possible_only",
+          "became_disconnected",
+          "new_known_violations",
+          "new_unknown_conditions",
+          "comparable_routes",
+          "observations"
+        ],
+        "title": "ExperimentRollup",
+        "type": "object"
+      },
+      "ExperimentStatus": {
+        "description": "Did the experiment run? Nothing about the plan's modelled behaviour.",
+        "enum": [
+          "completed",
+          "partially_completed",
+          "invalid_experiment",
+          "execution_failed",
+          "cancelled"
+        ],
+        "title": "ExperimentStatus",
+        "type": "string"
+      },
+      "FaultKind": {
+        "description": "The supported fault-injection primitives (MASTER_PROMPT \u00a78, Gate 6 G6-06).\n\nOnly a mutation the domain can genuinely represent is listed. Each entry\nmaps to one authoritative operation - see ``faults.py`` for the mapping.",
+        "enum": [
+          "edge_closure",
+          "temporary_connection_loss",
+          "evidence_removal",
+          "conflicting_observation",
+          "evidence_expiration",
+          "unsupported_unit_observation",
+          "path_obstruction"
+        ],
+        "title": "FaultKind",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Transparent, fully-denominated comparison of baseline against faults.",
+    "properties": {
+      "base_graph_hash": {
+        "title": "Base Graph Hash",
+        "type": "string"
+      },
+      "comparable_routes": {
+        "title": "Comparable Routes",
+        "type": "integer"
+      },
+      "denominator_note": {
+        "title": "Denominator Note",
+        "type": "string"
+      },
+      "evaluation_instant": {
+        "title": "Evaluation Instant",
+        "type": "string"
+      },
+      "experiments_completed": {
+        "title": "Experiments Completed",
+        "type": "integer"
+      },
+      "experiments_failed": {
+        "title": "Experiments Failed",
+        "type": "integer"
+      },
+      "experiments_invalid": {
+        "title": "Experiments Invalid",
+        "type": "integer"
+      },
+      "experiments_partially_completed": {
+        "title": "Experiments Partially Completed",
+        "type": "integer"
+      },
+      "experiments_requested": {
+        "title": "Experiments Requested",
+        "type": "integer"
+      },
+      "fault_kinds_available": {
+        "items": {
+          "$ref": "#/$defs/FaultKind"
+        },
+        "title": "Fault Kinds Available",
+        "type": "array"
+      },
+      "fault_kinds_tested": {
+        "items": {
+          "$ref": "#/$defs/FaultKind"
+        },
+        "title": "Fault Kinds Tested",
+        "type": "array"
+      },
+      "fault_kinds_untested": {
+        "items": {
+          "$ref": "#/$defs/FaultKind"
+        },
+        "title": "Fault Kinds Untested",
+        "type": "array"
+      },
+      "interpretation_note": {
+        "default": "These counts describe how DETOUR LAB's model behaved under the specific synthetic conditions that were executed. A count of experiments that preserved a confirmed route is a test-coverage result over those chosen conditions. It is NOT a probability that the route is safe in the field, NOT a failure rate, and NOT a statistical result: the faults are deliberately authored stress conditions, not a sample drawn from any population of real-world hazards.",
+        "title": "Interpretation Note",
+        "type": "string"
+      },
+      "limitations": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Limitations",
+        "type": "array"
+      },
+      "pairs_becoming_disconnected": {
+        "title": "Pairs Becoming Disconnected",
+        "type": "integer"
+      },
+      "pairs_becoming_possible_only": {
+        "title": "Pairs Becoming Possible Only",
+        "type": "integer"
+      },
+      "pairs_evaluated": {
+        "title": "Pairs Evaluated",
+        "type": "integer"
+      },
+      "pairs_gaining_confirmed": {
+        "title": "Pairs Gaining Confirmed",
+        "type": "integer"
+      },
+      "pairs_losing_confirmed": {
+        "title": "Pairs Losing Confirmed",
+        "type": "integer"
+      },
+      "pairs_retaining_confirmed": {
+        "title": "Pairs Retaining Confirmed",
+        "type": "integer"
+      },
+      "pairs_with_new_known_violation": {
+        "title": "Pairs With New Known Violation",
+        "type": "integer"
+      },
+      "pairs_with_new_unknown_condition": {
+        "title": "Pairs With New Unknown Condition",
+        "type": "integer"
+      },
+      "per_experiment": {
+        "items": {
+          "$ref": "#/$defs/ExperimentRollup"
+        },
+        "title": "Per Experiment",
+        "type": "array"
+      },
+      "phase_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Phase Ids",
+        "type": "array"
+      },
+      "profile_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Profile Ids",
+        "type": "array"
+      },
+      "rulepack_hash": {
+        "title": "Rulepack Hash",
+        "type": "string"
+      },
+      "rulepack_id": {
+        "title": "Rulepack Id",
+        "type": "string"
+      },
+      "scenario_content_hash": {
+        "title": "Scenario Content Hash",
+        "type": "string"
+      },
+      "scenario_id": {
+        "title": "Scenario Id",
+        "type": "string"
+      },
+      "scenario_revision": {
+        "title": "Scenario Revision",
+        "type": "integer"
+      },
+      "schema_version": {
+        "default": "1.0.0",
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "total_distance_delta_m": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Total Distance Delta M"
+      }
+    },
+    "required": [
+      "scenario_id",
+      "scenario_revision",
+      "scenario_content_hash",
+      "phase_ids",
+      "profile_ids",
+      "evaluation_instant",
+      "rulepack_id",
+      "rulepack_hash",
+      "base_graph_hash",
+      "experiments_requested",
+      "experiments_completed",
+      "experiments_partially_completed",
+      "experiments_invalid",
+      "experiments_failed",
+      "fault_kinds_available",
+      "fault_kinds_tested",
+      "fault_kinds_untested",
+      "pairs_evaluated",
+      "pairs_retaining_confirmed",
+      "pairs_losing_confirmed",
+      "pairs_becoming_possible_only",
+      "pairs_becoming_disconnected",
+      "pairs_with_new_known_violation",
+      "pairs_with_new_unknown_condition",
+      "pairs_gaining_confirmed",
+      "comparable_routes",
+      "denominator_note"
+    ],
+    "title": "RobustnessSummary",
     "type": "object"
   },
   "Rule": {
@@ -8570,6 +15504,38 @@
       "exhaustive"
     ],
     "title": "SearchStatus",
+    "type": "object"
+  },
+  "SectionAvailability": {
+    "additionalProperties": false,
+    "description": "Whether a report section could be populated, and why not.",
+    "properties": {
+      "reason": {
+        "default": "",
+        "title": "Reason",
+        "type": "string"
+      },
+      "source_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Source Ids",
+        "type": "array"
+      },
+      "status": {
+        "enum": [
+          "available",
+          "unavailable",
+          "not_selected"
+        ],
+        "title": "Status",
+        "type": "string"
+      }
+    },
+    "required": [
+      "status"
+    ],
+    "title": "SectionAvailability",
     "type": "object"
   },
   "TemporaryEdge": {

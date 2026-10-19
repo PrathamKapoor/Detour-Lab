@@ -50,6 +50,27 @@ from detour_lab.domain.contracts import (
     Scenario,
     TemporaryEdge,
 )
+from detour_lab.evidence.model import (
+    EvidenceConflictReport,
+    EvidenceIssue,
+    EvidenceIssuePair,
+    EvidenceQueue,
+    EvidenceQueueScope,
+    ObservationComparison,
+)
+from detour_lab.failure.compare import ExperimentRollup, RobustnessSummary
+from detour_lab.failure.model import (
+    ElementStateChange,
+    ExecutionError,
+    ExperimentLimits,
+    ExperimentOutcome,
+    ExperimentSource,
+    ExperimentSummary,
+    FaultDefinition,
+    FaultObservation,
+    PairTransition,
+    PhaseProfileOutcome,
+)
 from detour_lab.optimization.model import (
     BaselineOD,
     BaselineProfile,
@@ -67,6 +88,23 @@ from detour_lab.optimization.model import (
     SearchConfig,
     SearchOutcome,
     SearchStatus,
+)
+from detour_lab.reporting.report import (
+    ReportAlternativePlan,
+    ReportCandidate,
+    ReportEvidenceIssue,
+    ReportEvidenceRow,
+    ReportExperiment,
+    ReportFinding,
+    ReportIdentity,
+    ReportLimitations,
+    ReportModification,
+    ReportNetwork,
+    ReportODRow,
+    ReportScope,
+    ReportSection12,
+    ReviewReport,
+    SectionAvailability,
 )
 
 #: Domain models exposed to the frontend, in dependency order. The generated
@@ -115,6 +153,47 @@ CONTRACT_MODELS: tuple[type[BaseModel], ...] = (
     RankingPolicy,
     SearchStatus,
     SearchOutcome,
+    # --- Gate 6: evidence intelligence -------------------------------------
+    # Bare StrEnums (EvidenceCriticality, QueueState, FaultKind,
+    # ExperimentStatus, EngineeringObservation) are deliberately NOT listed
+    # here: the generator walks ``$defs`` and emits them as type aliases through
+    # the models that reference them, which is how the pre-existing enums
+    # (VerdictState, ReasonCode, ...) already reach types.ts.
+    ObservationComparison,
+    EvidenceIssuePair,
+    EvidenceIssue,
+    EvidenceQueueScope,
+    EvidenceQueue,
+    EvidenceConflictReport,
+    # --- Gate 6: failure laboratory ----------------------------------------
+    FaultObservation,
+    FaultDefinition,
+    ExperimentLimits,
+    ExecutionError,
+    ElementStateChange,
+    PairTransition,
+    PhaseProfileOutcome,
+    ExperimentSource,
+    ExperimentOutcome,
+    ExperimentSummary,
+    ExperimentRollup,
+    RobustnessSummary,
+    # --- Gate 6: review reporting ------------------------------------------
+    SectionAvailability,
+    ReportIdentity,
+    ReportScope,
+    ReportModification,
+    ReportFinding,
+    ReportODRow,
+    ReportEvidenceRow,
+    ReportEvidenceIssue,
+    ReportCandidate,
+    ReportAlternativePlan,
+    ReportExperiment,
+    ReportSection12,
+    ReportLimitations,
+    ReportNetwork,
+    ReviewReport,
 )
 
 _HEADER = """// GENERATED FILE - do not edit by hand.
