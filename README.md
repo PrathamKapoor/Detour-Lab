@@ -137,8 +137,9 @@ DETOUR-LAB/
 ### Automated Setup (Windows PowerShell)
 
 ```powershell
-# Clone repository (or navigate to workspace)
-cd C:\Pratham\DETOUR-LAB
+# Clone repository and enter directory
+git clone https://github.com/PrathamKapoor/Detour-Lab.git
+Set-Location Detour-Lab
 
 # Execute automated setup script
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup.ps1
@@ -158,17 +159,20 @@ DETOUR LAB runs entirely on your local machine with two processes.
 
 ### Terminal 1: Backend API Service
 
+From the repository root:
+
 ```powershell
-Set-Location "C:\Pratham\DETOUR-LAB"
-$env:PYTHONPATH = "$PWD\apps\api"
+$env:PYTHONPATH = (Join-Path (Get-Location) "apps\api")
 .\.venv\Scripts\python.exe -m uvicorn detour_lab.api.main:app --app-dir apps\api --host 127.0.0.1 --port 8077
 ```
 The API becomes healthy at `http://127.0.0.1:8077/api/v1/health`.
 
 ### Terminal 2: Web Planning Studio
 
+From the repository root:
+
 ```powershell
-Set-Location "C:\Pratham\DETOUR-LAB\apps\web"
+Set-Location apps\web
 npm run dev
 ```
 Open your browser to `http://127.0.0.1:5173`. The application automatically connects to the backend on `:8077`.
@@ -179,7 +183,7 @@ For a structured demonstration flow for evaluators or judges, consult the [5-Min
 
 ## 7. Verification & Benchmarking
 
-The complete test suite and verification pipeline can be executed with a single command:
+The complete test suite and verification pipeline can be executed with a single command from the repository root:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1
