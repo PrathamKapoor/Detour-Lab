@@ -47,11 +47,11 @@ def main() -> int:
 
     # Critical artifacts to audit
     critical_files = [
-        "docs/RELEASE_READINESS_AUDIT.md",
-        "docs/RESEARCH_EVALUATION.md",
-        "docs/SECURITY_REVIEW.md",
-        "docs/DEMO_WALKTHROUGH.md",
-        "docs/HACKATHON_TECHNICAL_DEFENSE.md",
+        "docs/evaluation/RELEASE_READINESS_AUDIT.md",
+        "docs/evaluation/RESEARCH_EVALUATION.md",
+        "docs/security/SECURITY_REVIEW.md",
+        "docs/guides/DEMO_WALKTHROUGH.md",
+        "docs/evaluation/TECHNICAL_DEFENSE.md",
         "var/benchmarks/research_benchmark_results.json",
         "var/benchmarks/performance_benchmark_results.json",
     ]

@@ -15,7 +15,7 @@ The outcome carries two identities, deliberately distinct:
 * ``search_id`` - execution identity (one per search execution);
 * ``semantic_hash`` - identity of the semantic inputs + outcome. Two searches
   with equal inputs must reproduce it; ``id`` and timestamps are excluded
-  (same rule as analysis runs, DECISIONS.md D-012/D-013).
+  (same rule as analysis runs, docs/architecture/ARCHITECTURE_DECISIONS.md D-012/D-013).
 
 Nothing in this module computes verdicts, routes or feasibility. Every
 verification field is filled from real ``run_analysis`` output by
@@ -337,7 +337,7 @@ class SearchOutcome(StrictModel):
         """Deterministic payload used for the semantic hash.
 
         Runtime metadata (execution id, wall clock, duration) is excluded, the
-        same rule analysis runs use (DECISIONS.md D-012/D-013).
+        same rule analysis runs use (docs/architecture/ARCHITECTURE_DECISIONS.md D-012/D-013).
         """
         payload = self.model_dump(mode="json")
         for key in ("search_id", "created_at", "duration_ms"):

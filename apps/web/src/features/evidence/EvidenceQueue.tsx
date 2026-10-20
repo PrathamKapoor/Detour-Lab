@@ -4,7 +4,7 @@ import { Button, EmptyState, ErrorPanel, Panel, Spinner } from '@/components/But
 import { SelectField, TextField } from '@/components/Field'
 import { KeyValueList, StatusBadge } from '@/components/StatusBadge'
 import { useResource } from '@/lib/useResource'
-import { criticalityMeta, evidenceStatusMeta, reachabilityOf } from '@/lib/gate6'
+import { criticalityMeta, evidenceStatusMeta, reachabilityOf } from '@/lib/presentation-meta'
 import type { Gate6ConflictReport, Gate6Issue } from '@/api/types'
 import './evidence-queue.css'
 

@@ -4,7 +4,7 @@ import { Button, EmptyState, ErrorPanel, Panel, Spinner } from '@/components/But
 import { KeyValueList, StatusBadge } from '@/components/StatusBadge'
 import { formatHash, formatDuration, formatTimestamp } from '@/lib/format'
 import { useResource } from '@/lib/useResource'
-import { formatOptionalCost } from '@/lib/gate6'
+import { formatOptionalCost } from '@/lib/presentation-meta'
 import type { GeneratedReportEnvelope, ReportEnvelope } from '@/api/types'
 import './reports.css'
 

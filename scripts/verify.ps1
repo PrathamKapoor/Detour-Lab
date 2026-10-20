@@ -26,6 +26,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
+Set-Location $repoRoot
 $venv = Join-Path $repoRoot '.venv'
 $apiDir = Join-Path $repoRoot 'apps\api'
 $python = Join-Path $venv 'Scripts\python.exe'
@@ -36,7 +37,7 @@ $env:PYTHONPATH = $apiDir
 function Write-Step($message) { Write-Host "==> $message" -ForegroundColor Cyan }
 
 Write-Step 'Static analysis (ruff)'
-& $python -m ruff check $apiDir --config (Join-Path $apiDir 'pyproject.toml')
+& $python -m ruff check 'apps/api' --config 'apps/api/pyproject.toml'
 if ($LASTEXITCODE -ne 0) { throw 'ruff reported problems' }
 
 Write-Step 'Backend test suite (pytest)'

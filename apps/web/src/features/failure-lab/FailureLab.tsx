@@ -10,7 +10,7 @@ import {
   formatDistance,
   observationMeta,
   reachabilityOf,
-} from '@/lib/gate6'
+} from '@/lib/presentation-meta'
 import type {
   ExperimentReplay,
   FailureLabRunEnvelope,
