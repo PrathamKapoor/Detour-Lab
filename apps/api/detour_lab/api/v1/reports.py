@@ -28,6 +28,7 @@ Safety controls applied at this boundary
 from __future__ import annotations
 
 import json
+import re
 
 from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel, ConfigDict, Field
@@ -38,6 +39,20 @@ from detour_lab.reporting.report import ReportDataError
 from detour_lab.reporting.service import generate_report
 
 router = APIRouter(prefix="/api/v1", tags=["reports"])
+
+SAFE_IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9_\-]{1,64}$")
+
+
+def _validate_id(identifier: str, name: str = "identifier") -> str:
+    """Ensure identifier contains no path traversal or shell special characters."""
+    if not isinstance(identifier, str) or not SAFE_IDENTIFIER_PATTERN.match(identifier):
+        raise _error(
+            400,
+            "INVALID_IDENTIFIER",
+            f"The {name} contains prohibited characters or exceeds maximum length.",
+            {"parameter": name, "value": identifier},
+        )
+    return identifier
 
 
 class CreateReportRequest(BaseModel):
@@ -81,6 +96,7 @@ def create_report(
     repository: Repository = Depends(get_repository),
 ) -> dict:
     """Generate a review packet from specific stored runs and experiments."""
+    _validate_id(scenario_id, "scenario_id")
     try:
         report = generate_report(
             repository=repository,
@@ -108,6 +124,7 @@ def create_report(
 @router.get("/scenarios/{scenario_id}/reports")
 def list_reports(scenario_id: str, repository: Repository = Depends(get_repository)) -> dict:
     """Stored packets for a scenario, with the revision each one describes."""
+    _validate_id(scenario_id, "scenario_id")
     try:
         records = repository.list_review_reports(scenario_id)
     except NotFoundError as exc:
@@ -144,6 +161,7 @@ def list_reports(scenario_id: str, repository: Repository = Depends(get_reposito
 
 @router.get("/reports/{report_id}")
 def get_report(report_id: str, repository: Repository = Depends(get_repository)) -> dict:
+    _validate_id(report_id, "report_id")
     try:
         record = repository.get_review_report(report_id)
     except NotFoundError as exc:
@@ -172,6 +190,7 @@ def get_report(report_id: str, repository: Repository = Depends(get_repository))
 @router.get("/reports/{report_id}/manifest")
 def get_report_manifest(report_id: str, repository: Repository = Depends(get_repository)) -> Response:
     """The canonical report manifest, served verbatim as downloadable JSON."""
+    _validate_id(report_id, "report_id")
     try:
         record = repository.get_review_report(report_id)
     except NotFoundError as exc:
@@ -195,6 +214,7 @@ def download_report_pdf(report_id: str, repository: Repository = Depends(get_rep
     generated; ``X-Detour-Lab-Pdf-Sha256`` lets a client verify that without
     trusting the request.
     """
+    _validate_id(report_id, "report_id")
     from detour_lab.reporting.pdf import pdf_sha256, render_report_pdf, rendered_page_count
     from detour_lab.reporting.report import ReviewReport
 

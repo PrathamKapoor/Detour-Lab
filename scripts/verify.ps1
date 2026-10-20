@@ -303,10 +303,18 @@ try {
     Write-Host ("  PDF {0} pages, {1} bytes, sha256 {2} verified against the recorded digest" -f $created.report.page_count, $pdfBytes, $served)
     Write-Host ("  packet written to var\verify-gate6-packet.pdf")
     Write-Host 'Note: measured durations over the synthetic demo fixture (9 nodes, 12 edges).'
-    Write-Host '      Not performance targets and not p50/p95 latency; Gate 7 owns those.' -ForegroundColor Yellow
+    Write-Host '      Gate 7 adds formal scientific benchmarks and scaling profiling below.'
 } finally {
     Stop-Process -Id $server3.Id -Force -ErrorAction SilentlyContinue
     Remove-Item Env:\DETOUR_LAB_DB_PATH -ErrorAction SilentlyContinue
 }
+
+Write-Step 'Gate 7 Research & Scalability Benchmarks (Baselines A-E + Grid Scaling)'
+& $python (Join-Path $repoRoot 'scripts\run_benchmarks.py') --iterations 5
+if ($LASTEXITCODE -ne 0) { throw 'Gate 7 benchmarks failed' }
+
+Write-Step 'Gate 7 Release Candidate Manifest Generation'
+& $python (Join-Path $repoRoot 'scripts\generate_release_manifest.py')
+if ($LASTEXITCODE -ne 0) { throw 'Release manifest generation failed' }
 
 Write-Step 'VERIFICATION PASSED' -ForegroundColor Green
